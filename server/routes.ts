@@ -14,6 +14,8 @@ interface GameWebSocket extends WebSocket {
 class GameManager {
   private sessionTimers: Map<number, NodeJS.Timeout> = new Map();
   private questionTimers: Map<number, NodeJS.Timeout> = new Map();
+  public hackModes: Map<string, {sessionId: number, hackerId: string, targetId: string, attackerProgress: number, defenderProgress: number}> = new Map();
+  public powerUpEffects: Map<string, {playerId: string, effect: string, endTime: number}> = new Map();
 
   generateGameCode(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -404,45 +406,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const cost = powerUpCosts[message.powerUpType as keyof typeof powerUpCosts];
               
               if (player && player.credits >= cost) {
+                if (message.powerUpType === 'hack') {
+                  // Check if either player is already in a hack
+                  const existingHack = Array.from(gameManager.hackModes.values()).find(hack => 
+                    hack.hackerId === ws.playerId || hack.targetId === ws.playerId ||
+                    hack.hackerId === message.targetId || hack.targetId === message.targetId
+                  );
+                  
+                  if (!existingHack) {
+                    // Start hack mode
+                    const hackId = `${ws.playerId}-${message.targetId}-${Date.now()}`;
+                    gameManager.hackModes.set(hackId, {
+                      sessionId: ws.sessionId,
+                      hackerId: ws.playerId,
+                      targetId: message.targetId,
+                      attackerProgress: 0,
+                      defenderProgress: 0
+                    });
+                    
+                    const targetPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, message.targetId);
+                    
+                    gameManager.broadcastToSession(ws.sessionId, wss, {
+                      type: 'hackStarted',
+                      hackerId: ws.playerId,
+                      targetId: message.targetId,
+                      hackerName: player.name,
+                      targetName: targetPlayer?.name
+                    });
+                  }
+                } else if (message.powerUpType === 'shield') {
+                  // Shield clears all effects and prevents new ones
+                  const effectKey = `${ws.playerId}-shield`;
+                  gameManager.powerUpEffects.set(effectKey, {
+                    playerId: ws.playerId,
+                    effect: 'shield',
+                    endTime: Date.now() + 10000 // 10 seconds
+                  });
+                  
+                  // Clear all existing effects on this player
+                  for (const [key, effect] of gameManager.powerUpEffects.entries()) {
+                    if (effect.playerId === ws.playerId && effect.effect !== 'shield') {
+                      gameManager.powerUpEffects.delete(key);
+                    }
+                  }
+                } else {
+                  // Check if target has shield protection
+                  const shieldEffect = Array.from(gameManager.powerUpEffects.values()).find(effect => 
+                    effect.playerId === message.targetId && effect.effect === 'shield' && effect.endTime > Date.now()
+                  );
+                  
+                  if (!shieldEffect) {
+                    const duration = message.powerUpType === 'slow' ? 10 : 
+                                   message.powerUpType === 'freeze' ? 8 : 
+                                   message.powerUpType === 'scramble' ? 12 : 5;
+                    
+                    const effectKey = `${message.targetId}-${message.powerUpType}`;
+                    gameManager.powerUpEffects.set(effectKey, {
+                      playerId: message.targetId,
+                      effect: message.powerUpType,
+                      endTime: Date.now() + (duration * 1000)
+                    });
+                    
+                    gameManager.broadcastToSession(ws.sessionId, wss, {
+                      type: 'powerUpUsed',
+                      effect: message.powerUpType,
+                      targetId: message.targetId,
+                      duration
+                    });
+                  }
+                }
+                
                 await storage.updatePlayer(player.id, {
                   credits: player.credits - cost
                 });
-
-                if (message.powerUpType === 'hack') {
-                  // Start hack attempt
-                  const hack = await storage.createHackAttempt({
-                    sessionId: ws.sessionId,
-                    hackerId: ws.playerId,
-                    targetId: message.targetId
-                  });
-
-                  // Mark target as being hacked
-                  const target = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, message.targetId);
-                  if (target) {
-                    await storage.updatePlayer(target.id, {
-                      isBeingHacked: true,
-                      hackedBy: ws.playerId,
-                      hackProgress: 0
-                    });
-                  }
-
-                  gameManager.broadcastToSession(ws.sessionId, wss, {
-                    type: 'hackStarted',
-                    hackerId: ws.playerId,
-                    targetId: message.targetId
-                  });
-                } else {
-                  // Apply other power-up effects
-                  gameManager.broadcastToSession(ws.sessionId, wss, {
-                    type: 'powerUpUsed',
-                    userId: ws.playerId,
-                    targetId: message.targetId,
-                    effect: message.powerUpType,
-                    duration: message.powerUpType === 'slow' ? 10 : 
-                             message.powerUpType === 'freeze' ? 5 :
-                             message.powerUpType === 'scramble' ? 8 : 15
-                  });
-                }
               }
             }
             break;

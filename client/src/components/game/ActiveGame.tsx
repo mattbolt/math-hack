@@ -21,6 +21,8 @@ interface ActiveGameProps {
   onSkipQuestion: () => void;
   showAnswerFeedback: {show: boolean, correct: boolean};
   pendingAnswer: boolean;
+  hackModeActive: boolean;
+  hackModeData: {attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string} | null;
 }
 
 export function ActiveGame({
@@ -36,7 +38,9 @@ export function ActiveGame({
   onStartHack,
   onSkipQuestion,
   showAnswerFeedback,
-  pendingAnswer
+  pendingAnswer,
+  hackModeActive,
+  hackModeData
 }: ActiveGameProps) {
   const [answer, setAnswer] = useState("");
   const [showPlayerSelection, setShowPlayerSelection] = useState(false);
@@ -321,39 +325,61 @@ export function ActiveGame({
             </CardContent>
           </Card>
 
-          {/* Hack Panel */}
-          <Card className="bg-gradient-to-br from-purple-600/20 to-purple-600/5 border-purple-600/30">
-            <CardContent className="p-6">
-              <h3 className="font-semibold mb-4 flex items-center space-x-2 text-purple-600">
-                <Skull className="w-5 h-5" />
-                <span>Hack Mode</span>
-              </h3>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">Hack Progress</span>
-                    <span className="text-purple-600 font-semibold">{currentPlayer.consecutiveCorrect}/5</span>
+          {/* Hack Mode Panel - Only show when hack mode is active */}
+          {hackModeActive && hackModeData && (
+            <Card className="bg-gradient-to-br from-red-600/20 to-purple-600/20 border-2 border-red-500 animate-pulse">
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-4 flex items-center space-x-2 text-red-400">
+                  <Skull className="w-5 h-5" />
+                  <span>HACK MODE ACTIVE</span>
+                </h3>
+                
+                <div className="space-y-4">
+                  <div className="text-center text-sm text-slate-300">
+                    {hackModeData.isAttacker 
+                      ? `Hacking ${hackModeData.opponentName}` 
+                      : `Defending against ${hackModeData.opponentName}`
+                    }
                   </div>
-                  <div className="w-full bg-slate-700 rounded-full h-2">
-                    <div 
-                      className="bg-gradient-to-r from-purple-600 to-pink-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${(currentPlayer.consecutiveCorrect / 5) * 100}%` }}
-                    />
+                  
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-red-400">Attacker Progress</span>
+                        <span className="font-semibold">{hackModeData.attackerProgress}/5</span>
+                      </div>
+                      <div className="w-full bg-slate-700 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-red-600 to-red-400 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${(hackModeData.attackerProgress / 5) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-blue-400">Defender Progress</span>
+                        <span className="font-semibold">{hackModeData.defenderProgress}/5</span>
+                      </div>
+                      <div className="w-full bg-slate-700 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-blue-600 to-blue-400 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${(hackModeData.defenderProgress / 5) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-center text-slate-400">
+                    {hackModeData.isAttacker 
+                      ? "Get 5 correct answers to steal credits!" 
+                      : "Get 5 correct answers to defend yourself!"
+                    }
                   </div>
                 </div>
-                
-                <Button
-                  onClick={() => handlePowerUpClick("hack")}
-                  disabled={currentPlayer.credits < 50 || currentPlayer.consecutiveCorrect < 5}
-                  className="w-full bg-purple-600 hover:bg-purple-700 transition-colors transform hover:scale-105"
-                >
-                  <Skull className="w-4 h-4 mr-2" />
-                  Start Hack (50 credits)
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Quick Stats */}
           <Card className="bg-slate-800/50 border-slate-700">
