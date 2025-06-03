@@ -70,8 +70,8 @@ export function ActiveGame({
             state: 'current' as const
           });
           
-          // Keep only last 3 items
-          return newStack.slice(-3);
+          // Keep only last 2 items (current + 1 previous)
+          return newStack.slice(-2);
         }
         
         return prev;
@@ -214,35 +214,37 @@ export function ActiveGame({
               <div className="space-y-6">
                 
                 {/* Question Display Area */}
-                <div className="relative min-h-[120px] flex flex-col justify-center">
+                <div className="relative min-h-[120px] flex flex-col justify-center mt-[50px]">
                   
                   {/* Question Stack */}
                   {questionStack.map((question, index) => {
-                    const isTop = index === questionStack.length - 1;
-                    const isSecond = index === questionStack.length - 2;
+                    const isNewest = index === questionStack.length - 1;
                     
                     let position = 'top-0';
                     let opacity = 'opacity-100';
                     let scale = 'scale-100';
                     let color = 'text-white';
                     
-                    if (question.state === 'previous') {
-                      position = isSecond ? 'top-[-40px]' : 'top-[-80px]';
-                      opacity = isSecond ? 'opacity-40' : 'opacity-20';
-                      scale = isSecond ? 'scale-75' : 'scale-50';
-                      color = question.correct ? 'text-green-400' : 'text-red-400';
-                    } else if (question.state === 'answered') {
+                    if (question.state === 'answered') {
                       position = 'top-[-40px]';
                       opacity = 'opacity-60';
+                      scale = 'scale-75';
+                      color = question.correct ? 'text-green-400' : 'text-red-400';
+                    } else if (question.state === 'previous') {
+                      position = 'top-[-40px]';
+                      opacity = 'opacity-30';
                       scale = 'scale-75';
                       color = question.correct ? 'text-green-400' : 'text-red-400';
                     }
                     
                     return (
                       <div 
-                        key={`question-${question.id}`}
+                        key={`question-${question.id}-${animationKey}`}
                         className={`absolute w-full transition-all duration-500 ease-in-out ${position} ${opacity} ${scale} ${color}`}
-                        style={{ zIndex: 30 - index }}
+                        style={{ 
+                          zIndex: isNewest ? 30 : 20,
+                          animation: question.state === 'current' && animationKey > 0 ? 'slideUpFromBelow 0.5s ease-out forwards' : 'none'
+                        }}
                       >
                         <div className="text-3xl font-bold">
                           {question.state === 'current' && !showAnswerFeedback.show
