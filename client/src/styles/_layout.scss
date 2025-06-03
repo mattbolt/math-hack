@@ -1,0 +1,206 @@
+// Layout components using BEM methodology
+
+.app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, $color-bg-primary 0%, $color-bg-secondary 100%);
+
+  &__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: $spacing-md;
+    
+    @media (min-width: $breakpoint-lg) {
+      padding: $spacing-xl;
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-lg 0;
+    border-bottom: 1px solid $color-bg-tertiary;
+    margin-bottom: $spacing-xl;
+  }
+
+  &__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.game-layout {
+  display: grid;
+  gap: $spacing-xl;
+  
+  @media (min-width: $breakpoint-lg) {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+
+  &__sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+}
+
+.grid {
+  display: grid;
+  gap: $spacing-md;
+
+  &--cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  &--cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  &--cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (min-width: $breakpoint-md) {
+    &--md-cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+.flex {
+  display: flex;
+
+  &--center {
+    justify-content: center;
+    align-items: center;
+  }
+
+  &--between {
+    justify-content: space-between;
+  }
+
+  &--column {
+    flex-direction: column;
+  }
+
+  &--wrap {
+    flex-wrap: wrap;
+  }
+
+  &--gap-sm {
+    gap: $spacing-sm;
+  }
+
+  &--gap-md {
+    gap: $spacing-md;
+  }
+
+  &--gap-lg {
+    gap: $spacing-lg;
+  }
+}
+
+.text {
+  &--center {
+    text-align: center;
+  }
+
+  &--left {
+    text-align: left;
+  }
+
+  &--right {
+    text-align: right;
+  }
+
+  &--xs {
+    font-size: $font-xs;
+  }
+
+  &--sm {
+    font-size: $font-sm;
+  }
+
+  &--lg {
+    font-size: $font-lg;
+  }
+
+  &--xl {
+    font-size: $font-xl;
+  }
+
+  &--2xl {
+    font-size: $font-2xl;
+  }
+
+  &--3xl {
+    font-size: $font-3xl;
+  }
+
+  &--4xl {
+    font-size: $font-4xl;
+  }
+
+  &--muted {
+    color: $color-text-muted;
+  }
+
+  &--secondary {
+    color: $color-text-secondary;
+  }
+
+  &--light {
+    color: $color-text-light;
+  }
+
+  &--bold {
+    font-weight: $font-bold;
+  }
+
+  &--semibold {
+    font-weight: $font-semibold;
+  }
+
+  &--medium {
+    font-weight: $font-medium;
+  }
+}
+
+.space-y {
+  &--sm > * + * {
+    margin-top: $spacing-sm;
+  }
+
+  &--md > * + * {
+    margin-top: $spacing-md;
+  }
+
+  &--lg > * + * {
+    margin-top: $spacing-lg;
+  }
+
+  &--xl > * + * {
+    margin-top: $spacing-xl;
+  }
+}
+
+.space-x {
+  &--sm > * + * {
+    margin-left: $spacing-sm;
+  }
+
+  &--md > * + * {
+    margin-left: $spacing-md;
+  }
+
+  &--lg > * + * {
+    margin-left: $spacing-lg;
+  }
+}
