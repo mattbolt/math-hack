@@ -165,8 +165,8 @@ export function ActiveGame({
     // At max difficulty (9), no progression possible
     if (player.difficultyLevel >= 9) return 0;
     
-    // Need 3 consecutive correct to advance
-    const needed = 3 - player.consecutiveCorrect;
+    // Need 5 consecutive correct to advance
+    const needed = 5 - player.consecutiveCorrect;
     return Math.max(0, needed);
   };
 

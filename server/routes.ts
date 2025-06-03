@@ -168,8 +168,8 @@ class GameManager {
   adjustDifficulty(player: any): number {
     let newDifficulty = player.difficultyLevel;
 
-    // Increase difficulty if player gets 3 consecutive correct answers
-    if (player.consecutiveCorrect >= 3) {
+    // Increase difficulty if player gets 5 consecutive correct answers at current level
+    if (player.consecutiveCorrect >= 5) {
       newDifficulty = Math.min(9, player.difficultyLevel + 1);
     }
     // Decrease difficulty if player gets 2 consecutive wrong answers or skips
@@ -435,7 +435,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 let updates: any = {
                   [isCorrect ? 'correctAnswers' : 'wrongAnswers']: isCorrect ? player.correctAnswers + 1 : player.wrongAnswers + 1,
                   consecutiveCorrect: isCorrect ? player.consecutiveCorrect + 1 : 0,
-                  consecutiveWrong: isCorrect ? 0 : player.consecutiveWrong + 1
+                  consecutiveWrong: isCorrect ? 0 : player.consecutiveWrong + 1,
+                  overallConsecutiveCorrect: isCorrect ? player.overallConsecutiveCorrect + 1 : 0
                 };
 
                 if (isCorrect) {
@@ -443,11 +444,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   updates.credits = player.credits + creditReward;
                   updates.score = player.score + (creditReward * player.difficultyLevel);
                   
-                  // Adjust difficulty
-                  updates.difficultyLevel = gameManager.adjustDifficulty({
+                  // Adjust difficulty and reset current level consecutive count if difficulty changes
+                  const newDifficulty = gameManager.adjustDifficulty({
                     ...player,
-                    correctAnswers: player.correctAnswers + 1
+                    consecutiveCorrect: updates.consecutiveCorrect,
+                    consecutiveWrong: updates.consecutiveWrong
                   });
+                  
+                  updates.difficultyLevel = newDifficulty;
+                  
+                  // Reset current level consecutive count if difficulty increased
+                  if (newDifficulty > player.difficultyLevel) {
+                    updates.consecutiveCorrect = 0;
+                  }
 
                   // Check hack progress for new sophisticated system
                   console.log('Checking hack progress for player:', ws.playerId, 'Active hacks:', Array.from(gameManager.hackModes.entries()));
@@ -637,6 +646,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   credits: player.credits - 5,
                   consecutiveCorrect: 0,
                   consecutiveWrong: player.consecutiveWrong + 1,
+                  overallConsecutiveCorrect: 0,
                   difficultyLevel: gameManager.adjustDifficulty({
                     ...player,
                     consecutiveWrong: player.consecutiveWrong + 1,
