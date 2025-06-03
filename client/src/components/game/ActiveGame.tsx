@@ -116,33 +116,23 @@ export function ActiveGame({
         // Show visual loading effect on the clicked button
         setSlowedButton(option);
         
-        // Delay before submitting answer
+        // Clear spinner after a short visual delay but submit immediately
         setTimeout(() => {
-          // Update current question in stack to "answered" state
-          setQuestionStack(prev => prev.map(q => 
-            q.id === currentQuestion.id 
-              ? { ...q, userAnswer: option, correct: option === currentQuestion.answer, state: 'answered' as const }
-              : q
-          ));
-          
-          // Submit the answer after delay
-          onSubmitAnswer(option);
-          setAnswer("");
           setSlowedButton(null);
-        }, 2000); // 2 second delay for slow effect
-      } else {
-        // Normal speed - immediate submission
-        // Update current question in stack to "answered" state
-        setQuestionStack(prev => prev.map(q => 
-          q.id === currentQuestion.id 
-            ? { ...q, userAnswer: option, correct: option === currentQuestion.answer, state: 'answered' as const }
-            : q
-        ));
-        
-        // Automatically submit the answer
-        onSubmitAnswer(option);
-        setAnswer("");
+        }, 1500);
       }
+      
+      // Always submit immediately regardless of slow effect
+      // Update current question in stack to "answered" state
+      setQuestionStack(prev => prev.map(q => 
+        q.id === currentQuestion.id 
+          ? { ...q, userAnswer: option, correct: option === currentQuestion.answer, state: 'answered' as const }
+          : q
+      ));
+      
+      // Automatically submit the answer
+      onSubmitAnswer(option);
+      setAnswer("");
     }
   };
 
@@ -379,10 +369,7 @@ export function ActiveGame({
                             } ${(pendingAnswer || isFrozen || isAnyButtonSlowed) ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             {isButtonSlowed ? (
-                              <div className="flex items-center space-x-2">
-                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                <span>Processing...</span>
-                              </div>
+                              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
                             ) : (
                               option
                             )}
