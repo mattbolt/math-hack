@@ -1,1 +1,128 @@
-@import './styles/main.scss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --primary: 207 90% 54%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+  --sidebar-background: 240 5.9% 10%;
+  --sidebar-foreground: 240 4.8% 95.9%;
+  --sidebar-primary: 224 71.4% 4.1%;
+  --sidebar-primary-foreground: 210 20% 98%;
+  --sidebar-accent: 240 3.7% 15.9%;
+  --sidebar-accent-foreground: 240 4.8% 95.9%;
+  --sidebar-border: 240 3.7% 15.9%;
+  --sidebar-ring: 217.2 91.2% 59.8%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  /* Custom animations for the game */
+  @keyframes pulse-slow {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes hack-glow {
+    0% {
+      box-shadow: 0 0 5px hsl(262 83% 58%);
+    }
+    100% {
+      box-shadow: 0 0 20px hsl(262 83% 58%), 0 0 30px hsl(262 83% 58%);
+    }
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-hack-glow {
+    animation: hack-glow 1.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes slideUpFromBelow {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Game-specific color palette */
+  .text-game-primary {
+    color: hsl(207 90% 54%);
+  }
+
+  .text-game-secondary {
+    color: hsl(262 83% 58%);
+  }
+
+  .text-game-success {
+    color: hsl(158 64% 52%);
+  }
+
+  .text-game-warning {
+    color: hsl(43 96% 56%);
+  }
+
+  .text-game-danger {
+    color: hsl(0 84% 60%);
+  }
+
+  .bg-game-primary {
+    background-color: hsl(207 90% 54%);
+  }
+
+  .bg-game-secondary {
+    background-color: hsl(262 83% 58%);
+  }
+
+  .bg-game-success {
+    background-color: hsl(158 64% 52%);
+  }
+
+  .bg-game-warning {
+    background-color: hsl(43 96% 56%);
+  }
+
+  .bg-game-danger {
+    background-color: hsl(0 84% 60%);
+  }
+}
