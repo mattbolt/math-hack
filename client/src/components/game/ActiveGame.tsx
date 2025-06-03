@@ -19,6 +19,8 @@ interface ActiveGameProps {
   onUsePowerUp: (powerUpType: string, targetId: string) => void;
   onStartHack: (targetId: string) => void;
   onSkipQuestion: () => void;
+  showAnswerFeedback: {show: boolean, correct: boolean};
+  pendingAnswer: boolean;
 }
 
 export function ActiveGame({
@@ -32,7 +34,9 @@ export function ActiveGame({
   onSubmitAnswer,
   onUsePowerUp,
   onStartHack,
-  onSkipQuestion
+  onSkipQuestion,
+  showAnswerFeedback,
+  pendingAnswer
 }: ActiveGameProps) {
   const [answer, setAnswer] = useState("");
   const [showPlayerSelection, setShowPlayerSelection] = useState(false);

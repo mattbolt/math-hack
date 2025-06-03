@@ -23,7 +23,11 @@ export default function Game() {
   const [isBeingHacked, setIsBeingHacked] = useState(false);
   const [hackerName, setHackerName] = useState("");
   const [hackProgress, setHackProgress] = useState(0);
-  const [activeEffects, setActiveEffects] = useState<string[]>([]);
+  const [activeEffects, setActiveEffects] = useState<{[key: string]: number}>({});
+  const [showAnswerFeedback, setShowAnswerFeedback] = useState<{show: boolean, correct: boolean}>({show: false, correct: false});
+  const [hackModeActive, setHackModeActive] = useState(false);
+  const [hackModeData, setHackModeData] = useState<{attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string} | null>(null);
+  const [pendingAnswer, setPendingAnswer] = useState(false);
   
   const { toast } = useToast();
 
@@ -61,6 +65,17 @@ export default function Game() {
         };
 
         const handleAnswerSubmitted = (message: any) => {
+          // Show feedback for the player who submitted the answer
+          if (message.playerId === playerId) {
+            setShowAnswerFeedback({ show: true, correct: message.isCorrect });
+            setPendingAnswer(false);
+            
+            // Hide feedback after 1 second
+            setTimeout(() => {
+              setShowAnswerFeedback({ show: false, correct: false });
+            }, 1000);
+          }
+          
           setPlayers(prevPlayers => 
             prevPlayers.map(p => 
               p.playerId === message.playerId ? message.player : p
@@ -95,13 +110,21 @@ export default function Game() {
 
         const handlePowerUpUsed = (message: any) => {
           if (message.targetId === playerId) {
-            // Add visual effect
-            setActiveEffects(prev => [...prev, message.effect]);
-            
-            // Remove effect after duration
-            setTimeout(() => {
-              setActiveEffects(prev => prev.filter(effect => effect !== message.effect));
-            }, (message.duration || 5) * 1000);
+            if (message.effect === 'shield') {
+              // Shield removes all active effects and prevents new ones
+              setActiveEffects({ shield: Date.now() + (message.duration * 1000) });
+            } else {
+              // Other effects - if shield is active, ignore them
+              setActiveEffects(prev => {
+                if (prev.shield && prev.shield > Date.now()) {
+                  return prev; // Shield blocks new effects
+                }
+                return { 
+                  ...prev, 
+                  [message.effect]: Date.now() + (message.duration * 1000) 
+                };
+              });
+            }
 
             toast({
               title: `${message.effect.charAt(0).toUpperCase() + message.effect.slice(1)} Effect Applied!`,
@@ -109,7 +132,6 @@ export default function Game() {
               variant: "destructive",
             });
           } else {
-            // Show who used the power-up
             const targetPlayer = players.find(p => p.playerId === message.targetId);
             toast({
               title: "Power-up Used!",
@@ -246,14 +268,39 @@ export default function Game() {
   };
 
   const handleSubmitAnswer = (answer: number) => {
-    if (gameSession && currentQuestion) {
-      wsManager.send({
-        type: 'submitAnswer',
-        sessionId: gameSession.id,
-        playerId,
-        answer,
-        correctAnswer: currentQuestion.answer
-      });
+    if (gameSession && currentQuestion && !pendingAnswer) {
+      // Check if freeze effect is active
+      if (activeEffects.freeze && activeEffects.freeze > Date.now()) {
+        toast({
+          title: "Frozen!",
+          description: "You cannot submit answers while frozen!",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setPendingAnswer(true);
+      
+      // Check if slow effect is active
+      const delay = (activeEffects.slow && activeEffects.slow > Date.now()) ? 2000 : 0;
+      
+      setTimeout(() => {
+        wsManager.send({
+          type: 'submitAnswer',
+          sessionId: gameSession.id,
+          playerId,
+          answer,
+          correctAnswer: currentQuestion.answer
+        });
+      }, delay);
+      
+      if (delay > 0) {
+        toast({
+          title: "Slowed Down!",
+          description: "Your answer will be processed in 2 seconds...",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -334,7 +381,7 @@ export default function Game() {
         )}
 
         {gamePhase === 'active' && currentPlayer && (
-          <div className={`${activeEffects.includes('freeze') ? 'animate-pulse' : ''} ${activeEffects.includes('slow') ? 'transition-all duration-1000' : ''} ${activeEffects.includes('scramble') ? 'animate-bounce' : ''}`}>
+          <div className={`${activeEffects.freeze && activeEffects.freeze > Date.now() ? 'animate-pulse' : ''} ${activeEffects.slow && activeEffects.slow > Date.now() ? 'transition-all duration-1000' : ''} ${activeEffects.scramble && activeEffects.scramble > Date.now() ? 'animate-bounce' : ''}`}>
             <ActiveGame
               players={players}
               currentPlayer={currentPlayer}
@@ -347,23 +394,33 @@ export default function Game() {
               onUsePowerUp={handleUsePowerUp}
               onStartHack={handleStartHack}
               onSkipQuestion={handleSkipQuestion}
+              showAnswerFeedback={showAnswerFeedback}
+              pendingAnswer={pendingAnswer}
             />
             
             {/* Active Effects Indicator */}
-            {activeEffects.length > 0 && (
+            {Object.keys(activeEffects).filter(effect => activeEffects[effect] > Date.now()).length > 0 && (
               <div className="fixed top-20 right-4 space-y-2 z-50">
-                {activeEffects.map((effect, index) => (
-                  <div key={index} className={`px-3 py-2 rounded-lg border-2 animate-pulse ${
-                    effect === 'slow' ? 'bg-orange-500/20 border-orange-500 text-orange-500' :
-                    effect === 'freeze' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-500' :
-                    effect === 'scramble' ? 'bg-purple-500/20 border-purple-500 text-purple-500' :
-                    'bg-green-500/20 border-green-500 text-green-500'
-                  }`}>
-                    <div className="text-sm font-semibold">
-                      {effect.charAt(0).toUpperCase() + effect.slice(1)} Active
-                    </div>
-                  </div>
-                ))}
+                {Object.entries(activeEffects)
+                  .filter(([effect, endTime]) => endTime > Date.now())
+                  .map(([effect, endTime]) => {
+                    const timeLeft = Math.ceil((endTime - Date.now()) / 1000);
+                    return (
+                      <div key={effect} className={`px-3 py-2 rounded-lg border-2 animate-pulse ${
+                        effect === 'slow' ? 'bg-orange-500/20 border-orange-500 text-orange-500' :
+                        effect === 'freeze' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-500' :
+                        effect === 'scramble' ? 'bg-purple-500/20 border-purple-500 text-purple-500' :
+                        'bg-green-500/20 border-green-500 text-green-500'
+                      }`}>
+                        <div className="text-sm font-semibold">
+                          {effect.charAt(0).toUpperCase() + effect.slice(1)} Active
+                        </div>
+                        <div className="text-xs opacity-75">
+                          {timeLeft}s remaining
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             )}
           </div>
