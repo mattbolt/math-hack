@@ -48,14 +48,35 @@ export function ActiveGame({
   const [showPlayerSelection, setShowPlayerSelection] = useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = useState<string>("");
   const [slowDownActive, setSlowDownActive] = useState(false);
-  const [previousQuestions, setPreviousQuestions] = useState<Array<{text: string, userAnswer: number, correct: boolean}>>([]);
-  const [currentQuestionKey, setCurrentQuestionKey] = useState(0);
-  const [lastSubmittedAnswer, setLastSubmittedAnswer] = useState<number | null>(null);
+  const [questionStack, setQuestionStack] = useState<Array<{id: string, text: string, userAnswer?: number, correct?: boolean, state: 'current' | 'answered' | 'previous'}>>([]);
+  const [animationKey, setAnimationKey] = useState(0);
 
-  // Track when new questions arrive to trigger animations
+  // Handle new questions and manage stack
   useEffect(() => {
     if (currentQuestion?.id) {
-      setCurrentQuestionKey(prev => prev + 1);
+      setQuestionStack(prev => {
+        // Find if this question already exists
+        const existingIndex = prev.findIndex(q => q.id === currentQuestion.id);
+        
+        if (existingIndex === -1) {
+          // New question - mark old ones as previous and add new current
+          const newStack = prev.map(q => ({ 
+            ...q, 
+            state: q.state === 'answered' ? 'previous' as const : 'previous' as const
+          }));
+          newStack.push({
+            id: currentQuestion.id,
+            text: currentQuestion.text,
+            state: 'current' as const
+          });
+          
+          // Keep only last 3 items
+          return newStack.slice(-3);
+        }
+        
+        return prev;
+      });
+      setAnimationKey(prev => prev + 1);
     }
   }, [currentQuestion?.id]);
 
@@ -74,20 +95,12 @@ export function ActiveGame({
   const handleSubmitAnswer = () => {
     const numAnswer = parseInt(answer);
     if (!isNaN(numAnswer) && currentQuestion) {
-      // Store the submitted answer for transformation
-      setLastSubmittedAnswer(numAnswer);
-      
-      // Add to previous questions when answer feedback shows
-      setTimeout(() => {
-        setPreviousQuestions(prev => [
-          ...prev.slice(-1), // Keep only last previous question
-          {
-            text: currentQuestion.text,
-            userAnswer: numAnswer,
-            correct: numAnswer === currentQuestion.answer
-          }
-        ]);
-      }, 500);
+      // Update current question in stack to "answered" state
+      setQuestionStack(prev => prev.map(q => 
+        q.id === currentQuestion.id 
+          ? { ...q, userAnswer: numAnswer, correct: numAnswer === currentQuestion.answer, state: 'answered' as const }
+          : q
+      ));
       
       onSubmitAnswer(numAnswer);
       setAnswer("");
@@ -201,53 +214,54 @@ export function ActiveGame({
               <div className="space-y-6">
                 
                 {/* Question Display Area */}
-                <div className="relative min-h-[200px] flex flex-col justify-center">
+                <div className="relative min-h-[120px] flex flex-col justify-center">
                   
-                  {/* Previous Questions Stack */}
-                  {previousQuestions.map((prevQ, index) => (
-                    <div 
-                      key={`prev-${index}-${prevQ.text}`}
-                      className={`absolute w-full transition-all duration-1000 ease-in-out ${
-                        index === previousQuestions.length - 1 ? 'top-[-60px] opacity-60 scale-75' : 'top-[-120px] opacity-30 scale-50'
-                      }`}
-                      style={{ zIndex: 10 - index }}
-                    >
-                      <div className={`text-2xl font-bold ${prevQ.correct ? 'text-green-400' : 'text-red-400'}`}>
-                        {prevQ.text.replace('= ?', `= ${prevQ.userAnswer}`)}
-                        <span className="ml-2 text-3xl">
-                          {prevQ.correct ? '✓' : '✗'}
-                        </span>
+                  {/* Question Stack */}
+                  {questionStack.map((question, index) => {
+                    const isTop = index === questionStack.length - 1;
+                    const isSecond = index === questionStack.length - 2;
+                    
+                    let position = 'top-0';
+                    let opacity = 'opacity-100';
+                    let scale = 'scale-100';
+                    let color = 'text-white';
+                    
+                    if (question.state === 'previous') {
+                      position = isSecond ? 'top-[-40px]' : 'top-[-80px]';
+                      opacity = isSecond ? 'opacity-40' : 'opacity-20';
+                      scale = isSecond ? 'scale-75' : 'scale-50';
+                      color = question.correct ? 'text-green-400' : 'text-red-400';
+                    } else if (question.state === 'answered') {
+                      position = 'top-[-40px]';
+                      opacity = 'opacity-60';
+                      scale = 'scale-75';
+                      color = question.correct ? 'text-green-400' : 'text-red-400';
+                    }
+                    
+                    return (
+                      <div 
+                        key={`question-${question.id}`}
+                        className={`absolute w-full transition-all duration-500 ease-in-out ${position} ${opacity} ${scale} ${color}`}
+                        style={{ zIndex: 30 - index }}
+                      >
+                        <div className="text-3xl font-bold">
+                          {question.state === 'current' && !showAnswerFeedback.show
+                            ? question.text
+                            : question.userAnswer !== undefined
+                            ? (
+                                <>
+                                  {question.text.replace('= ?', `= ${question.userAnswer}`)}
+                                  <span className="ml-2 text-4xl">
+                                    {question.correct ? '✓' : '✗'}
+                                  </span>
+                                </>
+                              )
+                            : question.text
+                          }
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  
-                  {/* Current Question with Answer Transformation */}
-                  <div 
-                    key={`current-${currentQuestionKey}`}
-                    className={`transition-all duration-500 ease-in-out ${
-                      showAnswerFeedback.show 
-                        ? `opacity-60 scale-75 transform translate-y-[-60px] ${showAnswerFeedback.correct ? 'text-green-400' : 'text-red-400'}` 
-                        : 'opacity-100 scale-100 transform translate-y-0 text-white'
-                    }`} 
-                    style={{ 
-                      zIndex: 20,
-                      animation: !showAnswerFeedback.show && currentQuestionKey > 0 ? 'slideUpFromBelow 0.5s ease-out forwards' : 'none'
-                    }}
-                  >
-                    <div className="text-4xl font-bold">
-                      {showAnswerFeedback.show && currentQuestion && lastSubmittedAnswer !== null
-                        ? (
-                            <>
-                              {currentQuestion.text.replace('= ?', `= ${lastSubmittedAnswer}`)}
-                              <span className="ml-2 text-5xl">
-                                {showAnswerFeedback.correct ? '✓' : '✗'}
-                              </span>
-                            </>
-                          )
-                        : (currentQuestion?.text || "Waiting for question...")
-                      }
-                    </div>
-                  </div>
+                    );
+                  })}
                   
                 </div>
                 
