@@ -178,8 +178,13 @@ export function ActiveGame({
 
   const handlePowerUpClick = (powerUpType: string) => {
     if (currentPlayer.credits >= getPowerUpCost(powerUpType)) {
-      setSelectedPowerUp(powerUpType);
-      setShowPlayerSelection(true);
+      if (powerUpType === "shield") {
+        // Shield applies to self, no target selection needed
+        onUsePowerUp(powerUpType, currentPlayer.playerId);
+      } else {
+        setSelectedPowerUp(powerUpType);
+        setShowPlayerSelection(true);
+      }
     }
   };
 
@@ -316,7 +321,9 @@ export function ActiveGame({
         <div className="lg:col-span-2 space-y-6">
           {/* Question Card with Animation */}
           <Card className={`bg-gradient-to-br border-slate-600 transition-colors duration-500 ${
-            Object.keys(activeEffects).some(effect => effect === 'freeze' && activeEffects[effect] > Date.now())
+            Object.keys(activeEffects).some(effect => effect === 'shield' && activeEffects[effect] > Date.now())
+              ? 'from-emerald-800/70 to-green-800/70 border-emerald-500 shadow-emerald-500/30 shadow-lg'
+              : Object.keys(activeEffects).some(effect => effect === 'freeze' && activeEffects[effect] > Date.now())
               ? 'from-cyan-800/70 to-blue-800/70 border-cyan-500 shadow-cyan-500/30 shadow-lg'
               : Object.keys(activeEffects).some(effect => effect === 'slow' && activeEffects[effect] > Date.now())
               ? 'from-orange-800/70 to-amber-800/70 border-orange-500 shadow-orange-500/30 shadow-lg'
