@@ -98,11 +98,10 @@ export default function Game() {
             setShowAnswerFeedback({ show: true, correct: message.isCorrect });
             setPendingAnswer(false);
             
-            // Hide feedback after different durations
-            const duration = message.isCorrect ? 1000 : 2000; // Incorrect answers show twice as long
+            // Hide feedback after short duration
             setTimeout(() => {
               setShowAnswerFeedback({ show: false, correct: false });
-            }, duration);
+            }, 1000);
           }
           
           setPlayers(prevPlayers => 
