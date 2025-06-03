@@ -48,10 +48,21 @@ export function ActiveGame({
   const [showPlayerSelection, setShowPlayerSelection] = useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = useState<string>("");
   const [slowDownActive, setSlowDownActive] = useState(false);
+  const [previousQuestions, setPreviousQuestions] = useState<Array<{text: string, userAnswer: number, correct: boolean}>>([]);
 
   const handleSubmitAnswer = () => {
     const numAnswer = parseInt(answer);
-    if (!isNaN(numAnswer)) {
+    if (!isNaN(numAnswer) && currentQuestion) {
+      // Add current question to previous questions for animation
+      setPreviousQuestions(prev => [
+        ...prev.slice(-2), // Keep only last 2 previous questions
+        {
+          text: currentQuestion.text,
+          userAnswer: numAnswer,
+          correct: numAnswer === currentQuestion.answer
+        }
+      ]);
+      
       onSubmitAnswer(numAnswer);
       setAnswer("");
       
@@ -158,38 +169,39 @@ export function ActiveGame({
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Main Question Area */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Question Card */}
+          {/* Question Card with Animation */}
           <Card className="bg-gradient-to-br from-slate-800 to-slate-700 border-slate-600">
             <CardContent className="p-8 text-center">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-slate-400">
-                    Question {currentQuestion ? 1 : 0} • Level {currentPlayer.difficultyLevel}
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4 text-orange-500" />
-                    <span className="font-mono font-bold text-orange-500">
-                      0:{timeRemaining.toString().padStart(2, '0')}
-                    </span>
-                  </div>
-                </div>
+              <div className="space-y-6 relative overflow-hidden min-h-[300px]">
                 
-                <div className="text-4xl font-bold text-white">
-                  {currentQuestion?.text || "Waiting for question..."}
-                </div>
-                
-                <div className="space-y-4 relative">
-                  {/* Answer Feedback Overlay */}
-                  {showAnswerFeedback.show && (
-                    <div className="absolute inset-0 flex items-center justify-center z-50 bg-slate-800/90 rounded-lg">
-                      <div className={`text-8xl font-bold animate-bounce ${
-                        showAnswerFeedback.correct ? 'text-green-500' : 'text-red-500'
-                      }`}>
-                        {showAnswerFeedback.correct ? '✓' : '✗'}
-                      </div>
+                {/* Previous Questions Stack */}
+                {previousQuestions.map((prevQ, index) => (
+                  <div 
+                    key={`prev-${index}-${prevQ.text}`}
+                    className={`absolute w-full transition-all duration-1000 ease-in-out ${
+                      index === previousQuestions.length - 1 ? 'top-0 opacity-60 scale-75' : 'top-[-50px] opacity-30 scale-50'
+                    }`}
+                    style={{ zIndex: 10 - index }}
+                  >
+                    <div className={`text-2xl font-bold ${prevQ.correct ? 'text-green-400' : 'text-red-400'}`}>
+                      {prevQ.text.replace('= ?', `= ${prevQ.userAnswer}`)}
+                      <span className="ml-2 text-3xl">
+                        {prevQ.correct ? '✓' : '✗'}
+                      </span>
                     </div>
-                  )}
-                  
+                  </div>
+                ))}
+                
+                {/* Current Question */}
+                <div className={`transition-all duration-500 ease-in-out ${
+                  showAnswerFeedback.show ? 'opacity-0 transform translate-y-[-100px] scale-75' : 'opacity-100 transform translate-y-0 scale-100'
+                }`} style={{ zIndex: 20 }}>
+                  <div className="text-4xl font-bold text-white mt-16">
+                    {currentQuestion?.text || "Waiting for question..."}
+                  </div>
+                </div>
+                
+                <div className="space-y-4 relative mt-20" style={{ zIndex: 30 }}>
                   <Input
                     type="number"
                     placeholder="Your answer..."
