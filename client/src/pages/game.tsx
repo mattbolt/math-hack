@@ -43,10 +43,6 @@ export default function Game() {
           if (message.players) setPlayers(message.players);
         });
 
-        wsManager.on('playerUpdate', (message: any) => {
-          if (message.players) setPlayers(message.players);
-        });
-
         wsManager.on('gameStarted', (message: any) => {
           setGamePhase('active');
           if (message.session) setGameSession(message.session);
@@ -139,23 +135,12 @@ export default function Game() {
       setPlayers([data.player]);
       setGamePhase('waiting');
       
-      // Ensure WebSocket connection is stable before host joins
-      const joinHostSession = async () => {
-        try {
-          await wsManager.connect();
-          console.log('HOST joining WebSocket session:', data.session.id, 'playerId:', playerId);
-          wsManager.send({
-            type: 'joinSession',
-            sessionId: data.session.id,
-            playerId
-          });
-        } catch (error) {
-          console.error('Host failed to join session:', error);
-        }
-      };
-
-      // Single attempt with proper connection wait
-      setTimeout(joinHostSession, 500);
+      // Join the session via WebSocket
+      wsManager.send({
+        type: 'joinSession',
+        sessionId: data.session.id,
+        playerId
+      });
     },
     onError: () => {
       toast({
@@ -180,14 +165,12 @@ export default function Game() {
       setPlayerName(playerName);
       setGamePhase('waiting');
       
-      // Ensure WebSocket is connected before joining session
-      setTimeout(() => {
-        wsManager.send({
-          type: 'joinSession',
-          sessionId: data.session.id,
-          playerId
-        });
-      }, 500);
+      // Join the session via WebSocket
+      wsManager.send({
+        type: 'joinSession',
+        sessionId: data.session.id,
+        playerId
+      });
     },
     onError: (error: any) => {
       toast({

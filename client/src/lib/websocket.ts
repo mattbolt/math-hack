@@ -6,35 +6,18 @@ class WebSocketManager {
   private maxReconnectAttempts = 5;
   private reconnectInterval = 1000;
   private messageHandlers: Map<string, Function[]> = new Map();
-  private isConnecting = false;
-  private pendingMessages: WebSocketMessage[] = [];
 
   connect(): Promise<void> {
-    if (this.isConnecting || (this.ws && this.ws.readyState === WebSocket.OPEN)) {
-      return Promise.resolve();
-    }
-
-    this.isConnecting = true;
     return new Promise((resolve, reject) => {
       try {
         const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-        const wsUrl = `${protocol}//${window.location.host}/game-ws`;
+        const wsUrl = `${protocol}//${window.location.host}/ws`;
         
         this.ws = new WebSocket(wsUrl);
 
         this.ws.onopen = () => {
           console.log('WebSocket connected');
           this.reconnectAttempts = 0;
-          this.isConnecting = false;
-          
-          // Send any pending messages
-          while (this.pendingMessages.length > 0) {
-            const message = this.pendingMessages.shift();
-            if (message) {
-              this.ws!.send(JSON.stringify(message));
-            }
-          }
-          
           resolve();
         };
 
@@ -49,19 +32,14 @@ class WebSocketManager {
 
         this.ws.onclose = () => {
           console.log('WebSocket disconnected');
-          this.isConnecting = false;
           this.attemptReconnect();
         };
 
         this.ws.onerror = (error) => {
           console.error('WebSocket error:', error);
-          this.isConnecting = false;
-          if (this.reconnectAttempts === 0) {
-            reject(error);
-          }
+          reject(error);
         };
       } catch (error) {
-        this.isConnecting = false;
         reject(error);
       }
     });
@@ -70,13 +48,10 @@ class WebSocketManager {
   private attemptReconnect() {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
+      console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
       
       setTimeout(() => {
-        this.connect().catch(error => {
-          if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-            console.error('Max reconnection attempts reached');
-          }
-        });
+        this.connect().catch(console.error);
       }, this.reconnectInterval * this.reconnectAttempts);
     }
   }
@@ -95,17 +70,8 @@ class WebSocketManager {
   send(message: WebSocketMessage) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
-      console.log('Sent WebSocket message:', message.type);
-      return;
-    }
-
-    // Queue message if not connected
-    console.log('Queueing message for when WebSocket connects:', message.type);
-    this.pendingMessages.push(message);
-    
-    // Try to reconnect if not already connecting
-    if (!this.isConnecting) {
-      this.connect().catch(console.error);
+    } else {
+      console.error('WebSocket is not connected');
     }
   }
 
