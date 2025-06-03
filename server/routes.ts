@@ -275,7 +275,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
   // WebSocket server setup
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const wss = new WebSocketServer({ 
+    server: httpServer, 
+    path: '/ws',
+    perMessageDeflate: false
+  });
+  
+  console.log('WebSocket server created on path /ws');
 
   wss.on('connection', (ws: GameWebSocket) => {
     const connectionId = Math.random().toString(36).substr(2, 9);
@@ -485,8 +491,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
 
-    ws.on('close', () => {
-      console.log(`WebSocket connection ${(ws as any).connectionId} closed (session: ${ws.sessionId}, player: ${ws.playerId})`);
+    ws.on('close', (code, reason) => {
+      console.log(`WebSocket connection ${(ws as any).connectionId} closed with code ${code} and reason: ${reason} (session: ${ws.sessionId}, player: ${ws.playerId})`);
+    });
+
+    ws.on('error', (error) => {
+      console.log(`WebSocket connection ${(ws as any).connectionId} error:`, error);
     });
   });
 
