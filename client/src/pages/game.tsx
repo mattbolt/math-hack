@@ -133,7 +133,7 @@ export default function Game() {
         };
 
         const handleHackProgress = (message: any) => {
-          if (hackModeActive && hackModeData) {
+          if (message.hackerId === playerId || message.targetId === playerId) {
             setHackModeData(prev => prev ? {
               ...prev,
               attackerProgress: message.attackerProgress,

@@ -503,23 +503,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     updates.consecutiveWrong = 0;
                   }
 
-                  // Check hack progress for new sophisticated system
-                  console.log('Checking hack progress for player:', ws.playerId, 'Active hacks:', Array.from(gameManager.hackModes.entries()));
-                  
+                  // Check hack progress only for correct answers
                   for (const [key, hackData] of Array.from(gameManager.hackModes.entries())) {
                     if (hackData.sessionId === ws.sessionId && (hackData.hackerId === ws.playerId || hackData.targetId === ws.playerId)) {
-                      console.log('Found matching hack:', key, hackData);
                       
                       if (hackData.hackerId === ws.playerId) {
                         hackData.attackerProgress++;
-                        console.log('Attacker progress increased to:', hackData.attackerProgress);
                       } else {
                         hackData.defenderProgress++;
-                        console.log('Defender progress increased to:', hackData.defenderProgress);
                       }
                       
                       gameManager.broadcastToSession(ws.sessionId, wss, {
                         type: 'hackProgress',
+                        hackerId: hackData.hackerId,
+                        targetId: hackData.targetId,
                         attackerProgress: hackData.attackerProgress,
                         defenderProgress: hackData.defenderProgress
                       });
@@ -535,6 +532,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
                             credits: Math.max(0, targetPlayer.credits - stolenCredits)
                           });
                           
+                          // Log successful hack
+                          await gameManager.logGameEvent(ws.sessionId, {
+                            type: 'hack_complete',
+                            playerId: hackData.hackerId,
+                            playerName: player.name,
+                            targetId: hackData.targetId,
+                            targetName: targetPlayer?.name,
+                            details: `${player.name} successfully hacked ${targetPlayer?.name} for ${stolenCredits} credits`,
+                            creditChange: stolenCredits
+                          }, wss);
+                          
                           gameManager.broadcastToSession(ws.sessionId, wss, {
                             type: 'hackCompleted',
                             hackerId: hackData.hackerId,
@@ -545,6 +553,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         }
                         gameManager.hackModes.delete(key);
                       } else if (hackData.defenderProgress >= 5) {
+                        const targetPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, hackData.targetId);
+                        const hackerPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, hackData.hackerId);
+                        
+                        // Log failed hack
+                        await gameManager.logGameEvent(ws.sessionId, {
+                          type: 'hack_complete',
+                          playerId: hackData.targetId,
+                          playerName: targetPlayer?.name,
+                          targetId: hackData.hackerId,
+                          targetName: hackerPlayer?.name,
+                          details: `${targetPlayer?.name} successfully defended against ${hackerPlayer?.name}'s hack`,
+                          creditChange: 0
+                        }, wss);
+                        
                         gameManager.broadcastToSession(ws.sessionId, wss, {
                           type: 'hackCompleted',
                           hackerId: hackData.hackerId,
