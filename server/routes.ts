@@ -471,7 +471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     type: 'credit_change',
                     playerId: ws.playerId,
                     playerName: player.name,
-                    details: `Earned ${creditReward} credits for correct answer`,
+                    details: `${player.name} earned ${creditReward} credits for correct answer`,
                     creditChange: creditReward
                   }, wss);
                   
@@ -744,7 +744,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   type: 'credit_change',
                   playerId: ws.playerId,
                   playerName: player.name,
-                  details: `Skipped question (-5 credits)`,
+                  details: `${player.name} skipped question (-5 credits)`,
                   creditChange: -5
                 }, wss);
 
