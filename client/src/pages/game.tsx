@@ -40,7 +40,18 @@ export default function Game() {
         });
 
         wsManager.on('playerJoined', (message: any) => {
-          if (message.players) setPlayers(message.players);
+          if (message.players) {
+            setPlayers(message.players);
+            console.log('Players updated:', message.players);
+          }
+        });
+
+        wsManager.on('gameState', (message: any) => {
+          if (message.session) setGameSession(message.session);
+          if (message.players) {
+            setPlayers(message.players);
+            console.log('Game state updated:', message.players);
+          }
         });
 
         wsManager.on('gameStarted', (message: any) => {

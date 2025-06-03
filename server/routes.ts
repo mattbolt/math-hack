@@ -218,6 +218,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isHost: false
       });
 
+      // Note: WebSocket broadcast will happen when the player connects via WebSocket
+
       res.json({ session, player });
     } catch (error) {
       res.status(500).json({ message: "Failed to join game session" });
