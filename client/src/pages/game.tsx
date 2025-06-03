@@ -23,6 +23,7 @@ export default function Game() {
   const [isBeingHacked, setIsBeingHacked] = useState(false);
   const [hackerName, setHackerName] = useState("");
   const [hackProgress, setHackProgress] = useState(0);
+  const [activeEffects, setActiveEffects] = useState<string[]>([]);
   
   const { toast } = useToast();
 
@@ -94,10 +95,25 @@ export default function Game() {
 
         const handlePowerUpUsed = (message: any) => {
           if (message.targetId === playerId) {
+            // Add visual effect
+            setActiveEffects(prev => [...prev, message.effect]);
+            
+            // Remove effect after duration
+            setTimeout(() => {
+              setActiveEffects(prev => prev.filter(effect => effect !== message.effect));
+            }, (message.duration || 5) * 1000);
+
             toast({
-              title: "Power-up Used Against You!",
-              description: `You've been affected by a ${message.effect} power-up!`,
+              title: `${message.effect.charAt(0).toUpperCase() + message.effect.slice(1)} Effect Applied!`,
+              description: `You've been affected for ${message.duration || 5} seconds!`,
               variant: "destructive",
+            });
+          } else {
+            // Show who used the power-up
+            const targetPlayer = players.find(p => p.playerId === message.targetId);
+            toast({
+              title: "Power-up Used!",
+              description: `${message.effect.charAt(0).toUpperCase() + message.effect.slice(1)} used on ${targetPlayer?.name || 'Unknown'}!`,
             });
           }
         };
@@ -230,12 +246,13 @@ export default function Game() {
   };
 
   const handleSubmitAnswer = (answer: number) => {
-    if (gameSession) {
+    if (gameSession && currentQuestion) {
       wsManager.send({
         type: 'submitAnswer',
         sessionId: gameSession.id,
         playerId,
-        answer
+        answer,
+        correctAnswer: currentQuestion.answer
       });
     }
   };

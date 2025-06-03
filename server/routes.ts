@@ -103,35 +103,25 @@ class GameManager {
     
     if (!session || players.length === 0) return;
 
-    // Generate question based on average difficulty
-    const avgDifficulty = Math.round(
-      players.reduce((sum, p) => sum + p.difficultyLevel, 0) / players.length
-    );
-    
-    const question = this.generateQuestion(avgDifficulty);
-    
     await storage.updateGameSession(sessionId, {
-      currentQuestion: question,
-      questionStartTime: new Date(),
       questionNumber: session.questionNumber + 1
     });
 
-    this.broadcastToSession(sessionId, wss, {
-      type: 'newQuestion',
-      question,
-      questionNumber: session.questionNumber + 1
-    });
-
-    // Set timer for question timeout
-    if (this.questionTimers.has(sessionId)) {
-      clearTimeout(this.questionTimers.get(sessionId)!);
+    // Generate individual questions for each player
+    for (const player of players) {
+      const question = this.generateQuestion(player.difficultyLevel);
+      
+      // Send individual question to each player
+      wss.clients.forEach((client: GameWebSocket) => {
+        if (client.playerId === player.playerId && client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'newQuestion',
+            question,
+            questionNumber: session.questionNumber + 1
+          }));
+        }
+      });
     }
-
-    const timer = setTimeout(() => {
-      this.handleQuestionTimeout(sessionId, wss);
-    }, question.timeLimit * 1000);
-
-    this.questionTimers.set(sessionId, timer);
   }
 
   async handleQuestionTimeout(sessionId: number, wss: WebSocketServer) {
@@ -318,9 +308,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const player = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, ws.playerId);
               const session = await storage.getGameSession(ws.sessionId);
               
-              if (player && session && session.currentQuestion) {
-                const question = session.currentQuestion as Question;
-                const isCorrect = message.answer === question.answer;
+              if (player && session) {
+                const isCorrect = message.answer === message.correctAnswer;
                 
                 let updates: any = {
                   [isCorrect ? 'correctAnswers' : 'wrongAnswers']: isCorrect ? player.correctAnswers + 1 : player.wrongAnswers + 1,
@@ -379,14 +368,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                 }
 
-                await storage.updatePlayer(player.id, updates);
+                const updatedPlayer = await storage.updatePlayer(player.id, updates);
                 
-                // Broadcast answer result
+                // Generate new question for this player immediately
+                const newQuestion = gameManager.generateQuestion(updates.difficultyLevel || player.difficultyLevel);
+                
+                // Send new question to this player
+                ws.send(JSON.stringify({
+                  type: 'newQuestion',
+                  question: newQuestion
+                }));
+                
+                // Broadcast answer result to all players in session
                 gameManager.broadcastToSession(ws.sessionId, wss, {
                   type: 'answerSubmitted',
                   playerId: ws.playerId,
                   isCorrect,
-                  player: { ...player, ...updates }
+                  player: updatedPlayer
                 });
               }
             }
@@ -395,61 +393,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
           case 'usePowerUp':
             if (ws.sessionId && ws.playerId) {
               const player = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, ws.playerId);
-              const powerUp = await storage.getAllPowerUps().then(powerUps => 
-                powerUps.find(p => p.effect === message.powerUpType)
-              );
+              const powerUpCosts = {
+                slow: 50,
+                freeze: 75,
+                scramble: 100,
+                shield: 150,
+                hack: 50
+              };
               
-              if (player && powerUp && player.credits >= powerUp.cost) {
-                await storage.updatePlayer(player.id, {
-                  credits: player.credits - powerUp.cost
-                });
-
-                // Apply power-up effect
-                gameManager.broadcastToSession(ws.sessionId, wss, {
-                  type: 'powerUpUsed',
-                  userId: ws.playerId,
-                  targetId: message.targetId,
-                  effect: message.powerUpType,
-                  duration: powerUp.duration
-                });
-              }
-            }
-            break;
-
-          case 'startHack':
-            if (ws.sessionId && ws.playerId) {
-              const player = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, ws.playerId);
-              const hackCost = 50;
+              const cost = powerUpCosts[message.powerUpType as keyof typeof powerUpCosts];
               
-              if (player && player.credits >= hackCost) {
+              if (player && player.credits >= cost) {
                 await storage.updatePlayer(player.id, {
-                  credits: player.credits - hackCost
+                  credits: player.credits - cost
                 });
 
-                const hack = await storage.createHackAttempt({
-                  sessionId: ws.sessionId,
-                  hackerId: ws.playerId,
-                  targetId: message.targetId
-                });
+                if (message.powerUpType === 'hack') {
+                  // Start hack attempt
+                  const hack = await storage.createHackAttempt({
+                    sessionId: ws.sessionId,
+                    hackerId: ws.playerId,
+                    targetId: message.targetId
+                  });
 
-                // Mark target as being hacked
-                const target = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, message.targetId);
-                if (target) {
-                  await storage.updatePlayer(target.id, {
-                    isBeingHacked: true,
-                    hackedBy: ws.playerId,
-                    hackProgress: 0
+                  // Mark target as being hacked
+                  const target = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, message.targetId);
+                  if (target) {
+                    await storage.updatePlayer(target.id, {
+                      isBeingHacked: true,
+                      hackedBy: ws.playerId,
+                      hackProgress: 0
+                    });
+                  }
+
+                  gameManager.broadcastToSession(ws.sessionId, wss, {
+                    type: 'hackStarted',
+                    hackerId: ws.playerId,
+                    targetId: message.targetId
+                  });
+                } else {
+                  // Apply other power-up effects
+                  gameManager.broadcastToSession(ws.sessionId, wss, {
+                    type: 'powerUpUsed',
+                    userId: ws.playerId,
+                    targetId: message.targetId,
+                    effect: message.powerUpType,
+                    duration: message.powerUpType === 'slow' ? 10 : 
+                             message.powerUpType === 'freeze' ? 5 :
+                             message.powerUpType === 'scramble' ? 8 : 15
                   });
                 }
-
-                gameManager.broadcastToSession(ws.sessionId, wss, {
-                  type: 'hackStarted',
-                  hackerId: ws.playerId,
-                  targetId: message.targetId
-                });
               }
             }
             break;
+
+
         }
       } catch (error) {
         console.error('WebSocket message error:', error);

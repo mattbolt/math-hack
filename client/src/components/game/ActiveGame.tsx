@@ -60,11 +60,7 @@ export function ActiveGame({
   };
 
   const handlePlayerSelect = (targetId: string) => {
-    if (selectedPowerUp === "hack") {
-      onStartHack(targetId);
-    } else {
-      onUsePowerUp(selectedPowerUp, targetId);
-    }
+    onUsePowerUp(selectedPowerUp, targetId);
     setShowPlayerSelection(false);
     setSelectedPowerUp("");
   };
@@ -282,6 +278,25 @@ export function ActiveGame({
                   <div className="flex items-center space-x-1">
                     <Coins className="w-3 h-3 text-yellow-500" />
                     <span className="text-xs font-semibold">150</span>
+                  </div>
+                </Button>
+
+                <Button
+                  onClick={() => handlePowerUpClick("hack")}
+                  disabled={currentPlayer.credits < 50}
+                  variant="outline"
+                  className="w-full bg-purple-700 hover:bg-purple-600 border-purple-600 text-left justify-between"
+                >
+                  <div className="flex items-center space-x-3">
+                    <Skull className="w-4 h-4 text-purple-400" />
+                    <div>
+                      <div className="font-medium">Hack Player</div>
+                      <div className="text-xs text-slate-400">Steal their credits</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Coins className="w-3 h-3 text-yellow-500" />
+                    <span className="text-xs font-semibold">50</span>
                   </div>
                 </Button>
               </div>
