@@ -562,7 +562,6 @@ export default function Game() {
           <GameResults
             players={players}
             onPlayAgain={handlePlayAgain}
-            onBackToHome={handleBackToHome}
           />
         )}
       </main>

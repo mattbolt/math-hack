@@ -11,6 +11,7 @@ interface GameLobbyProps {
 }
 
 export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
+  const [step, setStep] = useState<'choose' | 'host' | 'join'>('choose');
   const [hostName, setHostName] = useState("");
   const [joinName, setJoinName] = useState("");
   const [gameCode, setGameCode] = useState("");
@@ -29,26 +30,62 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
     }
   };
 
-  return (
-    <div className="text-center space-y-8">
-      <div className="space-y-4">
-        <h2 className="text-4xl font-bold">Ready to MathHack?</h2>
-        <p className="text-slate-400 max-w-2xl mx-auto">
-          Join other players in this real-time math competition. Answer questions, earn credits, and hack your opponents!
-        </p>
-      </div>
+  if (step === 'choose') {
+    return (
+      <div className="text-center space-y-8">
+        <div className="space-y-4">
+          <h2 className="text-4xl font-bold">Ready to MathHack?</h2>
+          <p className="text-slate-400 max-w-2xl mx-auto">
+            Join other players in this real-time math competition. Answer questions, earn credits, and hack your opponents!
+          </p>
+        </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        {/* Host Game Card */}
-        <Card className="bg-slate-800/50 backdrop-blur border-slate-700 hover:border-blue-500/50 transition-all group">
-          <CardContent className="p-8">
-            <div className="space-y-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+        <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+          {/* Host Game Button */}
+          <Card className="bg-slate-800/50 backdrop-blur border-slate-700 hover:border-blue-500/50 transition-all group cursor-pointer" onClick={() => setStep('host')}>
+            <CardContent className="p-8">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                   <Crown className="w-8 h-8 text-blue-500" />
                 </div>
                 <h3 className="text-xl font-semibold">Host Game</h3>
-                <p className="text-slate-400 text-sm mt-2">Create a new game session</p>
+                <p className="text-slate-400 text-sm">Create a new game session</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Join Game Button */}
+          <Card className="bg-slate-800/50 backdrop-blur border-slate-700 hover:border-emerald-500/50 transition-all group cursor-pointer" onClick={() => setStep('join')}>
+            <CardContent className="p-8">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                  <Users className="w-8 h-8 text-emerald-500" />
+                </div>
+                <h3 className="text-xl font-semibold">Join Game</h3>
+                <p className="text-slate-400 text-sm">Enter a game session code</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'host') {
+    return (
+      <div className="text-center space-y-8">
+        <div className="space-y-4">
+          <h2 className="text-4xl font-bold">Host a Game</h2>
+          <p className="text-slate-400">Set up your game session</p>
+        </div>
+
+        <Card className="bg-slate-800/50 backdrop-blur border-slate-700 max-w-md mx-auto">
+          <CardContent className="p-8">
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Crown className="w-8 h-8 text-blue-500" />
+                </div>
               </div>
               
               <div className="space-y-4">
@@ -84,27 +121,44 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
                 </Select>
               </div>
               
-              <Button 
-                onClick={handleHostGame}
-                disabled={!hostName.trim()}
-                className="w-full bg-blue-500 hover:bg-blue-600 transition-colors transform hover:scale-105"
-              >
-                Create Game
-              </Button>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={() => setStep('choose')}
+                  variant="outline"
+                  className="flex-1 bg-slate-700 hover:bg-slate-600 border-slate-600"
+                >
+                  Back
+                </Button>
+                <Button 
+                  onClick={handleHostGame}
+                  disabled={!hostName.trim()}
+                  className="flex-1 bg-blue-500 hover:bg-blue-600"
+                >
+                  Create Game
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
 
-        {/* Join Game Card */}
-        <Card className="bg-slate-800/50 backdrop-blur border-slate-700 hover:border-emerald-500/50 transition-all group">
+  if (step === 'join') {
+    return (
+      <div className="text-center space-y-8">
+        <div className="space-y-4">
+          <h2 className="text-4xl font-bold">Join a Game</h2>
+          <p className="text-slate-400">Enter your details and game code</p>
+        </div>
+
+        <Card className="bg-slate-800/50 backdrop-blur border-slate-700 max-w-md mx-auto">
           <CardContent className="p-8">
             <div className="space-y-6">
               <div className="text-center">
-                <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Users className="w-8 h-8 text-emerald-500" />
                 </div>
-                <h3 className="text-xl font-semibold">Join Game</h3>
-                <p className="text-slate-400 text-sm mt-2">Enter a game session code</p>
               </div>
               
               <div className="space-y-4">
@@ -125,17 +179,28 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
                 />
               </div>
               
-              <Button 
-                onClick={handleJoinGame}
-                disabled={!joinName.trim() || !gameCode.trim()}
-                className="w-full bg-emerald-500 hover:bg-emerald-600 transition-colors transform hover:scale-105"
-              >
-                Join Game
-              </Button>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={() => setStep('choose')}
+                  variant="outline"
+                  className="flex-1 bg-slate-700 hover:bg-slate-600 border-slate-600"
+                >
+                  Back
+                </Button>
+                <Button 
+                  onClick={handleJoinGame}
+                  disabled={!joinName.trim() || !gameCode.trim()}
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-600"
+                >
+                  Join Game
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return null;
 }

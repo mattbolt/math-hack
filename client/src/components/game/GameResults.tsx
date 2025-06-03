@@ -1,15 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Player } from "@shared/schema";
-import { Trophy, Share, RotateCcw, Home } from "lucide-react";
+import { Trophy, Share, RotateCcw } from "lucide-react";
 
 interface GameResultsProps {
   players: Player[];
   onPlayAgain: () => void;
-  onBackToHome: () => void;
 }
 
-export function GameResults({ players, onPlayAgain, onBackToHome }: GameResultsProps) {
+export function GameResults({ players, onPlayAgain }: GameResultsProps) {
   const sortedPlayers = [...players].sort((a, b) => b.credits - a.credits);
 
   const getRankColor = (rank: number) => {
@@ -117,14 +116,7 @@ export function GameResults({ players, onPlayAgain, onBackToHome }: GameResultsP
           Share Results
         </Button>
         
-        <Button 
-          onClick={onBackToHome}
-          variant="outline"
-          className="bg-slate-700 hover:bg-slate-600 border-slate-600"
-        >
-          <Home className="w-4 h-4 mr-2" />
-          Back to Home
-        </Button>
+
       </div>
     </div>
   );
