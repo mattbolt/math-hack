@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Player, Question } from "@shared/schema";
+import { Player, Question, GameLogEntry } from "@shared/schema";
 import { type GameStats } from "@/lib/gameTypes";
 import { Clock, Coins, Shield, Snowflake, Zap, User, Skull } from "lucide-react";
 import { PlayerSelectionModal } from "./PlayerSelectionModal";
+import { GameLog } from "./GameLog";
 
 interface ActiveGameProps {
   players: Player[];
@@ -24,6 +25,7 @@ interface ActiveGameProps {
   hackModeActive: boolean;
   hackModeData: {attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string} | null;
   slowCountdown: number;
+  gameLog?: GameLogEntry[];
 }
 
 export function ActiveGame({

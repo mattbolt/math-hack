@@ -600,6 +600,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       sessionId: ws.sessionId
                     });
 
+                    // Log hack attempt
+                    await gameManager.logGameEvent(ws.sessionId, {
+                      type: 'hack_start',
+                      playerId: ws.playerId,
+                      playerName: player.name,
+                      targetId: message.targetId,
+                      targetName: targetPlayer?.name,
+                      details: `${player.name} started hacking ${targetPlayer?.name}`,
+                      creditChange: -cost
+                    });
+
                     gameManager.broadcastToSession(ws.sessionId, wss, {
                       type: 'hackStarted',
                       hackerId: ws.playerId,
@@ -625,6 +636,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     }
                   }
                   effectsToDelete.forEach(key => gameManager.powerUpEffects.delete(key));
+
+                  // Log shield usage
+                  await gameManager.logGameEvent(ws.sessionId, {
+                    type: 'powerup',
+                    playerId: ws.playerId,
+                    playerName: player.name,
+                    details: `${player.name} used Shield (self-protection)`,
+                    creditChange: -cost
+                  });
                 } else {
                   // Check if target has shield protection
                   const shieldEffect = Array.from(gameManager.powerUpEffects.values()).find(effect => 
@@ -643,6 +663,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       endTime: Date.now() + (duration * 1000)
                     });
                     
+                    // Log power-up usage
+                    const targetPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, message.targetId);
+                    await gameManager.logGameEvent(ws.sessionId, {
+                      type: 'powerup',
+                      playerId: ws.playerId,
+                      playerName: player.name,
+                      targetId: message.targetId,
+                      targetName: targetPlayer?.name,
+                      details: `${player.name} used ${message.powerUpType.charAt(0).toUpperCase() + message.powerUpType.slice(1)} on ${targetPlayer?.name}`,
+                      creditChange: -cost
+                    });
+
                     gameManager.broadcastToSession(ws.sessionId, wss, {
                       type: 'powerUpUsed',
                       effect: message.powerUpType,
@@ -676,6 +708,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     consecutiveCorrect: 0
                   })
                 };
+
+                // Log credit deduction for skip
+                await gameManager.logGameEvent(ws.sessionId, {
+                  type: 'credit_change',
+                  playerId: ws.playerId,
+                  playerName: player.name,
+                  details: `Skipped question (-5 credits)`,
+                  creditChange: -5
+                });
 
                 const updatedPlayer = await storage.updatePlayer(player.id, updates);
                 
