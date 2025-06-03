@@ -333,20 +333,25 @@ export function ActiveGame({
                 <div className="space-y-4">
                   {currentQuestion?.options && (
                     <div className="grid grid-cols-2 gap-3">
-                      {currentQuestion.options.map((option, index) => (
-                        <Button
-                          key={option}
-                          onClick={() => handleOptionSelect(option)}
-                          disabled={pendingAnswer}
-                          className={`p-6 text-2xl font-bold transition-all transform hover:scale-105 ${
-                            answer === option.toString() 
-                              ? 'bg-blue-500 hover:bg-blue-600 border-2 border-blue-400' 
-                              : 'bg-slate-600 hover:bg-slate-500 border-2 border-slate-500'
-                          } ${pendingAnswer ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          {option}
-                        </Button>
-                      ))}
+                      {currentQuestion.options.map((option, index) => {
+                        const isFrozen = Object.keys(activeEffects).some(effect => 
+                          effect === 'freeze' && activeEffects[effect] > Date.now()
+                        );
+                        return (
+                          <Button
+                            key={option}
+                            onClick={() => handleOptionSelect(option)}
+                            disabled={pendingAnswer || isFrozen}
+                            className={`p-6 text-2xl font-bold transition-all transform hover:scale-105 ${
+                              answer === option.toString() 
+                                ? 'bg-blue-500 hover:bg-blue-600 border-2 border-blue-400' 
+                                : 'bg-slate-600 hover:bg-slate-500 border-2 border-slate-500'
+                            } ${(pendingAnswer || isFrozen) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {option}
+                          </Button>
+                        );
+                      })}
                     </div>
                   )}
                   
