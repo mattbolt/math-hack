@@ -310,6 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           case 'startGame':
             if (ws.sessionId) {
+              console.log(`Starting game for session ${ws.sessionId}`);
               const session = await storage.updateGameSession(ws.sessionId, { status: 'active' });
               gameManager.broadcastToSession(ws.sessionId, wss, {
                 type: 'gameStarted',
@@ -319,7 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Start first question
               setTimeout(() => {
                 gameManager.startQuestion(ws.sessionId!, wss);
-              }, 1000);
+              }, 2000);
             }
             break;
 

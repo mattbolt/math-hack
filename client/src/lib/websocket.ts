@@ -37,7 +37,10 @@ class WebSocketManager {
 
         this.ws.onerror = (error) => {
           console.error('WebSocket error:', error);
-          reject(error);
+          // Don't reject on error during normal operation
+          if (this.reconnectAttempts === 0) {
+            reject(error);
+          }
         };
       } catch (error) {
         reject(error);
@@ -48,10 +51,13 @@ class WebSocketManager {
   private attemptReconnect() {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
-      console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
       
       setTimeout(() => {
-        this.connect().catch(console.error);
+        this.connect().catch(error => {
+          if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+            console.error('Max reconnection attempts reached');
+          }
+        });
       }, this.reconnectInterval * this.reconnectAttempts);
     }
   }
