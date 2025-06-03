@@ -168,10 +168,34 @@ class GameManager {
 
     const timeLimit = Math.max(15, 35 - difficulty * 2);
 
+    // Generate 3 incorrect options
+    const options = new Set<number>();
+    options.add(answer); // Add correct answer
+    
+    while (options.size < 4) {
+      let wrongAnswer;
+      if (operation === 'division') {
+        // For division, generate reasonable wrong answers
+        wrongAnswer = Math.max(1, answer + Math.floor(Math.random() * 10) - 5);
+      } else {
+        // For other operations, generate wrong answers within a reasonable range
+        const range = Math.max(5, Math.abs(answer * 0.5));
+        wrongAnswer = Math.max(0, answer + Math.floor(Math.random() * range * 2) - range);
+      }
+      
+      if (wrongAnswer !== answer) {
+        options.add(wrongAnswer);
+      }
+    }
+    
+    // Convert to array and shuffle
+    const shuffledOptions = Array.from(options).sort(() => Math.random() - 0.5);
+
     return {
       id: Math.random().toString(36).substr(2, 9),
       text: `${num1} ${this.getOperationSymbol(operation)} ${num2} = ?`,
       answer,
+      options: shuffledOptions,
       operation,
       difficulty,
       timeLimit

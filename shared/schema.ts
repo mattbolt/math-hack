@@ -112,6 +112,7 @@ export interface Question {
   id: string;
   text: string;
   answer: number;
+  options: number[];
   operation: 'addition' | 'subtraction' | 'multiplication' | 'division';
   difficulty: number;
   timeLimit: number;

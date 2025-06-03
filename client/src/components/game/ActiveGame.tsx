@@ -95,6 +95,12 @@ export function ActiveGame({
     }
   }, [pendingAnswer]);
 
+  const handleOptionSelect = (option: number) => {
+    if (!pendingAnswer) {
+      setAnswer(option.toString());
+    }
+  };
+
   const handleSubmitAnswer = () => {
     const numAnswer = parseInt(answer);
     if (!isNaN(numAnswer) && currentQuestion) {
@@ -299,19 +305,26 @@ export function ActiveGame({
                   
                 </div>
                 
-                {/* Input Area */}
+                {/* Multiple Choice Options */}
                 <div className="space-y-4">
-                  <Input
-                    type="number"
-                    placeholder="Your answer..."
-                    value={answer}
-                    onChange={(e) => setAnswer(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    disabled={pendingAnswer}
-                    className={`w-full px-6 py-4 bg-slate-700 border-2 border-slate-600 focus:border-blue-500 text-center text-2xl font-semibold ${
-                      pendingAnswer ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                  />
+                  {currentQuestion?.options && (
+                    <div className="grid grid-cols-2 gap-3">
+                      {currentQuestion.options.map((option, index) => (
+                        <Button
+                          key={option}
+                          onClick={() => handleOptionSelect(option)}
+                          disabled={pendingAnswer}
+                          className={`p-6 text-2xl font-bold transition-all transform hover:scale-105 ${
+                            answer === option.toString() 
+                              ? 'bg-blue-500 hover:bg-blue-600 border-2 border-blue-400' 
+                              : 'bg-slate-600 hover:bg-slate-500 border-2 border-slate-500'
+                          } ${pendingAnswer ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {String.fromCharCode(65 + index)}. {option}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                   
                   <div className="flex space-x-3">
                     <Button 
