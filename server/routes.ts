@@ -329,43 +329,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     correctAnswers: player.correctAnswers + 1
                   });
 
-                  // Check hack progress
-                  const activeHacks = await storage.getActiveHacksByTarget(ws.sessionId, ws.playerId);
-                  for (const hack of activeHacks) {
-                    if (hack.hackerId !== ws.playerId) {
-                      const hackProgress = hack.questionsCompleted + 1;
-                      await storage.updateHackAttempt(hack.id, {
-                        questionsCompleted: hackProgress
+                  // Check hack progress for new sophisticated system
+                  for (const [key, hackData] of Array.from(gameManager.hackModes.entries())) {
+                    if (hackData.hackerId === ws.playerId || hackData.targetId === ws.playerId) {
+                      if (hackData.hackerId === ws.playerId) {
+                        hackData.attackerProgress++;
+                      } else {
+                        hackData.defenderProgress++;
+                      }
+                      
+                      gameManager.broadcastToSession(ws.sessionId, wss, {
+                        type: 'hackProgress',
+                        attackerProgress: hackData.attackerProgress,
+                        defenderProgress: hackData.defenderProgress
                       });
-
-                      if (hackProgress >= hack.questionsRequired) {
-                        // Hack successful - steal credits
-                        const hacker = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, hack.hackerId);
-                        if (hacker) {
-                          const stolenCredits = Math.floor(player.credits * (0.1 + Math.random() * 0.3));
-                          await storage.updatePlayer(hacker.id, {
-                            credits: hacker.credits + stolenCredits
-                          });
-                          updates.credits = Math.max(0, updates.credits - stolenCredits);
-                          
-                          // End hack
-                          await storage.updateHackAttempt(hack.id, {
-                            isActive: false,
-                            completedAt: new Date()
+                      
+                      if (hackData.attackerProgress >= 5) {
+                        const targetPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, hackData.targetId);
+                        if (targetPlayer) {
+                          const stolenCredits = Math.floor(targetPlayer.credits * (0.2 + Math.random() * 0.3));
+                          if (hackData.hackerId === ws.playerId) {
+                            updates.credits = player.credits + stolenCredits;
+                          }
+                          await storage.updatePlayer(targetPlayer.id, {
+                            credits: Math.max(0, targetPlayer.credits - stolenCredits)
                           });
                           
-                          updates.isBeingHacked = false;
-                          updates.hackedBy = null;
-                          updates.hackProgress = 0;
-
                           gameManager.broadcastToSession(ws.sessionId, wss, {
                             type: 'hackCompleted',
-                            hackerId: hack.hackerId,
-                            targetId: ws.playerId,
-                            stolenCredits
+                            hackerId: hackData.hackerId,
+                            targetId: hackData.targetId,
+                            success: true,
+                            creditsStolen: stolenCredits
                           });
                         }
+                        gameManager.hackModes.delete(key);
+                      } else if (hackData.defenderProgress >= 5) {
+                        gameManager.broadcastToSession(ws.sessionId, wss, {
+                          type: 'hackCompleted',
+                          hackerId: hackData.hackerId,
+                          targetId: hackData.targetId,
+                          success: false,
+                          creditsStolen: 0
+                        });
+                        gameManager.hackModes.delete(key);
                       }
+                      break;
                     }
                   }
                 }
@@ -444,11 +453,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   });
                   
                   // Clear all existing effects on this player
-                  for (const [key, effect] of gameManager.powerUpEffects.entries()) {
+                  const effectsToDelete: string[] = [];
+                  for (const [key, effect] of Array.from(gameManager.powerUpEffects.entries())) {
                     if (effect.playerId === ws.playerId && effect.effect !== 'shield') {
-                      gameManager.powerUpEffects.delete(key);
+                      effectsToDelete.push(key);
                     }
                   }
+                  effectsToDelete.forEach(key => gameManager.powerUpEffects.delete(key));
                 } else {
                   // Check if target has shield protection
                   const shieldEffect = Array.from(gameManager.powerUpEffects.values()).find(effect => 
