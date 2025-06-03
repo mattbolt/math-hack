@@ -19,6 +19,7 @@ export const gameSessions = pgTable("game_sessions", {
   questionNumber: integer("question_number").notNull().default(0),
   gameDuration: integer("game_duration").notNull().default(15), // Duration in minutes
   gameStartTime: timestamp("game_start_time"),
+  gameLog: jsonb("game_log").default([]), // Array of game events
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -28,7 +29,6 @@ export const players = pgTable("players", {
   playerId: text("player_id").notNull(),
   name: text("name").notNull(),
   credits: integer("credits").notNull().default(0),
-  score: integer("score").notNull().default(0),
   correctAnswers: integer("correct_answers").notNull().default(0),
   wrongAnswers: integer("wrong_answers").notNull().default(0),
   difficultyLevel: integer("difficulty_level").notNull().default(1),
@@ -129,4 +129,16 @@ export interface PowerUpEffect {
   targetId: string;
   duration: number;
   startTime: number;
+}
+
+export interface GameLogEntry {
+  id: string;
+  timestamp: number;
+  type: 'powerup' | 'credit_change' | 'hack_start' | 'hack_complete' | 'game_start' | 'player_join';
+  playerId?: string;
+  playerName?: string;
+  targetId?: string;
+  targetName?: string;
+  details: string;
+  creditChange?: number;
 }
