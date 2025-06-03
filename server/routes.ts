@@ -759,7 +759,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
                 
                 const updatedPlayer = await storage.updatePlayer(player.id, {
-                  credits: player.credits - cost
+                  credits: player.credits - cost,
+                  hackAttempts: (player.hackAttempts || 0) + 1
                 });
                 
                 // Broadcast updated player data to all clients
@@ -781,7 +782,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   credits: player.credits - 5,
                   consecutiveCorrect: 0,
                   consecutiveWrong: player.consecutiveWrong + 1,
-                  overallConsecutiveCorrect: 0
+                  overallConsecutiveCorrect: 0,
+                  questionsSkipped: (player.questionsSkipped || 0) + 1
                 };
 
                 const newDifficulty = gameManager.adjustDifficulty({
