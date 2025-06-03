@@ -45,12 +45,21 @@ export function ActiveGame({
   const [answer, setAnswer] = useState("");
   const [showPlayerSelection, setShowPlayerSelection] = useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = useState<string>("");
+  const [slowDownActive, setSlowDownActive] = useState(false);
 
   const handleSubmitAnswer = () => {
     const numAnswer = parseInt(answer);
     if (!isNaN(numAnswer)) {
       onSubmitAnswer(numAnswer);
       setAnswer("");
+      
+      // Focus the input after submission
+      setTimeout(() => {
+        const inputElement = document.querySelector('input[type="number"]') as HTMLInputElement;
+        if (inputElement) {
+          inputElement.focus();
+        }
+      }, 100);
     }
   };
 
@@ -197,7 +206,12 @@ export function ActiveGame({
                       disabled={!answer.trim() || !currentQuestion || pendingAnswer}
                       className="flex-1 bg-emerald-500 hover:bg-emerald-600 transition-colors transform hover:scale-105 disabled:opacity-50"
                     >
-                      {pendingAnswer ? 'Processing...' : 'Submit Answer'}
+                      {pendingAnswer ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Processing...</span>
+                        </div>
+                      ) : 'Submit Answer'}
                     </Button>
                     <Button 
                       onClick={onSkipQuestion}

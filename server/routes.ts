@@ -331,7 +331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
                   // Check hack progress for new sophisticated system
                   for (const [key, hackData] of Array.from(gameManager.hackModes.entries())) {
-                    if (hackData.hackerId === ws.playerId || hackData.targetId === ws.playerId) {
+                    if (hackData.sessionId === ws.sessionId && (hackData.hackerId === ws.playerId || hackData.targetId === ws.playerId)) {
                       if (hackData.hackerId === ws.playerId) {
                         hackData.attackerProgress++;
                       } else {

@@ -28,6 +28,7 @@ export default function Game() {
   const [hackModeActive, setHackModeActive] = useState(false);
   const [hackModeData, setHackModeData] = useState<{attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string} | null>(null);
   const [pendingAnswer, setPendingAnswer] = useState(false);
+  const [slowCountdown, setSlowCountdown] = useState(0);
 
   // Update effect timers every second
   useEffect(() => {
@@ -85,10 +86,11 @@ export default function Game() {
             setShowAnswerFeedback({ show: true, correct: message.isCorrect });
             setPendingAnswer(false);
             
-            // Hide feedback after 1 second
+            // Hide feedback after different durations
+            const duration = message.isCorrect ? 1000 : 2000; // Incorrect answers show twice as long
             setTimeout(() => {
               setShowAnswerFeedback({ show: false, correct: false });
-            }, 1000);
+            }, duration);
           }
           
           setPlayers(prevPlayers => 
@@ -326,6 +328,14 @@ export default function Game() {
       // Check if slow effect is active
       const delay = (activeEffects.slow && activeEffects.slow > Date.now()) ? 2000 : 0;
       
+      if (delay > 0) {
+        toast({
+          title: "Slowed Down!",
+          description: "Your answer is being processed slowly due to a power-up effect...",
+          variant: "destructive",
+        });
+      }
+
       setTimeout(() => {
         wsManager.send({
           type: 'submitAnswer',
@@ -335,14 +345,6 @@ export default function Game() {
           correctAnswer: currentQuestion.answer
         });
       }, delay);
-      
-      if (delay > 0) {
-        toast({
-          title: "Slowed Down!",
-          description: "Your answer will be processed in 2 seconds...",
-          variant: "destructive",
-        });
-      }
     }
   };
 
