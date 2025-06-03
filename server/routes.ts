@@ -518,6 +518,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   
                   updates.difficultyLevel = newDifficulty;
                   
+                  // Track maximum difficulty reached
+                  if (newDifficulty > (player.maxDifficultyReached || 1)) {
+                    updates.maxDifficultyReached = newDifficulty;
+                  }
+                  
                   // Reset current level consecutive count if difficulty increased
                   if (newDifficulty > player.difficultyLevel) {
                     updates.consecutiveCorrect = 0;

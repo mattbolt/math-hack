@@ -93,6 +93,9 @@ export function GameResults({ players, onPlayAgain }: GameResultsProps) {
                           {player.correctAnswers} correct • {accuracy}% accuracy
                         </div>
                         <div className="text-xs text-slate-500">
+                          Max Level: {player.maxDifficultyReached || 1} • Final Level: {player.difficultyLevel}
+                        </div>
+                        <div className="text-xs text-slate-500">
                           {player.questionsSkipped || 0} skipped • {player.hackAttempts || 0} attacks
                         </div>
                       </div>

@@ -147,6 +147,7 @@ export class MemStorage implements IStorage {
       correctAnswers: 0,
       wrongAnswers: 0,
       difficultyLevel: 1,
+      maxDifficultyReached: 1,
       consecutiveCorrect: 0,
       consecutiveWrong: 0,
       overallConsecutiveCorrect: 0,
@@ -197,7 +198,7 @@ export class MemStorage implements IStorage {
       id,
       name: insertPowerUp.name,
       cost: insertPowerUp.cost,
-      duration: insertPowerUp.duration,
+      duration: insertPowerUp.duration || null,
       effect: insertPowerUp.effect
     };
     this.powerUps.set(id, powerUp);

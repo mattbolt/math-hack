@@ -32,6 +32,7 @@ export const players = pgTable("players", {
   correctAnswers: integer("correct_answers").notNull().default(0),
   wrongAnswers: integer("wrong_answers").notNull().default(0),
   difficultyLevel: integer("difficulty_level").notNull().default(1),
+  maxDifficultyReached: integer("max_difficulty_reached").notNull().default(1),
   consecutiveCorrect: integer("consecutive_correct").notNull().default(0),
   consecutiveWrong: integer("consecutive_wrong").notNull().default(0),
   overallConsecutiveCorrect: integer("overall_consecutive_correct").notNull().default(0),
