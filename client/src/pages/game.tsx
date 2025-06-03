@@ -254,11 +254,12 @@ export default function Game() {
   }, [gamePhase, timeRemaining]);
 
   const createGameMutation = useMutation({
-    mutationFn: async ({ hostName, maxPlayers }: { hostName: string; maxPlayers: number }) => {
+    mutationFn: async ({ hostName, maxPlayers, gameDuration }: { hostName: string; maxPlayers: number; gameDuration: number }) => {
       const response = await apiRequest('POST', '/api/game/create', {
         hostId: playerId,
         hostName,
-        maxPlayers
+        maxPlayers,
+        gameDuration
       });
       return response.json();
     },
@@ -314,8 +315,8 @@ export default function Game() {
     }
   });
 
-  const handleHostGame = (hostName: string, maxPlayers: number) => {
-    createGameMutation.mutate({ hostName, maxPlayers });
+  const handleHostGame = (hostName: string, maxPlayers: number, gameDuration: number) => {
+    createGameMutation.mutate({ hostName, maxPlayers, gameDuration });
   };
 
   const handleJoinGame = (joinName: string, gameCode: string) => {

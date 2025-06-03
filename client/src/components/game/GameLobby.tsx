@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Crown, Users } from "lucide-react";
 
 interface GameLobbyProps {
-  onHostGame: (playerName: string, maxPlayers: number) => void;
+  onHostGame: (playerName: string, maxPlayers: number, gameDuration: number) => void;
   onJoinGame: (playerName: string, gameCode: string) => void;
 }
 
@@ -15,10 +15,11 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
   const [joinName, setJoinName] = useState("");
   const [gameCode, setGameCode] = useState("");
   const [maxPlayers, setMaxPlayers] = useState("4");
+  const [gameDuration, setGameDuration] = useState("15");
 
   const handleHostGame = () => {
     if (hostName.trim()) {
-      onHostGame(hostName.trim(), parseInt(maxPlayers));
+      onHostGame(hostName.trim(), parseInt(maxPlayers), parseInt(gameDuration));
     }
   };
 
@@ -66,6 +67,19 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
                     <SelectItem value="4">Max 4 players</SelectItem>
                     <SelectItem value="6">Max 6 players</SelectItem>
                     <SelectItem value="8">Max 8 players</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={gameDuration} onValueChange={setGameDuration}>
+                  <SelectTrigger className="bg-slate-700 border-slate-600 focus:border-blue-500">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5 minutes</SelectItem>
+                    <SelectItem value="10">10 minutes</SelectItem>
+                    <SelectItem value="15">15 minutes</SelectItem>
+                    <SelectItem value="20">20 minutes</SelectItem>
+                    <SelectItem value="25">25 minutes</SelectItem>
+                    <SelectItem value="30">30 minutes</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
