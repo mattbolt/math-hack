@@ -279,7 +279,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ws.sessionId = message.sessionId;
             ws.playerId = message.playerId;
             
-            // Send current game state
+            // Send current game state to the joining player
             const gameState = await storage.getGameSession(message.sessionId);
             const players = await storage.getPlayersBySession(message.sessionId);
             
@@ -289,11 +289,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               players
             }));
             
-            // Broadcast player joined
-            gameManager.broadcastToSession(message.sessionId, wss, {
-              type: 'playerJoined',
-              players
-            });
+            // Broadcast updated player list to ALL players in the session
+            setTimeout(() => {
+              gameManager.broadcastToSession(message.sessionId, wss, {
+                type: 'playerUpdate',
+                players
+              });
+            }, 100);
             break;
 
           case 'startGame':

@@ -43,6 +43,10 @@ export default function Game() {
           if (message.players) setPlayers(message.players);
         });
 
+        wsManager.on('playerUpdate', (message: any) => {
+          if (message.players) setPlayers(message.players);
+        });
+
         wsManager.on('gameStarted', (message: any) => {
           setGamePhase('active');
           if (message.session) setGameSession(message.session);
