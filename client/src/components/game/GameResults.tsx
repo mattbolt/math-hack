@@ -10,19 +10,34 @@ interface GameResultsProps {
 
 export function GameResults({ players, onPlayAgain }: GameResultsProps) {
   const sortedPlayers = [...players].sort((a, b) => b.credits - a.credits);
+  const highestScore = sortedPlayers.length > 0 ? sortedPlayers[0].credits : 0;
 
-  const getRankColor = (rank: number) => {
+  const getRankColor = (player: any, rank: number) => {
+    // All players with highest score get gold styling
+    if (player.credits === highestScore && highestScore > 0) {
+      return "from-yellow-400 to-yellow-600";
+    }
     switch (rank) {
-      case 1: return "from-yellow-400 to-yellow-600";
       case 2: return "from-slate-400 to-slate-600";
       case 3: return "from-amber-600 to-amber-800";
       default: return "from-slate-600 to-slate-700";
     }
   };
 
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Trophy className="w-6 h-6 text-yellow-100" />;
+  const getRankIcon = (player: any, rank: number) => {
+    // All players with highest score get trophy
+    if (player.credits === highestScore && highestScore > 0) {
+      return <Trophy className="w-6 h-6 text-yellow-100" />;
+    }
     return <span className="text-lg font-bold">{rank}</span>;
+  };
+
+  const getCardBackground = (player: any, rank: number) => {
+    // All players with highest score get gold background
+    if (player.credits === highestScore && highestScore > 0) {
+      return 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30';
+    }
+    return 'bg-slate-700/50 border-slate-600';
   };
 
   const shareResults = async () => {
@@ -66,15 +81,11 @@ export function GameResults({ players, onPlayAgain }: GameResultsProps) {
                 return (
                   <div 
                     key={player.id}
-                    className={`flex items-center justify-between p-4 rounded-lg border ${
-                      rank === 1 
-                        ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30' 
-                        : 'bg-slate-700/50 border-slate-600'
-                    }`}
+                    className={`flex items-center justify-between p-4 rounded-lg border ${getCardBackground(player, rank)}`}
                   >
                     <div className="flex items-center space-x-4">
-                      <div className={`w-12 h-12 bg-gradient-to-br ${getRankColor(rank)} rounded-full flex items-center justify-center`}>
-                        {getRankIcon(rank)}
+                      <div className={`w-12 h-12 bg-gradient-to-br ${getRankColor(player, rank)} rounded-full flex items-center justify-center`}>
+                        {getRankIcon(player, rank)}
                       </div>
                       <div className="text-left">
                         <div className="font-semibold text-lg">{player.name}</div>
