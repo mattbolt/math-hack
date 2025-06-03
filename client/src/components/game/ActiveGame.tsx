@@ -50,7 +50,7 @@ export function ActiveGame({
   const [showPlayerSelection, setShowPlayerSelection] = useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = useState<string>("");
   const [slowDownActive, setSlowDownActive] = useState(false);
-  const [questionStack, setQuestionStack] = useState<Array<{id: string, text: string, userAnswer?: number, correct?: boolean, state: 'current' | 'answered' | 'previous'}>>([]);
+  const [questionStack, setQuestionStack] = useState<Array<{id: string, text: string, userAnswer?: number, correct?: boolean, state: string}>>([]);
   const [animationKey, setAnimationKey] = useState(0);
 
   // Handle new questions and manage stack
@@ -64,12 +64,12 @@ export function ActiveGame({
           // New question - mark old ones as previous and add new current
           const newStack = prev.map(q => ({ 
             ...q, 
-            state: q.state === 'answered' ? 'previous' as const : 'previous' as const
+            state: 'previous'
           }));
           newStack.push({
             id: currentQuestion.id,
             text: currentQuestion.text,
-            state: 'current' as const
+            state: 'current'
           });
           
           // Keep only last 2 items (current + 1 previous)
@@ -106,7 +106,7 @@ export function ActiveGame({
       // Update current question in stack to "answered" state
       setQuestionStack(prev => prev.map(q => 
         q.id === currentQuestion.id 
-          ? { ...q, userAnswer: numAnswer, correct: numAnswer === currentQuestion.answer, state: 'answered' as const }
+          ? { ...q, userAnswer: numAnswer, correct: numAnswer === currentQuestion.answer, state: 'answered' }
           : q
       ));
       
