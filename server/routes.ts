@@ -490,19 +490,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Heartbeat
-  const interval = setInterval(() => {
-    wss.clients.forEach((ws: GameWebSocket) => {
-      if (ws.isAlive === false) return ws.terminate();
-      
-      ws.isAlive = false;
-      ws.ping();
-    });
-  }, 30000);
+  // Heartbeat (temporarily disabled for debugging)
+  // const interval = setInterval(() => {
+  //   wss.clients.forEach((ws: GameWebSocket) => {
+  //     if (ws.isAlive === false) return ws.terminate();
+  //     
+  //     ws.isAlive = false;
+  //     ws.ping();
+  //   });
+  // }, 30000);
 
-  wss.on('close', () => {
-    clearInterval(interval);
-  });
+  // wss.on('close', () => {
+  //   clearInterval(interval);
+  // });
 
   return httpServer;
 }
