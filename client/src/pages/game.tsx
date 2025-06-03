@@ -34,53 +34,52 @@ export default function Game() {
       try {
         await wsManager.connect();
         
-        wsManager.on('gameState', (message: any) => {
-          if (message.session) setGameSession(message.session);
-          if (message.players) setPlayers(message.players);
-        });
-
-        wsManager.on('playerJoined', (message: any) => {
-          if (message.players) {
-            setPlayers(message.players);
-            console.log('Players updated:', message.players);
-          }
-        });
-
-        wsManager.on('gameState', (message: any) => {
+        const handleGameState = (message: any) => {
           if (message.session) setGameSession(message.session);
           if (message.players) {
             setPlayers(message.players);
             console.log('Game state updated:', message.players);
           }
-        });
+        };
 
-        wsManager.on('gameStarted', (message: any) => {
+        const handlePlayerJoined = (message: any) => {
+          if (message.players) {
+            setPlayers(message.players);
+            console.log('Players updated:', message.players);
+          }
+        };
+
+        const handleGameStarted = (message: any) => {
           setGamePhase('active');
           if (message.session) setGameSession(message.session);
-        });
+        };
 
-        wsManager.on('newQuestion', (message: any) => {
+        const handleNewQuestion = (message: any) => {
           setCurrentQuestion(message.question);
           setTimeRemaining(message.question.timeLimit);
-        });
+        };
 
-        wsManager.on('answerSubmitted', (message: any) => {
-          const updatedPlayers = players.map(p => 
-            p.playerId === message.playerId ? message.player : p
+        const handleAnswerSubmitted = (message: any) => {
+          setPlayers(prevPlayers => 
+            prevPlayers.map(p => 
+              p.playerId === message.playerId ? message.player : p
+            )
           );
-          setPlayers(updatedPlayers);
-        });
+        };
 
-        wsManager.on('hackStarted', (message: any) => {
+        const handleHackStarted = (message: any) => {
           if (message.targetId === playerId) {
             setIsBeingHacked(true);
-            const hacker = players.find(p => p.playerId === message.hackerId);
-            setHackerName(hacker?.name || "Unknown");
+            setPlayers(prevPlayers => {
+              const hacker = prevPlayers.find(p => p.playerId === message.hackerId);
+              setHackerName(hacker?.name || "Unknown");
+              return prevPlayers;
+            });
             setHackProgress(0);
           }
-        });
+        };
 
-        wsManager.on('hackCompleted', (message: any) => {
+        const handleHackCompleted = (message: any) => {
           if (message.targetId === playerId) {
             setIsBeingHacked(false);
             setHackerName("");
@@ -91,9 +90,9 @@ export default function Game() {
               variant: "destructive",
             });
           }
-        });
+        };
 
-        wsManager.on('powerUpUsed', (message: any) => {
+        const handlePowerUpUsed = (message: any) => {
           if (message.targetId === playerId) {
             toast({
               title: "Power-up Used Against You!",
@@ -101,7 +100,27 @@ export default function Game() {
               variant: "destructive",
             });
           }
-        });
+        };
+
+        wsManager.on('gameState', handleGameState);
+        wsManager.on('playerJoined', handlePlayerJoined);
+        wsManager.on('gameStarted', handleGameStarted);
+        wsManager.on('newQuestion', handleNewQuestion);
+        wsManager.on('answerSubmitted', handleAnswerSubmitted);
+        wsManager.on('hackStarted', handleHackStarted);
+        wsManager.on('hackCompleted', handleHackCompleted);
+        wsManager.on('powerUpUsed', handlePowerUpUsed);
+
+        return () => {
+          wsManager.off('gameState', handleGameState);
+          wsManager.off('playerJoined', handlePlayerJoined);
+          wsManager.off('gameStarted', handleGameStarted);
+          wsManager.off('newQuestion', handleNewQuestion);
+          wsManager.off('answerSubmitted', handleAnswerSubmitted);
+          wsManager.off('hackStarted', handleHackStarted);
+          wsManager.off('hackCompleted', handleHackCompleted);
+          wsManager.off('powerUpUsed', handlePowerUpUsed);
+        };
 
       } catch (error) {
         console.error('Failed to connect to WebSocket:', error);
@@ -113,12 +132,13 @@ export default function Game() {
       }
     };
 
-    connectWebSocket();
+    const cleanup = connectWebSocket();
 
     return () => {
+      cleanup?.then(cleanupFn => cleanupFn?.());
       wsManager.disconnect();
     };
-  }, [playerId, players, toast]);
+  }, [playerId, toast]);
 
   // Timer countdown
   useEffect(() => {
