@@ -488,6 +488,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   if (newDifficulty > player.difficultyLevel) {
                     updates.consecutiveCorrect = 0;
                   }
+
+                  // Check hack progress only for correct answers
+                  for (const [key, hackData] of Array.from(gameManager.hackModes.entries())) {
+                    if (hackData.sessionId === ws.sessionId && (hackData.hackerId === ws.playerId || hackData.targetId === ws.playerId)) {
+                      
+                      if (hackData.hackerId === ws.playerId) {
+                        hackData.attackerProgress++;
+                      } else {
+                        hackData.defenderProgress++;
+                      }
+                      
+                      gameManager.broadcastToSession(ws.sessionId, wss, {
+                        type: 'hackProgress',
+                        hackerId: hackData.hackerId,
+                        targetId: hackData.targetId,
+                        attackerProgress: hackData.attackerProgress,
+                        defenderProgress: hackData.defenderProgress
+                      });
+                      
+                      if (hackData.attackerProgress >= 5) {
+                        const targetPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, hackData.targetId);
+                        if (targetPlayer) {
+                          const stolenCredits = Math.floor(targetPlayer.credits * (0.2 + Math.random() * 0.3));
+                          if (hackData.hackerId === ws.playerId) {
+                            updates.credits = player.credits + stolenCredits;
+                          }
+                          await storage.updatePlayer(targetPlayer.id, {
+                            credits: Math.max(0, targetPlayer.credits - stolenCredits)
+                          });
+                          
+                          // Log successful hack
+                          await gameManager.logGameEvent(ws.sessionId, {
+                            type: 'hack_complete',
+                            playerId: hackData.hackerId,
+                            playerName: player.name,
+                            targetId: hackData.targetId,
+                            targetName: targetPlayer?.name,
+                            details: `${player.name} successfully hacked ${targetPlayer?.name} for ${stolenCredits} credits`,
+                            creditChange: stolenCredits
+                          }, wss);
+                          
+                          gameManager.broadcastToSession(ws.sessionId, wss, {
+                            type: 'hackCompleted',
+                            hackerId: hackData.hackerId,
+                            targetId: hackData.targetId,
+                            success: true,
+                            creditsStolen: stolenCredits
+                          });
+                        }
+                        gameManager.hackModes.delete(key);
+                      } else if (hackData.defenderProgress >= 5) {
+                        const targetPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, hackData.targetId);
+                        const hackerPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, hackData.hackerId);
+                        
+                        // Log failed hack
+                        await gameManager.logGameEvent(ws.sessionId, {
+                          type: 'hack_complete',
+                          playerId: hackData.targetId,
+                          playerName: targetPlayer?.name,
+                          targetId: hackData.hackerId,
+                          targetName: hackerPlayer?.name,
+                          details: `${targetPlayer?.name} successfully defended against ${hackerPlayer?.name}'s hack`,
+                          creditChange: 0
+                        }, wss);
+                        
+                        gameManager.broadcastToSession(ws.sessionId, wss, {
+                          type: 'hackCompleted',
+                          hackerId: hackData.hackerId,
+                          targetId: hackData.targetId,
+                          success: false,
+                          creditsStolen: 0
+                        });
+                        gameManager.hackModes.delete(key);
+                      }
+                      break;
+                    }
+                  }
                 } else {
                   // Handle incorrect answers - also adjust difficulty
                   const newDifficulty = gameManager.adjustDifficulty({
