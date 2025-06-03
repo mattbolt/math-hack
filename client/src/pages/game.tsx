@@ -201,8 +201,15 @@ export default function Game() {
             )
           );
 
-          // Show feedback for the player who skipped
+          // Show feedback for the player who skipped with yellow animation
           if (message.playerId === playerId) {
+            setShowAnswerFeedback({ show: true, correct: false });
+            setPendingAnswer(false);
+            
+            setTimeout(() => {
+              setShowAnswerFeedback({ show: false, correct: false });
+            }, 1500);
+            
             toast({
               title: "Question Skipped",
               description: "5 credits deducted. Difficulty may decrease.",

@@ -93,6 +93,12 @@ export function ActiveGame({
   }, [pendingAnswer]);
 
   const handleSubmitAnswer = () => {
+    // Check if player is frozen
+    const now = Date.now();
+    const isFrozen = activeEffects.freeze && activeEffects.freeze > now;
+    
+    if (isFrozen) return; // Prevent submission when frozen
+    
     const numAnswer = parseInt(answer);
     if (!isNaN(numAnswer) && currentQuestion) {
       // Update current question in stack to "answered" state
@@ -123,8 +129,13 @@ export function ActiveGame({
 
   const handlePowerUpClick = (powerUpType: string) => {
     if (currentPlayer.credits >= getPowerUpCost(powerUpType)) {
-      setSelectedPowerUp(powerUpType);
-      setShowPlayerSelection(true);
+      if (powerUpType === 'shield') {
+        // Shield applies to self, no player selection needed
+        onUsePowerUp(powerUpType, currentPlayer.playerId);
+      } else {
+        setSelectedPowerUp(powerUpType);
+        setShowPlayerSelection(true);
+      }
     }
   };
 
@@ -165,8 +176,8 @@ export function ActiveGame({
     // At max difficulty (9), no progression possible
     if (player.difficultyLevel >= 9) return 0;
     
-    // Need 3 consecutive correct to advance
-    const needed = 3 - player.consecutiveCorrect;
+    // Need 5 consecutive correct to advance
+    const needed = 5 - player.consecutiveCorrect;
     return Math.max(0, needed);
   };
 

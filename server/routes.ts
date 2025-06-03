@@ -168,8 +168,8 @@ class GameManager {
   adjustDifficulty(player: any): number {
     let newDifficulty = player.difficultyLevel;
 
-    // Increase difficulty if player gets 3 consecutive correct answers
-    if (player.consecutiveCorrect >= 3) {
+    // Increase difficulty if player gets 5 consecutive correct answers
+    if (player.consecutiveCorrect >= 5) {
       newDifficulty = Math.min(9, player.difficultyLevel + 1);
     }
     // Decrease difficulty if player gets 2 consecutive wrong answers or skips
