@@ -329,6 +329,17 @@ export default function Game() {
       const delay = (activeEffects.slow && activeEffects.slow > Date.now()) ? 2000 : 0;
       
       if (delay > 0) {
+        setSlowCountdown(2);
+        const countdownInterval = setInterval(() => {
+          setSlowCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(countdownInterval);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        
         toast({
           title: "Slowed Down!",
           description: "Your answer is being processed slowly due to a power-up effect...",
@@ -442,6 +453,7 @@ export default function Game() {
               pendingAnswer={pendingAnswer}
               hackModeActive={hackModeActive}
               hackModeData={hackModeData}
+              slowCountdown={slowCountdown}
             />
             
             {/* Active Effects Indicator */}

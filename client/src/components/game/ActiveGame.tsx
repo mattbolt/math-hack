@@ -23,6 +23,7 @@ interface ActiveGameProps {
   pendingAnswer: boolean;
   hackModeActive: boolean;
   hackModeData: {attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string} | null;
+  slowCountdown: number;
 }
 
 export function ActiveGame({
@@ -40,7 +41,8 @@ export function ActiveGame({
   showAnswerFeedback,
   pendingAnswer,
   hackModeActive,
-  hackModeData
+  hackModeData,
+  slowCountdown
 }: ActiveGameProps) {
   const [answer, setAnswer] = useState("");
   const [showPlayerSelection, setShowPlayerSelection] = useState(false);
@@ -209,7 +211,9 @@ export function ActiveGame({
                       {pendingAnswer ? (
                         <div className="flex items-center space-x-2">
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Processing...</span>
+                          <span>
+                            {slowCountdown > 0 ? `Slowed (${slowCountdown}s)` : 'Processing...'}
+                          </span>
                         </div>
                       ) : 'Submit Answer'}
                     </Button>
