@@ -432,6 +432,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const message = JSON.parse(data.toString());
         
         switch (message.type) {
+          case 'ping':
+            // Respond to keep-alive ping
+            ws.send(JSON.stringify({ type: 'pong' }));
+            break;
+            
           case 'joinSession':
             ws.sessionId = message.sessionId;
             ws.playerId = message.playerId;

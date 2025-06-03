@@ -100,7 +100,8 @@ class WebSocketManager {
     this.stopPingInterval();
     this.pingInterval = setInterval(() => {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        this.ws.ping?.();
+        // Send a keep-alive message instead of ping
+        this.send({ type: 'ping' });
       }
     }, 10000); // Ping every 10 seconds
   }
@@ -130,10 +131,13 @@ class WebSocketManager {
   }
 
   disconnect() {
+    this.stopPingInterval();
     if (this.ws) {
       this.ws.close();
       this.ws = null;
     }
+    this.sessionId = null;
+    this.playerId = null;
   }
 }
 
