@@ -8,6 +8,7 @@ export interface GameStats {
   wrong: number;
   accuracy: number;
   hacks: number;
+  difficulty: number;
 }
 
 export interface PowerUpType {

@@ -589,6 +589,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
             break;
 
+          case 'skipQuestion':
+            if (ws.sessionId && ws.playerId) {
+              const player = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, ws.playerId);
+              
+              if (player && player.credits >= 5) {
+                // Deduct credits and treat as wrong answer for difficulty scaling
+                const updates: any = {
+                  credits: player.credits - 5,
+                  consecutiveCorrect: 0,
+                  consecutiveWrong: player.consecutiveWrong + 1,
+                  difficultyLevel: gameManager.adjustDifficulty({
+                    ...player,
+                    consecutiveWrong: player.consecutiveWrong + 1,
+                    consecutiveCorrect: 0
+                  })
+                };
+
+                const updatedPlayer = await storage.updatePlayer(player.id, updates);
+                
+                // Generate new question for this player immediately
+                const newQuestion = gameManager.generateQuestion(updates.difficultyLevel || player.difficultyLevel);
+                
+                // Send new question to this player
+                ws.send(JSON.stringify({
+                  type: 'newQuestion',
+                  question: newQuestion
+                }));
+                
+                // Broadcast skip result to all players in session
+                gameManager.broadcastToSession(ws.sessionId, wss, {
+                  type: 'questionSkipped',
+                  playerId: ws.playerId,
+                  player: updatedPlayer
+                });
+              }
+            }
+            break;
 
         }
       } catch (error) {

@@ -167,7 +167,8 @@ export function ActiveGame({
     accuracy: currentPlayer.correctAnswers + currentPlayer.wrongAnswers > 0 
       ? Math.round((currentPlayer.correctAnswers / (currentPlayer.correctAnswers + currentPlayer.wrongAnswers)) * 100)
       : 0,
-    hacks: 0 // This would need to be tracked separately
+    hacks: 0, // This would need to be tracked separately
+    difficulty: currentPlayer.difficultyLevel
   };
 
   return (

@@ -383,12 +383,11 @@ export default function Game() {
   };
 
   const handleSkipQuestion = () => {
-    // Implement skip logic (deduct credits)
-    if (currentPlayer && currentPlayer.credits >= 5) {
-      // This would be handled by the server
-      toast({
-        title: "Question Skipped",
-        description: "5 credits deducted for skipping.",
+    if (gameSession && currentPlayer && currentPlayer.credits >= 5) {
+      wsManager.send({
+        type: 'skipQuestion',
+        sessionId: gameSession.id,
+        playerId
       });
     }
   };
