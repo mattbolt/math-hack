@@ -3,9 +3,12 @@ import { type WebSocketMessage } from "./gameTypes";
 class WebSocketManager {
   private ws: WebSocket | null = null;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
+  private maxReconnectAttempts = 10;
   private reconnectInterval = 1000;
   private messageHandlers: Map<string, Function[]> = new Map();
+  private pingInterval: NodeJS.Timeout | null = null;
+  private sessionId: number | null = null;
+  private playerId: string | null = null;
 
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -18,6 +21,17 @@ class WebSocketManager {
         this.ws.onopen = () => {
           console.log('WebSocket connected');
           this.reconnectAttempts = 0;
+          this.startPingInterval();
+          
+          // Auto-rejoin session if we have session data
+          if (this.sessionId && this.playerId) {
+            this.send({
+              type: 'joinSession',
+              sessionId: this.sessionId,
+              playerId: this.playerId
+            });
+          }
+          
           resolve();
         };
 
@@ -32,6 +46,7 @@ class WebSocketManager {
 
         this.ws.onclose = () => {
           console.log('WebSocket disconnected');
+          this.stopPingInterval();
           this.attemptReconnect();
         };
 
@@ -70,8 +85,30 @@ class WebSocketManager {
   send(message: WebSocketMessage) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
+      
+      // Store session info for reconnection
+      if (message.type === 'joinSession') {
+        this.sessionId = message.sessionId;
+        this.playerId = message.playerId;
+      }
     } else {
       console.error('WebSocket is not connected');
+    }
+  }
+
+  private startPingInterval() {
+    this.stopPingInterval();
+    this.pingInterval = setInterval(() => {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.ping?.();
+      }
+    }, 10000); // Ping every 10 seconds
+  }
+
+  private stopPingInterval() {
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
     }
   }
 

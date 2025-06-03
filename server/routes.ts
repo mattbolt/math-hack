@@ -417,9 +417,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   wss.on('connection', (ws: GameWebSocket) => {
     ws.isAlive = true;
+    console.log('WebSocket connection established');
     
     ws.on('pong', () => {
       ws.isAlive = true;
+    });
+
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
     });
 
     ws.on('message', async (data) => {
@@ -836,19 +841,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
 
     ws.on('close', () => {
+      console.log('WebSocket connection closed for player:', ws.playerId);
       // Handle player disconnection
+      if (ws.sessionId && ws.playerId) {
+        // Broadcast player disconnection to other players
+        gameManager.broadcastToSession(ws.sessionId, wss, {
+          type: 'playerDisconnected',
+          playerId: ws.playerId
+        });
+      }
     });
   });
 
-  // Heartbeat
+  // Heartbeat - reduced interval for better connection monitoring
   const interval = setInterval(() => {
     wss.clients.forEach((ws: GameWebSocket) => {
-      if (ws.isAlive === false) return ws.terminate();
+      if (ws.isAlive === false) {
+        console.log('Terminating inactive WebSocket connection');
+        return ws.terminate();
+      }
       
       ws.isAlive = false;
       ws.ping();
     });
-  }, 30000);
+  }, 15000); // Check every 15 seconds instead of 30
 
   wss.on('close', () => {
     clearInterval(interval);
