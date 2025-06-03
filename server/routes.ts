@@ -195,8 +195,8 @@ class GameManager {
     if (player.consecutiveCorrect >= 5) {
       newDifficulty = Math.min(9, player.difficultyLevel + 1);
     }
-    // Decrease difficulty if player gets 2 consecutive wrong answers or skips
-    else if (player.consecutiveWrong >= 2) {
+    // Decrease difficulty if player gets 3 consecutive wrong answers or skips
+    else if (player.consecutiveWrong >= 3) {
       newDifficulty = Math.max(1, player.difficultyLevel - 1);
     }
 
@@ -488,6 +488,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   if (newDifficulty > player.difficultyLevel) {
                     updates.consecutiveCorrect = 0;
                   }
+                } else {
+                  // Handle incorrect answers - also adjust difficulty
+                  const newDifficulty = gameManager.adjustDifficulty({
+                    ...player,
+                    consecutiveCorrect: updates.consecutiveCorrect,
+                    consecutiveWrong: updates.consecutiveWrong
+                  });
+                  
+                  updates.difficultyLevel = newDifficulty;
+                  
+                  // Reset consecutive counts if difficulty decreased
+                  if (newDifficulty < player.difficultyLevel) {
+                    updates.consecutiveWrong = 0;
+                  }
 
                   // Check hack progress for new sophisticated system
                   console.log('Checking hack progress for player:', ws.playerId, 'Active hacks:', Array.from(gameManager.hackModes.entries()));
@@ -709,13 +723,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   credits: player.credits - 5,
                   consecutiveCorrect: 0,
                   consecutiveWrong: player.consecutiveWrong + 1,
-                  overallConsecutiveCorrect: 0,
-                  difficultyLevel: gameManager.adjustDifficulty({
-                    ...player,
-                    consecutiveWrong: player.consecutiveWrong + 1,
-                    consecutiveCorrect: 0
-                  })
+                  overallConsecutiveCorrect: 0
                 };
+
+                const newDifficulty = gameManager.adjustDifficulty({
+                  ...player,
+                  consecutiveWrong: updates.consecutiveWrong,
+                  consecutiveCorrect: 0
+                });
+                
+                updates.difficultyLevel = newDifficulty;
+                
+                // Reset consecutive counts if difficulty decreased
+                if (newDifficulty < player.difficultyLevel) {
+                  updates.consecutiveWrong = 0;
+                }
 
                 // Log credit deduction for skip
                 await gameManager.logGameEvent(ws.sessionId, {
