@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { type GameStats } from "@/lib/gameTypes";
 import { Clock, Coins, Shield, Snowflake, Zap, User, Skull } from "lucide-react";
 import { PlayerSelectionModal } from "./PlayerSelectionModal";
 import { GameLog } from "./GameLog";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ActiveGameProps {
   players: Player[];
@@ -242,6 +243,11 @@ export function ActiveGame({
     return Math.max(0, needed);
   };
 
+  // Sort players by credits in descending order for animated leaderboard
+  const sortedPlayers = useMemo(() => {
+    return [...players].sort((a, b) => b.credits - a.credits);
+  }, [players]);
+
   const stats: GameStats = {
     correct: currentPlayer.correctAnswers,
     wrong: currentPlayer.wrongAnswers,
@@ -259,31 +265,48 @@ export function ActiveGame({
       <Card className="bg-slate-800/50 backdrop-blur border-slate-700">
         <CardContent className="p-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {players.map((player, index) => (
-              <div key={player.id} className="flex items-center justify-between bg-slate-700/50 rounded-lg p-3">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-8 h-8 ${getPlayerColor(index)} rounded-full flex items-center justify-center relative`}>
-                    <span className="text-xs font-bold text-white">
-                      {player.name.charAt(0).toUpperCase()}
-                    </span>
-                    {player.isBeingHacked && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping opacity-75" />
-                    )}
+            <AnimatePresence>
+              {sortedPlayers.map((player, index) => (
+                <motion.div
+                  key={player.playerId}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ 
+                    duration: 0.3,
+                    layout: { duration: 0.4, ease: "easeInOut" }
+                  }}
+                  className="flex items-center justify-between bg-slate-700/50 rounded-lg p-3"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-8 h-8 ${getPlayerColor(index)} rounded-full flex items-center justify-center relative`}>
+                      <span className="text-xs font-bold text-white">
+                        {player.name.charAt(0).toUpperCase()}
+                      </span>
+                      {player.isBeingHacked && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping opacity-75" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-sm">{player.name}</div>
+                      <div className="text-xs text-slate-400">Credits: {player.credits}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-semibold text-sm">{player.name}</div>
-                    <div className="text-xs text-slate-400">Score: {player.score}</div>
+                  <div className="flex items-center space-x-2">
+                    <motion.div 
+                      className="flex items-center space-x-1"
+                      animate={{ scale: player.credits > 0 ? [1, 1.1, 1] : 1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Coins className="w-3 h-3 text-yellow-500" />
+                      <span className="text-xs font-semibold">{player.credits}</span>
+                    </motion.div>
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                   </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center space-x-1">
-                    <Coins className="w-3 h-3 text-yellow-500" />
-                    <span className="text-xs font-semibold">{player.credits}</span>
-                  </div>
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                </div>
-              </div>
-            ))}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </CardContent>
       </Card>
