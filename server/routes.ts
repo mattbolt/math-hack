@@ -221,6 +221,35 @@ class GameManager {
       }
     });
   }
+
+  async endGame(sessionId: number, wss: WebSocketServer) {
+    // Update session status to finished
+    await storage.updateGameSession(sessionId, { status: 'finished' });
+    
+    // Get final player rankings
+    const players = await storage.getPlayersBySession(sessionId);
+    const sortedPlayers = players.sort((a, b) => b.score - a.score);
+    
+    // Clear timers
+    const sessionTimer = this.sessionTimers.get(sessionId);
+    if (sessionTimer) {
+      clearTimeout(sessionTimer);
+      this.sessionTimers.delete(sessionId);
+    }
+    
+    const questionTimer = this.questionTimers.get(sessionId);
+    if (questionTimer) {
+      clearTimeout(questionTimer);
+      this.questionTimers.delete(sessionId);
+    }
+    
+    // Broadcast game end
+    this.broadcastToSession(sessionId, wss, {
+      type: 'gameEnded',
+      players: sortedPlayers,
+      reason: 'timeUp'
+    });
+  }
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -374,7 +403,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           case 'startGame':
             if (ws.sessionId) {
-              const session = await storage.updateGameSession(ws.sessionId, { status: 'active' });
+              const session = await storage.updateGameSession(ws.sessionId, { 
+                status: 'active',
+                gameStartTime: new Date()
+              });
               gameManager.broadcastToSession(ws.sessionId, wss, {
                 type: 'gameStarted',
                 session
@@ -384,6 +416,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               setTimeout(() => {
                 gameManager.startQuestion(ws.sessionId!, wss);
               }, 1000);
+              
+              // Set overall game timer
+              const gameTimer = setTimeout(async () => {
+                await gameManager.endGame(ws.sessionId!, wss);
+              }, (session?.gameDuration || 15) * 60 * 1000);
             }
             break;
 
