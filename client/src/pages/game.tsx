@@ -124,19 +124,21 @@ export default function Game() {
     mutationFn: async ({ hostName, maxPlayers }: { hostName: string; maxPlayers: number }) => {
       const response = await apiRequest('POST', '/api/game/create', {
         hostId: playerId,
+        hostName,
         maxPlayers
       });
       return response.json();
     },
-    onSuccess: (session: GameSession) => {
-      setGameSession(session);
-      setPlayerName(hostName);
+    onSuccess: (data: { session: GameSession; player: Player }) => {
+      setGameSession(data.session);
+      setPlayerName(data.player.name);
+      setPlayers([data.player]);
       setGamePhase('waiting');
       
       // Join the session via WebSocket
       wsManager.send({
         type: 'joinSession',
-        sessionId: session.id,
+        sessionId: data.session.id,
         playerId
       });
     },

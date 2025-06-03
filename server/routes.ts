@@ -156,10 +156,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create game session
   app.post("/api/game/create", async (req, res) => {
     try {
-      const { hostId, maxPlayers = 4 } = req.body;
+      const { hostId, maxPlayers = 4, hostName } = req.body;
       
-      if (!hostId) {
-        return res.status(400).json({ message: "Host ID is required" });
+      if (!hostId || !hostName) {
+        return res.status(400).json({ message: "Host ID and name are required" });
       }
 
       const code = gameManager.generateGameCode();
@@ -169,7 +169,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxPlayers
       });
 
-      res.json(session);
+      // Create the host player
+      const hostPlayer = await storage.createPlayer({
+        sessionId: session.id,
+        playerId: hostId,
+        name: hostName,
+        isHost: true
+      });
+
+      res.json({ session, player: hostPlayer });
     } catch (error) {
       res.status(500).json({ message: "Failed to create game session" });
     }

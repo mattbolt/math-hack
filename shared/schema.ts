@@ -69,14 +69,14 @@ export const insertGameSessionSchema = createInsertSchema(gameSessions).pick({
   code: true,
   hostId: true,
   maxPlayers: true,
-});
+}).required({ maxPlayers: true });
 
 export const insertPlayerSchema = createInsertSchema(players).pick({
   sessionId: true,
   playerId: true,
   name: true,
   isHost: true,
-});
+}).required({ sessionId: true, isHost: true });
 
 export const insertPowerUpSchema = createInsertSchema(powerUps).pick({
   name: true,
@@ -89,7 +89,7 @@ export const insertHackAttemptSchema = createInsertSchema(hackAttempts).pick({
   sessionId: true,
   hackerId: true,
   targetId: true,
-});
+}).required({ sessionId: true });
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;

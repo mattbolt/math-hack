@@ -96,8 +96,10 @@ export class MemStorage implements IStorage {
   async createGameSession(insertSession: InsertGameSession): Promise<GameSession> {
     const id = this.currentId++;
     const session: GameSession = {
-      ...insertSession,
       id,
+      code: insertSession.code,
+      hostId: insertSession.hostId,
+      maxPlayers: insertSession.maxPlayers || 4,
       status: "waiting",
       currentQuestion: null,
       questionStartTime: null,
@@ -133,8 +135,11 @@ export class MemStorage implements IStorage {
   async createPlayer(insertPlayer: InsertPlayer): Promise<Player> {
     const id = this.currentId++;
     const player: Player = {
-      ...insertPlayer,
       id,
+      sessionId: insertPlayer.sessionId,
+      playerId: insertPlayer.playerId,
+      name: insertPlayer.name,
+      isHost: insertPlayer.isHost,
       credits: 0,
       score: 0,
       correctAnswers: 0,
@@ -182,7 +187,13 @@ export class MemStorage implements IStorage {
   // Power-up methods
   async createPowerUp(insertPowerUp: InsertPowerUp): Promise<PowerUp> {
     const id = this.currentId++;
-    const powerUp: PowerUp = { ...insertPowerUp, id };
+    const powerUp: PowerUp = { 
+      id,
+      name: insertPowerUp.name,
+      cost: insertPowerUp.cost,
+      duration: insertPowerUp.duration,
+      effect: insertPowerUp.effect
+    };
     this.powerUps.set(id, powerUp);
     return powerUp;
   }
@@ -195,8 +206,10 @@ export class MemStorage implements IStorage {
   async createHackAttempt(insertHack: InsertHackAttempt): Promise<HackAttempt> {
     const id = this.currentId++;
     const hack: HackAttempt = {
-      ...insertHack,
       id,
+      sessionId: insertHack.sessionId,
+      hackerId: insertHack.hackerId,
+      targetId: insertHack.targetId,
       questionsRequired: 5,
       questionsCompleted: 0,
       isActive: true,
