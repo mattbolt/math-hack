@@ -166,9 +166,10 @@ export function ActiveGame({
     const effects: {[playerId: string]: {[effect: string]: number}} = {};
     
     players.forEach(player => {
-      if (player.powerUpsActive && player.powerUpsActive.length > 0) {
+      const powerUps = Array.isArray(player.powerUpsActive) ? player.powerUpsActive : [];
+      if (powerUps.length > 0) {
         effects[player.playerId] = {};
-        player.powerUpsActive.forEach(powerUp => {
+        powerUps.forEach((powerUp: string) => {
           // Extract effect type from powerUp string (assuming format like "slow", "freeze", etc.)
           effects[player.playerId][powerUp] = 1; // Just marking as active
         });
