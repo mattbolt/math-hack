@@ -49,19 +49,33 @@ export function ActiveGame({
   const [selectedPowerUp, setSelectedPowerUp] = useState<string>("");
   const [slowDownActive, setSlowDownActive] = useState(false);
   const [previousQuestions, setPreviousQuestions] = useState<Array<{text: string, userAnswer: number, correct: boolean}>>([]);
+  const [currentQuestionKey, setCurrentQuestionKey] = useState(0);
+  const [submittedAnswer, setSubmittedAnswer] = useState<number | null>(null);
+
+  // Reset states when a new question arrives
+  useEffect(() => {
+    if (currentQuestion && !showAnswerFeedback.show) {
+      setSubmittedAnswer(null);
+      setCurrentQuestionKey(prev => prev + 1);
+      // Add previous question to stack if we have a submitted answer
+      if (submittedAnswer !== null) {
+        setPreviousQuestions(prev => [
+          ...prev.slice(-2), // Keep only last 2 previous questions
+          {
+            text: `Previous question = ${submittedAnswer}`,
+            userAnswer: submittedAnswer,
+            correct: showAnswerFeedback.correct
+          }
+        ]);
+      }
+    }
+  }, [currentQuestion?.id, showAnswerFeedback.show]);
 
   const handleSubmitAnswer = () => {
     const numAnswer = parseInt(answer);
     if (!isNaN(numAnswer) && currentQuestion) {
-      // Add current question to previous questions for animation
-      setPreviousQuestions(prev => [
-        ...prev.slice(-2), // Keep only last 2 previous questions
-        {
-          text: currentQuestion.text,
-          userAnswer: numAnswer,
-          correct: numAnswer === currentQuestion.answer
-        }
-      ]);
+      // Store the submitted answer for transformation animation
+      setSubmittedAnswer(numAnswer);
       
       onSubmitAnswer(numAnswer);
       setAnswer("");
@@ -192,12 +206,31 @@ export function ActiveGame({
                   </div>
                 ))}
                 
-                {/* Current Question */}
-                <div className={`transition-all duration-500 ease-in-out ${
-                  showAnswerFeedback.show ? 'opacity-0 transform translate-y-[-100px] scale-75' : 'opacity-100 transform translate-y-0 scale-100'
-                }`} style={{ zIndex: 20 }}>
-                  <div className="text-4xl font-bold text-white mt-16">
-                    {currentQuestion?.text || "Waiting for question..."}
+                {/* Current Question with Answer Transformation */}
+                <div 
+                  key={`current-${currentQuestionKey}`}
+                  className={`absolute w-full transition-all duration-500 ease-in-out mt-16 ${
+                    showAnswerFeedback.show 
+                      ? `opacity-60 scale-75 transform translate-y-[-100px] ${showAnswerFeedback.correct ? 'text-green-400' : 'text-red-400'}` 
+                      : 'opacity-100 scale-100 transform translate-y-[10px] text-white'
+                  }`} 
+                  style={{ 
+                    zIndex: 20,
+                    animation: showAnswerFeedback.show ? 'none' : 'slideUpFromBelow 0.5s ease-out forwards'
+                  }}
+                >
+                  <div className="text-4xl font-bold">
+                    {showAnswerFeedback.show && currentQuestion
+                      ? (
+                          <>
+                            {currentQuestion.text.replace('= ?', `= ${parseInt(answer) || 0}`)}
+                            <span className="ml-2 text-5xl">
+                              {showAnswerFeedback.correct ? '✓' : '✗'}
+                            </span>
+                          </>
+                        )
+                      : (currentQuestion?.text || "Waiting for question...")
+                    }
                   </div>
                 </div>
                 

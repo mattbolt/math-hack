@@ -74,6 +74,17 @@
     animation: hack-glow 1.5s ease-in-out infinite alternate;
   }
 
+  @keyframes slideUpFromBelow {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   /* Game-specific color palette */
   .text-game-primary {
     color: hsl(207 90% 54%);
