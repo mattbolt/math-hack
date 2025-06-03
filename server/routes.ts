@@ -274,14 +274,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   
-  // WebSocket server setup
+  // WebSocket server setup with specific path to avoid Vite HMR conflicts
   const wss = new WebSocketServer({ 
     server: httpServer, 
-    path: '/ws',
-    perMessageDeflate: false
+    path: '/game-ws',
+    perMessageDeflate: false,
+    clientTracking: true
   });
   
-  console.log('WebSocket server created on path /ws');
+  console.log('WebSocket server created on path /game-ws');
 
   wss.on('connection', (ws: GameWebSocket) => {
     const connectionId = Math.random().toString(36).substr(2, 9);
