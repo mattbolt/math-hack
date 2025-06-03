@@ -26,6 +26,7 @@ interface ActiveGameProps {
   hackModeData: {attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string} | null;
   slowCountdown: number;
   gameLog?: GameLogEntry[];
+  activeEffects?: {[effect: string]: number};
 }
 
 export function ActiveGame({
@@ -45,7 +46,8 @@ export function ActiveGame({
   hackModeActive,
   hackModeData,
   slowCountdown,
-  gameLog = []
+  gameLog = [],
+  activeEffects = {}
 }: ActiveGameProps) {
   const [answer, setAnswer] = useState("");
   const [showPlayerSelection, setShowPlayerSelection] = useState(false);
@@ -96,7 +98,12 @@ export function ActiveGame({
   }, [pendingAnswer]);
 
   const handleOptionSelect = (option: number) => {
-    if (!pendingAnswer && currentQuestion) {
+    // Check if player is frozen - disable all interactions
+    const isFrozen = Object.keys(activeEffects).some(effect => 
+      effect === 'freeze' && activeEffects[effect] > Date.now()
+    );
+    
+    if (!pendingAnswer && currentQuestion && !isFrozen) {
       setAnswer(option.toString());
       
       // Update current question in stack to "answered" state
@@ -258,7 +265,13 @@ export function ActiveGame({
         {/* Main Question Area */}
         <div className="lg:col-span-2 space-y-6">
           {/* Question Card with Animation */}
-          <Card className="bg-gradient-to-br from-slate-800 to-slate-700 border-slate-600">
+          <Card className={`bg-gradient-to-br border-slate-600 transition-colors duration-500 ${
+            Object.keys(activeEffects).some(effect => effect === 'freeze' && activeEffects[effect] > Date.now())
+              ? 'from-cyan-800/70 to-blue-800/70 border-cyan-500 shadow-cyan-500/30 shadow-lg'
+              : Object.keys(activeEffects).some(effect => effect === 'slow' && activeEffects[effect] > Date.now())
+              ? 'from-orange-800/70 to-amber-800/70 border-orange-500 shadow-orange-500/30 shadow-lg'
+              : 'from-slate-800 to-slate-700'
+          }`}>
             <CardContent className="p-8 text-center">
               <div className="space-y-6">
                 
@@ -340,7 +353,7 @@ export function ActiveGame({
                   <div className="flex justify-center">
                     <Button 
                       onClick={onSkipQuestion}
-                      disabled={currentPlayer.credits < 5 || pendingAnswer}
+                      disabled={currentPlayer.credits < 5 || pendingAnswer || Object.keys(activeEffects).some(effect => effect === 'freeze' && activeEffects[effect] > Date.now())}
                       variant="outline"
                       className="px-6 bg-slate-600 hover:bg-slate-500 border-slate-500"
                     >
