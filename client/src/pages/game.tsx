@@ -515,6 +515,7 @@ export default function Game() {
               hackModeData={hackModeData}
               slowCountdown={slowCountdown}
               gameLog={gameLog}
+              activeEffects={activeEffects}
             />
             
             {/* Active Effects Indicator */}
