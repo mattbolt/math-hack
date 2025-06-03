@@ -8,7 +8,7 @@ import { GameWaitingRoom } from "@/components/game/GameWaitingRoom";
 import { ActiveGame } from "@/components/game/ActiveGame";
 import { GameResults } from "@/components/game/GameResults";
 import { type GamePhase } from "@/lib/gameTypes";
-import { type GameSession, type Player, type Question } from "@shared/schema";
+import { type GameSession, type Player, type Question, type GameLogEntry } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { nanoid } from "nanoid";
 
@@ -30,6 +30,7 @@ export default function Game() {
   const [pendingAnswer, setPendingAnswer] = useState(false);
   const [slowCountdown, setSlowCountdown] = useState(0);
   const [gameTimeRemaining, setGameTimeRemaining] = useState<number>(0);
+  const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
 
   // Update effect timers every second
   useEffect(() => {
@@ -211,6 +212,10 @@ export default function Game() {
           }
         };
 
+        const handleGameLogUpdated = (message: any) => {
+          setGameLog(message.gameLog || []);
+        };
+
         wsManager.on('gameState', handleGameState);
         wsManager.on('playerJoined', handlePlayerJoined);
         wsManager.on('gameStarted', handleGameStarted);
@@ -221,6 +226,7 @@ export default function Game() {
         wsManager.on('hackCompleted', handleHackCompleted);
         wsManager.on('powerUpUsed', handlePowerUpUsed);
         wsManager.on('questionSkipped', handleQuestionSkipped);
+        wsManager.on('gameLogUpdated', handleGameLogUpdated);
 
         return () => {
           wsManager.off('gameState', handleGameState);
@@ -233,6 +239,7 @@ export default function Game() {
           wsManager.off('hackCompleted', handleHackCompleted);
           wsManager.off('powerUpUsed', handlePowerUpUsed);
           wsManager.off('questionSkipped', handleQuestionSkipped);
+          wsManager.off('gameLogUpdated', handleGameLogUpdated);
         };
 
       } catch (error) {
@@ -497,6 +504,7 @@ export default function Game() {
               hackModeActive={hackModeActive}
               hackModeData={hackModeData}
               slowCountdown={slowCountdown}
+              gameLog={gameLog}
             />
             
             {/* Active Effects Indicator */}
