@@ -500,6 +500,10 @@ export function ActiveGame({
                   <span className="text-slate-400">Consecutive:</span>
                   <span className="font-semibold text-purple-600">{currentPlayer.consecutiveCorrect}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Difficulty:</span>
+                  <span className="font-semibold text-blue-500">{stats.difficulty}</span>
+                </div>
               </div>
             </CardContent>
           </Card>
