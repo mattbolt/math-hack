@@ -334,19 +334,39 @@ export default function Game() {
         )}
 
         {gamePhase === 'active' && currentPlayer && (
-          <ActiveGame
-            players={players}
-            currentPlayer={currentPlayer}
-            currentQuestion={currentQuestion}
-            timeRemaining={timeRemaining}
-            isBeingHacked={isBeingHacked}
-            hackerName={hackerName}
-            hackProgress={hackProgress}
-            onSubmitAnswer={handleSubmitAnswer}
-            onUsePowerUp={handleUsePowerUp}
-            onStartHack={handleStartHack}
-            onSkipQuestion={handleSkipQuestion}
-          />
+          <div className={`${activeEffects.includes('freeze') ? 'animate-pulse' : ''} ${activeEffects.includes('slow') ? 'transition-all duration-1000' : ''} ${activeEffects.includes('scramble') ? 'animate-bounce' : ''}`}>
+            <ActiveGame
+              players={players}
+              currentPlayer={currentPlayer}
+              currentQuestion={currentQuestion}
+              timeRemaining={timeRemaining}
+              isBeingHacked={isBeingHacked}
+              hackerName={hackerName}
+              hackProgress={hackProgress}
+              onSubmitAnswer={handleSubmitAnswer}
+              onUsePowerUp={handleUsePowerUp}
+              onStartHack={handleStartHack}
+              onSkipQuestion={handleSkipQuestion}
+            />
+            
+            {/* Active Effects Indicator */}
+            {activeEffects.length > 0 && (
+              <div className="fixed top-20 right-4 space-y-2 z-50">
+                {activeEffects.map((effect, index) => (
+                  <div key={index} className={`px-3 py-2 rounded-lg border-2 animate-pulse ${
+                    effect === 'slow' ? 'bg-orange-500/20 border-orange-500 text-orange-500' :
+                    effect === 'freeze' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-500' :
+                    effect === 'scramble' ? 'bg-purple-500/20 border-purple-500 text-purple-500' :
+                    'bg-green-500/20 border-green-500 text-green-500'
+                  }`}>
+                    <div className="text-sm font-semibold">
+                      {effect.charAt(0).toUpperCase() + effect.slice(1)} Active
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {gamePhase === 'results' && (
