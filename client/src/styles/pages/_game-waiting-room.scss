@@ -1,0 +1,180 @@
+// Game waiting room page styles using BEM methodology
+.game-waiting-room {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: $spacing-xl;
+
+  &__container {
+    max-width: 48rem;
+    width: 100%;
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: $spacing-2xl;
+  }
+
+  &__title {
+    font-size: $font-3xl;
+    font-weight: $font-bold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-md;
+  }
+
+  &__game-code {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+    background: $color-bg-card;
+    border: 2px solid $color-primary;
+    border-radius: $radius-lg;
+    padding: $spacing-md $spacing-xl;
+    font-size: $font-xl;
+    font-weight: $font-bold;
+    color: $color-primary;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__players-section {
+    background: $color-bg-card;
+    border: 1px solid $color-bg-tertiary;
+    border-radius: $radius-lg;
+    padding: $spacing-xl;
+    backdrop-filter: blur(10px);
+    margin-bottom: $spacing-xl;
+  }
+
+  &__players-title {
+    font-size: $font-xl;
+    font-weight: $font-semibold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-lg;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__players-count {
+    font-size: $font-sm;
+    color: $color-text-secondary;
+    background: $color-bg-tertiary;
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $radius-full;
+  }
+
+  &__players-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: $spacing-md;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__player-card {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    background: $color-bg-secondary;
+    border: 1px solid $color-bg-tertiary;
+    border-radius: $radius-md;
+    padding: $spacing-md;
+    transition: all $transition-fast;
+
+    &:hover {
+      border-color: $color-primary;
+    }
+
+    &--host {
+      border-color: $color-secondary;
+      background: linear-gradient(135deg, $color-bg-secondary, rgba(16, 185, 129, 0.1));
+    }
+  }
+
+  &__player-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, $color-primary, $color-secondary);
+    border-radius: $radius-full;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: $font-bold;
+    color: white;
+  }
+
+  &__player-info {
+    flex: 1;
+  }
+
+  &__player-name {
+    font-weight: $font-medium;
+    color: $color-text-primary;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__player-status {
+    font-size: $font-xs;
+    color: $color-text-secondary;
+  }
+
+  &__waiting-indicator {
+    text-align: center;
+    padding: $spacing-xl;
+    color: $color-text-secondary;
+  }
+
+  &__waiting-message {
+    font-size: $font-lg;
+    margin-bottom: $spacing-md;
+  }
+
+  &__waiting-dots {
+    display: inline-flex;
+    gap: $spacing-xs;
+
+    &__dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      background: $color-primary;
+      border-radius: 50%;
+      animation: waitingDots 1.5s ease-in-out infinite;
+
+      &:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      &:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: center;
+    gap: $spacing-md;
+  }
+
+  @media (max-width: $breakpoint-md) {
+    &__players-grid {
+      grid-template-columns: 1fr;
+    }
+
+    &__actions {
+      flex-direction: column;
+    }
+  }
+}
+
+@keyframes waitingDots {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

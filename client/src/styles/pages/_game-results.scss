@@ -1,0 +1,245 @@
+// Game results page styles using BEM methodology
+.game-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: $spacing-xl;
+
+  &__container {
+    max-width: 48rem;
+    width: 100%;
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: $spacing-2xl;
+  }
+
+  &__title {
+    font-size: $font-4xl;
+    font-weight: $font-bold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-md;
+    background: linear-gradient(135deg, $color-secondary, $color-warning);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  &__subtitle {
+    font-size: $font-lg;
+    color: $color-text-secondary;
+  }
+
+  &__leaderboard {
+    background: $color-bg-card;
+    border: 1px solid $color-bg-tertiary;
+    border-radius: $radius-lg;
+    padding: $spacing-xl;
+    backdrop-filter: blur(10px);
+    margin-bottom: $spacing-xl;
+  }
+
+  &__leaderboard-title {
+    font-size: $font-2xl;
+    font-weight: $font-semibold;
+    color: $color-text-primary;
+    text-align: center;
+    margin-bottom: $spacing-xl;
+  }
+
+  &__players-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &__player-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-lg;
+    background: $color-bg-secondary;
+    border: 2px solid $color-bg-tertiary;
+    border-radius: $radius-lg;
+    padding: $spacing-lg;
+    transition: all $transition-base;
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-lg;
+    }
+
+    &--winner {
+      border-color: $color-warning;
+      background: linear-gradient(135deg, $color-bg-secondary, rgba(245, 158, 11, 0.1));
+      
+      &::before {
+        content: '👑';
+        position: absolute;
+        top: -5px;
+        right: $spacing-md;
+        font-size: $font-2xl;
+        animation: crownFloat 2s ease-in-out infinite;
+      }
+    }
+
+    &--second {
+      border-color: #c0c0c0;
+      background: linear-gradient(135deg, $color-bg-secondary, rgba(192, 192, 192, 0.1));
+    }
+
+    &--third {
+      border-color: #cd7f32;
+      background: linear-gradient(135deg, $color-bg-secondary, rgba(205, 127, 50, 0.1));
+    }
+  }
+
+  &__rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, $color-primary, $color-secondary);
+    border-radius: $radius-full;
+    font-size: $font-xl;
+    font-weight: $font-bold;
+    color: white;
+    flex-shrink: 0;
+
+    &--winner {
+      background: linear-gradient(135deg, $color-warning, darken($color-warning, 10%));
+    }
+
+    &--second {
+      background: linear-gradient(135deg, #c0c0c0, darken(#c0c0c0, 10%));
+    }
+
+    &--third {
+      background: linear-gradient(135deg, #cd7f32, darken(#cd7f32, 10%));
+    }
+  }
+
+  &__player-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__player-name {
+    font-size: $font-lg;
+    font-weight: $font-semibold;
+    color: $color-text-primary;
+  }
+
+  &__player-stats {
+    display: flex;
+    gap: $spacing-lg;
+    font-size: $font-sm;
+    color: $color-text-secondary;
+
+    @media (max-width: $breakpoint-sm) {
+      flex-direction: column;
+      gap: $spacing-xs;
+    }
+  }
+
+  &__stat {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+  }
+
+  &__player-credits {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    font-size: $font-xl;
+    font-weight: $font-bold;
+    color: $color-warning;
+    flex-shrink: 0;
+  }
+
+  &__stats-summary {
+    background: $color-bg-card;
+    border: 1px solid $color-bg-tertiary;
+    border-radius: $radius-lg;
+    padding: $spacing-xl;
+    backdrop-filter: blur(10px);
+    margin-bottom: $spacing-xl;
+  }
+
+  &__stats-title {
+    font-size: $font-xl;
+    font-weight: $font-semibold;
+    color: $color-text-primary;
+    text-align: center;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: $spacing-lg;
+  }
+
+  &__stat-card {
+    background: $color-bg-secondary;
+    border: 1px solid $color-bg-tertiary;
+    border-radius: $radius-md;
+    padding: $spacing-lg;
+    text-align: center;
+  }
+
+  &__stat-value {
+    font-size: $font-2xl;
+    font-weight: $font-bold;
+    color: $color-primary;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__stat-label {
+    font-size: $font-sm;
+    color: $color-text-secondary;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: center;
+    gap: $spacing-md;
+
+    @media (max-width: $breakpoint-sm) {
+      flex-direction: column;
+    }
+  }
+
+  @media (max-width: $breakpoint-md) {
+    &__player-item {
+      gap: $spacing-md;
+    }
+
+    &__rank {
+      width: 2.5rem;
+      height: 2.5rem;
+      font-size: $font-lg;
+    }
+
+    &__player-credits {
+      font-size: $font-lg;
+    }
+  }
+}
+
+@keyframes crownFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}

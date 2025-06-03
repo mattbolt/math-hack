@@ -1,0 +1,113 @@
+// Game lobby page styles using BEM methodology
+.game-lobby {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: $spacing-xl;
+  background: linear-gradient(135deg, $color-bg-primary 0%, $color-bg-secondary 100%);
+
+  &__container {
+    max-width: 32rem;
+    width: 100%;
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: $spacing-2xl;
+  }
+
+  &__title {
+    font-size: $font-4xl;
+    font-weight: $font-bold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-md;
+    background: linear-gradient(135deg, $color-primary, $color-secondary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  &__subtitle {
+    font-size: $font-lg;
+    color: $color-text-secondary;
+  }
+
+  &__tabs {
+    background: $color-bg-card;
+    border: 1px solid $color-bg-tertiary;
+    border-radius: $radius-lg;
+    padding: $spacing-xl;
+    backdrop-filter: blur(10px);
+  }
+
+  &__tab-list {
+    display: flex;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-xl;
+    background: $color-bg-secondary;
+    border-radius: $radius-md;
+    padding: $spacing-xs;
+  }
+
+  &__tab-trigger {
+    flex: 1;
+    padding: $spacing-sm $spacing-md;
+    border: none;
+    background: transparent;
+    color: $color-text-secondary;
+    font-size: $font-sm;
+    font-weight: $font-medium;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      color: $color-text-primary;
+      background: $color-bg-tertiary;
+    }
+
+    &--active {
+      color: $color-text-primary;
+      background: $color-primary;
+    }
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+
+  &__form-group {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &__label {
+    font-size: $font-sm;
+    font-weight: $font-medium;
+    color: $color-text-primary;
+  }
+
+  &__input-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: $spacing-sm;
+    align-items: end;
+  }
+
+  @media (max-width: $breakpoint-sm) {
+    padding: $spacing-lg;
+
+    &__title {
+      font-size: $font-3xl;
+    }
+
+    &__input-row {
+      grid-template-columns: 1fr;
+    }
+  }
+}
