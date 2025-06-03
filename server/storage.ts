@@ -65,7 +65,7 @@ export class MemStorage implements IStorage {
   private initializePowerUps() {
     const defaultPowerUps = [
       { name: "Slow Down", cost: 50, duration: 10, effect: "slow" },
-      { name: "Freeze", cost: 75, duration: 5, effect: "freeze" },
+      { name: "Freeze", cost: 100, duration: 5, effect: "freeze" },
       { name: "Scramble", cost: 100, duration: 8, effect: "scramble" },
       { name: "Shield", cost: 150, duration: 15, effect: "shield" },
     ];

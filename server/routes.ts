@@ -638,10 +638,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const player = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, ws.playerId);
               const powerUpCosts = {
                 slow: 50,
-                freeze: 75,
+                freeze: 100,
                 scramble: 100,
                 shield: 150,
-                hack: 50
+                hack: 250
               };
               
               const cost = powerUpCosts[message.powerUpType as keyof typeof powerUpCosts];

@@ -481,7 +481,7 @@ export function ActiveGame({
                 
                 <Button
                   onClick={() => handlePowerUpClick("freeze")}
-                  disabled={currentPlayer.credits < 75}
+                  disabled={currentPlayer.credits < 100}
                   variant="outline"
                   className="w-full bg-slate-700 hover:bg-slate-600 border-slate-600 text-left justify-between"
                 >
@@ -494,7 +494,7 @@ export function ActiveGame({
                   </div>
                   <div className="flex items-center space-x-1">
                     <Coins className="w-3 h-3 text-yellow-500" />
-                    <span className="text-xs font-semibold">75</span>
+                    <span className="text-xs font-semibold">100</span>
                   </div>
                 </Button>
 
@@ -519,7 +519,7 @@ export function ActiveGame({
 
                 <Button
                   onClick={() => handlePowerUpClick("hack")}
-                  disabled={currentPlayer.credits < 50}
+                  disabled={currentPlayer.credits < 250}
                   variant="outline"
                   className="w-full bg-purple-700 hover:bg-purple-600 border-purple-600 text-left justify-between"
                 >
@@ -532,7 +532,7 @@ export function ActiveGame({
                   </div>
                   <div className="flex items-center space-x-1">
                     <Coins className="w-3 h-3 text-yellow-500" />
-                    <span className="text-xs font-semibold">50</span>
+                    <span className="text-xs font-semibold">250</span>
                   </div>
                 </Button>
               </div>
