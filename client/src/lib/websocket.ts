@@ -68,11 +68,38 @@ class WebSocketManager {
   }
 
   send(message: WebSocketMessage) {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(message));
-    } else {
-      console.error('WebSocket is not connected');
+    const sendMessage = () => {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify(message));
+        console.log('Sent WebSocket message:', message.type);
+        return true;
+      }
+      return false;
+    };
+
+    if (sendMessage()) {
+      return;
     }
+
+    // If not connected, wait for connection or reconnect
+    console.error('WebSocket is not connected, waiting for connection...');
+    
+    let attempts = 0;
+    const maxAttempts = 10;
+    const checkConnection = () => {
+      attempts++;
+      if (sendMessage()) {
+        return;
+      }
+      
+      if (attempts < maxAttempts) {
+        setTimeout(checkConnection, 200);
+      } else {
+        console.error('Failed to send message after multiple attempts');
+      }
+    };
+    
+    checkConnection();
   }
 
   on(messageType: string, handler: Function) {

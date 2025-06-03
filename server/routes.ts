@@ -268,6 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
   wss.on('connection', (ws: GameWebSocket) => {
+    console.log('New WebSocket connection established');
     ws.isAlive = true;
     
     ws.on('pong', () => {
