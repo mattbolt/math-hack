@@ -545,6 +545,7 @@ export function ActiveGame({
         onSelect={handlePlayerSelect}
         onCancel={() => setShowPlayerSelection(false)}
         title={selectedPowerUp === "hack" ? "Select Target to Hack" : "Select Target Player"}
+        activeEffects={activeEffects}
       />
     </div>
   );
