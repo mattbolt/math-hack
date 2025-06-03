@@ -7,9 +7,10 @@ interface GameHeaderProps {
   playerCredits: number;
   gameTimeRemaining?: number;
   onLeaveGame: () => void;
+  isGameActive?: boolean;
 }
 
-export function GameHeader({ gameCode, playerCredits, gameTimeRemaining, onLeaveGame }: GameHeaderProps) {
+export function GameHeader({ gameCode, playerCredits, gameTimeRemaining, onLeaveGame, isGameActive = false }: GameHeaderProps) {
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -50,18 +51,22 @@ export function GameHeader({ gameCode, playerCredits, gameTimeRemaining, onLeave
           </div>
           
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 bg-slate-800 px-3 py-1 rounded-full">
-              <Coins className="w-4 h-4 text-yellow-500" />
-              <span className="font-semibold">{playerCredits}</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onLeaveGame}
-              className="text-slate-400 hover:text-white"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
+            {isGameActive && (
+              <div className="flex items-center space-x-2 bg-slate-800 px-3 py-1 rounded-full">
+                <Coins className="w-4 h-4 text-yellow-500" />
+                <span className="font-semibold">{playerCredits}</span>
+              </div>
+            )}
+            {isGameActive && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onLeaveGame}
+                className="text-slate-400 hover:text-white"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
