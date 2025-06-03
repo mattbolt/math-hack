@@ -50,32 +50,32 @@ export function ActiveGame({
   const [slowDownActive, setSlowDownActive] = useState(false);
   const [previousQuestions, setPreviousQuestions] = useState<Array<{text: string, userAnswer: number, correct: boolean}>>([]);
   const [currentQuestionKey, setCurrentQuestionKey] = useState(0);
-  const [submittedAnswer, setSubmittedAnswer] = useState<number | null>(null);
+  const [lastSubmittedAnswer, setLastSubmittedAnswer] = useState<number | null>(null);
 
-  // Reset states when a new question arrives
+  // Track when new questions arrive to trigger animations
   useEffect(() => {
-    if (currentQuestion && !showAnswerFeedback.show) {
-      setSubmittedAnswer(null);
+    if (currentQuestion?.id) {
       setCurrentQuestionKey(prev => prev + 1);
-      // Add previous question to stack if we have a submitted answer
-      if (submittedAnswer !== null) {
-        setPreviousQuestions(prev => [
-          ...prev.slice(-2), // Keep only last 2 previous questions
-          {
-            text: `Previous question = ${submittedAnswer}`,
-            userAnswer: submittedAnswer,
-            correct: showAnswerFeedback.correct
-          }
-        ]);
-      }
     }
-  }, [currentQuestion?.id, showAnswerFeedback.show]);
+  }, [currentQuestion?.id]);
 
   const handleSubmitAnswer = () => {
     const numAnswer = parseInt(answer);
     if (!isNaN(numAnswer) && currentQuestion) {
-      // Store the submitted answer for transformation animation
-      setSubmittedAnswer(numAnswer);
+      // Store the submitted answer for transformation
+      setLastSubmittedAnswer(numAnswer);
+      
+      // Add to previous questions when answer feedback shows
+      setTimeout(() => {
+        setPreviousQuestions(prev => [
+          ...prev.slice(-1), // Keep only last previous question
+          {
+            text: currentQuestion.text,
+            userAnswer: numAnswer,
+            correct: numAnswer === currentQuestion.answer
+          }
+        ]);
+      }, 500);
       
       onSubmitAnswer(numAnswer);
       setAnswer("");
@@ -212,18 +212,18 @@ export function ActiveGame({
                   className={`absolute w-full transition-all duration-500 ease-in-out mt-16 ${
                     showAnswerFeedback.show 
                       ? `opacity-60 scale-75 transform translate-y-[-100px] ${showAnswerFeedback.correct ? 'text-green-400' : 'text-red-400'}` 
-                      : 'opacity-100 scale-100 transform translate-y-[10px] text-white'
+                      : 'opacity-100 scale-100 transform translate-y-0 text-white'
                   }`} 
                   style={{ 
                     zIndex: 20,
-                    animation: showAnswerFeedback.show ? 'none' : 'slideUpFromBelow 0.5s ease-out forwards'
+                    animation: !showAnswerFeedback.show && currentQuestionKey > 0 ? 'slideUpFromBelow 0.5s ease-out forwards' : 'none'
                   }}
                 >
                   <div className="text-4xl font-bold">
-                    {showAnswerFeedback.show && currentQuestion
+                    {showAnswerFeedback.show && currentQuestion && lastSubmittedAnswer !== null
                       ? (
                           <>
-                            {currentQuestion.text.replace('= ?', `= ${parseInt(answer) || 0}`)}
+                            {currentQuestion.text.replace('= ?', `= ${lastSubmittedAnswer}`)}
                             <span className="ml-2 text-5xl">
                               {showAnswerFeedback.correct ? '✓' : '✗'}
                             </span>
