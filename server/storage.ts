@@ -150,6 +150,8 @@ export class MemStorage implements IStorage {
       consecutiveCorrect: 0,
       consecutiveWrong: 0,
       overallConsecutiveCorrect: 0,
+      questionsSkipped: 0,
+      hackAttempts: 0,
       isReady: false,
       isBeingHacked: false,
       hackedBy: null,

@@ -40,6 +40,8 @@ export const players = pgTable("players", {
   isBeingHacked: boolean("is_being_hacked").notNull().default(false),
   hackedBy: text("hacked_by"),
   hackProgress: integer("hack_progress").notNull().default(0),
+  questionsSkipped: integer("questions_skipped").notNull().default(0),
+  hackAttempts: integer("hack_attempts").notNull().default(0),
   powerUpsActive: jsonb("power_ups_active").default([]),
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
 });

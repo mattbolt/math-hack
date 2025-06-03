@@ -10,7 +10,7 @@ interface GameResultsProps {
 }
 
 export function GameResults({ players, onPlayAgain, onBackToHome }: GameResultsProps) {
-  const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+  const sortedPlayers = [...players].sort((a, b) => b.credits - a.credits);
 
   const getRankColor = (rank: number) => {
     switch (rank) {
@@ -31,7 +31,7 @@ export function GameResults({ players, onPlayAgain, onBackToHome }: GameResultsP
       try {
         await navigator.share({
           title: 'MathHack Game Results',
-          text: `I just played MathHack! Check out the results:\n${sortedPlayers.map((p, i) => `${i + 1}. ${p.name}: ${p.score} points`).join('\n')}`,
+          text: `I just played MathHack! Check out the results:\n${sortedPlayers.map((p, i) => `${i + 1}. ${p.name}: ${p.credits} credits`).join('\n')}`,
           url: window.location.origin
         });
       } catch (error) {
@@ -82,11 +82,14 @@ export function GameResults({ players, onPlayAgain, onBackToHome }: GameResultsP
                         <div className="text-sm text-slate-400">
                           {player.correctAnswers} correct • {accuracy}% accuracy
                         </div>
+                        <div className="text-xs text-slate-500">
+                          {player.questionsSkipped || 0} skipped • {player.hackAttempts || 0} attacks
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-500">{player.score}</div>
-                      <div className="text-xs text-slate-400">points</div>
+                      <div className="text-2xl font-bold text-blue-500">{player.credits}</div>
+                      <div className="text-xs text-slate-400">credits</div>
                     </div>
                   </div>
                 );
