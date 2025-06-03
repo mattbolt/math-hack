@@ -29,6 +29,7 @@ export default function Game() {
   const [hackModeData, setHackModeData] = useState<{attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string} | null>(null);
   const [pendingAnswer, setPendingAnswer] = useState(false);
   const [slowCountdown, setSlowCountdown] = useState(0);
+  const [gameTimeRemaining, setGameTimeRemaining] = useState<number>(0);
 
   // Update effect timers every second
   useEffect(() => {
@@ -72,7 +73,17 @@ export default function Game() {
 
         const handleGameStarted = (message: any) => {
           setGamePhase('active');
-          if (message.session) setGameSession(message.session);
+          if (message.session) {
+            setGameSession(message.session);
+            // Calculate initial game time remaining
+            if (message.session.gameStartTime && message.session.gameDuration) {
+              const startTime = new Date(message.session.gameStartTime).getTime();
+              const duration = message.session.gameDuration * 60 * 1000; // Convert to milliseconds
+              const elapsed = Date.now() - startTime;
+              const remaining = Math.max(0, Math.ceil((duration - elapsed) / 1000));
+              setGameTimeRemaining(remaining);
+            }
+          }
         };
 
         const handleNewQuestion = (message: any) => {
@@ -252,6 +263,17 @@ export default function Game() {
       return () => clearTimeout(timer);
     }
   }, [gamePhase, timeRemaining]);
+
+  // Game timer countdown
+  useEffect(() => {
+    if (gamePhase === 'active' && gameTimeRemaining > 0) {
+      const timer = setTimeout(() => {
+        setGameTimeRemaining(prev => prev - 1);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [gamePhase, gameTimeRemaining]);
 
   const createGameMutation = useMutation({
     mutationFn: async ({ hostName, maxPlayers, gameDuration }: { hostName: string; maxPlayers: number; gameDuration: number }) => {

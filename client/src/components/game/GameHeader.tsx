@@ -1,14 +1,21 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calculator, Coins, LogOut } from "lucide-react";
+import { Calculator, Coins, LogOut, Clock } from "lucide-react";
 
 interface GameHeaderProps {
   gameCode?: string;
   playerCredits: number;
+  gameTimeRemaining?: number;
   onLeaveGame: () => void;
 }
 
-export function GameHeader({ gameCode, playerCredits, onLeaveGame }: GameHeaderProps) {
+export function GameHeader({ gameCode, playerCredits, gameTimeRemaining, onLeaveGame }: GameHeaderProps) {
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   return (
     <Card className="bg-slate-900/50 backdrop-blur-sm border-slate-700 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
