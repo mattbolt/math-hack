@@ -139,14 +139,20 @@ export default function Game() {
       setPlayers([data.player]);
       setGamePhase('waiting');
       
-      // Ensure WebSocket is connected before joining session
-      setTimeout(() => {
+      // Host must join the WebSocket session
+      const joinHostSession = () => {
+        console.log('HOST attempting to join WebSocket session:', data.session.id, 'playerId:', playerId);
         wsManager.send({
           type: 'joinSession',
           sessionId: data.session.id,
           playerId
         });
-      }, 500);
+      };
+
+      // Multiple attempts to ensure connection
+      setTimeout(joinHostSession, 100);
+      setTimeout(joinHostSession, 1000);
+      setTimeout(joinHostSession, 2500);
     },
     onError: () => {
       toast({
