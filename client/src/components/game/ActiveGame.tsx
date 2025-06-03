@@ -55,6 +55,7 @@ export function ActiveGame({
   const [slowDownActive, setSlowDownActive] = useState(false);
   const [questionStack, setQuestionStack] = useState<Array<{id: string, text: string, userAnswer?: number, correct?: boolean, state: 'current' | 'answered' | 'previous'}>>([]);
   const [animationKey, setAnimationKey] = useState(0);
+  const [slowedButton, setSlowedButton] = useState<number | null>(null);
 
   // Handle new questions and manage stack
   useEffect(() => {
@@ -103,19 +104,45 @@ export function ActiveGame({
       effect === 'freeze' && activeEffects[effect] > Date.now()
     );
     
+    // Check if player is slowed
+    const isSlowed = Object.keys(activeEffects).some(effect => 
+      effect === 'slow' && activeEffects[effect] > Date.now()
+    );
+    
     if (!pendingAnswer && currentQuestion && !isFrozen) {
       setAnswer(option.toString());
       
-      // Update current question in stack to "answered" state
-      setQuestionStack(prev => prev.map(q => 
-        q.id === currentQuestion.id 
-          ? { ...q, userAnswer: option, correct: option === currentQuestion.answer, state: 'answered' as const }
-          : q
-      ));
-      
-      // Automatically submit the answer
-      onSubmitAnswer(option);
-      setAnswer("");
+      if (isSlowed) {
+        // Show visual loading effect on the clicked button
+        setSlowedButton(option);
+        
+        // Delay before submitting answer
+        setTimeout(() => {
+          // Update current question in stack to "answered" state
+          setQuestionStack(prev => prev.map(q => 
+            q.id === currentQuestion.id 
+              ? { ...q, userAnswer: option, correct: option === currentQuestion.answer, state: 'answered' as const }
+              : q
+          ));
+          
+          // Submit the answer after delay
+          onSubmitAnswer(option);
+          setAnswer("");
+          setSlowedButton(null);
+        }, 2000); // 2 second delay for slow effect
+      } else {
+        // Normal speed - immediate submission
+        // Update current question in stack to "answered" state
+        setQuestionStack(prev => prev.map(q => 
+          q.id === currentQuestion.id 
+            ? { ...q, userAnswer: option, correct: option === currentQuestion.answer, state: 'answered' as const }
+            : q
+        ));
+        
+        // Automatically submit the answer
+        onSubmitAnswer(option);
+        setAnswer("");
+      }
     }
   };
 
@@ -337,18 +364,28 @@ export function ActiveGame({
                         const isFrozen = Object.keys(activeEffects).some(effect => 
                           effect === 'freeze' && activeEffects[effect] > Date.now()
                         );
+                        const isButtonSlowed = slowedButton === option;
+                        const isAnyButtonSlowed = slowedButton !== null;
+                        
                         return (
                           <Button
                             key={option}
                             onClick={() => handleOptionSelect(option)}
-                            disabled={pendingAnswer || isFrozen}
-                            className={`p-6 text-2xl font-bold transition-all transform hover:scale-105 ${
-                              answer === option.toString() 
+                            disabled={pendingAnswer || isFrozen || isAnyButtonSlowed}
+                            className={`p-6 text-2xl font-bold transition-all transform hover:scale-105 relative ${
+                              answer === option.toString() || isButtonSlowed
                                 ? 'bg-blue-500 hover:bg-blue-600 border-2 border-blue-400' 
                                 : 'bg-slate-600 hover:bg-slate-500 border-2 border-slate-500'
-                            } ${(pendingAnswer || isFrozen) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            } ${(pendingAnswer || isFrozen || isAnyButtonSlowed) ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
-                            {option}
+                            {isButtonSlowed ? (
+                              <div className="flex items-center space-x-2">
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                <span>Processing...</span>
+                              </div>
+                            ) : (
+                              option
+                            )}
                           </Button>
                         );
                       })}
