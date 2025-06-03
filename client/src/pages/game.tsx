@@ -457,6 +457,7 @@ export default function Game() {
       <GameHeader
         gameCode={gameSession?.code}
         playerCredits={currentPlayer?.credits || 0}
+        gameTimeRemaining={gamePhase === 'active' ? gameTimeRemaining : undefined}
         onLeaveGame={handleLeaveGame}
       />
 

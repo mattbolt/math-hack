@@ -37,6 +37,16 @@ export function GameHeader({ gameCode, playerCredits, gameTimeRemaining, onLeave
                 </span>
               </div>
             )}
+            {gameTimeRemaining !== undefined && gameTimeRemaining > 0 && (
+              <div className="hidden sm:block">
+                <div className="flex items-center space-x-2 bg-slate-800 px-3 py-1 rounded-full">
+                  <Clock className="w-4 h-4 text-orange-500" />
+                  <span className={`font-semibold ${gameTimeRemaining <= 60 ? 'text-red-500' : 'text-white'}`}>
+                    {formatTime(gameTimeRemaining)}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
           
           <div className="flex items-center space-x-4">
