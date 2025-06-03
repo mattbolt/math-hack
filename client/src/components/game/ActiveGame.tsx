@@ -44,7 +44,8 @@ export function ActiveGame({
   pendingAnswer,
   hackModeActive,
   hackModeData,
-  slowCountdown
+  slowCountdown,
+  gameLog = []
 }: ActiveGameProps) {
   const [answer, setAnswer] = useState("");
   const [showPlayerSelection, setShowPlayerSelection] = useState(false);
@@ -543,6 +544,9 @@ export function ActiveGame({
               </div>
             </CardContent>
           </Card>
+
+          {/* Game Log */}
+          <GameLog gameLog={gameLog} />
         </div>
       </div>
 

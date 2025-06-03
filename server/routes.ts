@@ -17,7 +17,7 @@ class GameManager {
   public hackModes: Map<string, {sessionId: number, hackerId: string, targetId: string, attackerProgress: number, defenderProgress: number}> = new Map();
   public powerUpEffects: Map<string, {playerId: string, effect: string, endTime: number}> = new Map();
 
-  async logGameEvent(sessionId: number, entry: Omit<GameLogEntry, 'id' | 'timestamp'>) {
+  async logGameEvent(sessionId: number, entry: Omit<GameLogEntry, 'id' | 'timestamp'>, wss?: WebSocketServer) {
     const session = await storage.getGameSession(sessionId);
     if (!session) return;
 
@@ -30,6 +30,14 @@ class GameManager {
 
     gameLog.push(logEntry);
     await storage.updateGameSession(sessionId, { gameLog });
+    
+    // Broadcast updated game log to all clients
+    if (wss) {
+      this.broadcastToSession(sessionId, wss, {
+        type: 'gameLogUpdated',
+        gameLog: gameLog.slice(-50) // Send last 50 entries to avoid overwhelming clients
+      });
+    }
   }
 
   generateGameCode(): string {
@@ -465,7 +473,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     playerName: player.name,
                     details: `Earned ${creditReward} credits for correct answer`,
                     creditChange: creditReward
-                  });
+                  }, wss);
                   
                   // Adjust difficulty and reset current level consecutive count if difficulty changes
                   const newDifficulty = gameManager.adjustDifficulty({
@@ -609,7 +617,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       targetName: targetPlayer?.name,
                       details: `${player.name} started hacking ${targetPlayer?.name}`,
                       creditChange: -cost
-                    });
+                    }, wss);
 
                     gameManager.broadcastToSession(ws.sessionId, wss, {
                       type: 'hackStarted',
@@ -644,7 +652,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     playerName: player.name,
                     details: `${player.name} used Shield (self-protection)`,
                     creditChange: -cost
-                  });
+                  }, wss);
                 } else {
                   // Check if target has shield protection
                   const shieldEffect = Array.from(gameManager.powerUpEffects.values()).find(effect => 
@@ -673,7 +681,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       targetName: targetPlayer?.name,
                       details: `${player.name} used ${message.powerUpType.charAt(0).toUpperCase() + message.powerUpType.slice(1)} on ${targetPlayer?.name}`,
                       creditChange: -cost
-                    });
+                    }, wss);
 
                     gameManager.broadcastToSession(ws.sessionId, wss, {
                       type: 'powerUpUsed',
@@ -716,7 +724,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   playerName: player.name,
                   details: `Skipped question (-5 credits)`,
                   creditChange: -5
-                });
+                }, wss);
 
                 const updatedPlayer = await storage.updatePlayer(player.id, updates);
                 
