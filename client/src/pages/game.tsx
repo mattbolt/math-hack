@@ -223,6 +223,17 @@ export default function Game() {
           );
         };
 
+        const handleGameEnded = (message: any) => {
+          setGamePhase('results');
+          setPlayers(message.players || []);
+          
+          toast({
+            title: "Game Over!",
+            description: message.reason === 'timeUp' ? "Time's up! Check the final scores." : "Game has ended.",
+            variant: "default",
+          });
+        };
+
         wsManager.on('gameState', handleGameState);
         wsManager.on('playerJoined', handlePlayerJoined);
         wsManager.on('gameStarted', handleGameStarted);
@@ -235,6 +246,7 @@ export default function Game() {
         wsManager.on('questionSkipped', handleQuestionSkipped);
         wsManager.on('gameLogUpdated', handleGameLogUpdated);
         wsManager.on('playerUpdated', handlePlayerUpdated);
+        wsManager.on('gameEnded', handleGameEnded);
 
         return () => {
           wsManager.off('gameState', handleGameState);
@@ -249,6 +261,7 @@ export default function Game() {
           wsManager.off('questionSkipped', handleQuestionSkipped);
           wsManager.off('gameLogUpdated', handleGameLogUpdated);
           wsManager.off('playerUpdated', handlePlayerUpdated);
+          wsManager.off('gameEnded', handleGameEnded);
         };
 
       } catch (error) {

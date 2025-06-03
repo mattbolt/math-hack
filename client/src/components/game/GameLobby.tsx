@@ -15,7 +15,7 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
   const [joinName, setJoinName] = useState("");
   const [gameCode, setGameCode] = useState("");
   const [maxPlayers, setMaxPlayers] = useState("4");
-  const [gameDuration, setGameDuration] = useState("15");
+  const [gameDuration, setGameDuration] = useState("5");
 
   const handleHostGame = () => {
     if (hostName.trim()) {
