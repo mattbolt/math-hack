@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Player } from "@shared/schema";
-import { ArrowRight, Coins, User } from "lucide-react";
+import { ArrowRight, Coins, User, Shield, Snowflake, Zap, Shuffle } from "lucide-react";
 
 interface PlayerSelectionModalProps {
   isOpen: boolean;
@@ -9,6 +9,7 @@ interface PlayerSelectionModalProps {
   onSelect: (playerId: string) => void;
   onCancel: () => void;
   title: string;
+  activeEffects?: {[playerId: string]: {[effect: string]: number}};
 }
 
 export function PlayerSelectionModal({ 
@@ -16,7 +17,8 @@ export function PlayerSelectionModal({
   players, 
   onSelect, 
   onCancel, 
-  title 
+  title,
+  activeEffects = {}
 }: PlayerSelectionModalProps) {
   const getPlayerColor = (index: number) => {
     const colors = [
@@ -29,6 +31,21 @@ export function PlayerSelectionModal({
       "from-cyan-500 to-cyan-600"
     ];
     return colors[index % colors.length];
+  };
+
+  const getPowerUpIcon = (effect: string) => {
+    switch (effect) {
+      case 'shield':
+        return <Shield className="w-4 h-4 text-blue-400" />;
+      case 'slow':
+        return <Snowflake className="w-4 h-4 text-blue-300" />;
+      case 'freeze':
+        return <Zap className="w-4 h-4 text-yellow-400" />;
+      case 'scramble':
+        return <Shuffle className="w-4 h-4 text-purple-400" />;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -56,6 +73,16 @@ export function PlayerSelectionModal({
                     <Coins className="w-3 h-3 text-yellow-500" />
                     <span>{player.credits} credits</span>
                   </div>
+                  {activeEffects[player.playerId] && Object.keys(activeEffects[player.playerId]).length > 0 && (
+                    <div className="flex items-center space-x-1 mt-1">
+                      <span className="text-xs text-slate-500">Active:</span>
+                      {Object.keys(activeEffects[player.playerId]).map((effect) => (
+                        <div key={effect} className="flex items-center">
+                          {getPowerUpIcon(effect)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-slate-400" />

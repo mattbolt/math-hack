@@ -161,6 +161,23 @@ export function ActiveGame({
 
   const otherPlayers = players.filter(p => p.playerId !== currentPlayer.playerId);
 
+  // Build active effects data for player selection modal
+  const getActiveEffects = () => {
+    const effects: {[playerId: string]: {[effect: string]: number}} = {};
+    
+    players.forEach(player => {
+      if (player.powerUpsActive && player.powerUpsActive.length > 0) {
+        effects[player.playerId] = {};
+        player.powerUpsActive.forEach(powerUp => {
+          // Extract effect type from powerUp string (assuming format like "slow", "freeze", etc.)
+          effects[player.playerId][powerUp] = 1; // Just marking as active
+        });
+      }
+    });
+    
+    return effects;
+  };
+
   const calculateQuestionsUntilNext = (player: Player): number => {
     // At max difficulty (9), no progression possible
     if (player.difficultyLevel >= 9) return 0;
@@ -532,6 +549,7 @@ export function ActiveGame({
         onSelect={handlePlayerSelect}
         onCancel={() => setShowPlayerSelection(false)}
         title={selectedPowerUp === "hack" ? "Select Target to Hack" : "Select Target Player"}
+        activeEffects={getActiveEffects()}
       />
     </div>
   );
