@@ -514,7 +514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                           if (hackData.hackerId === ws.playerId) {
                             updates.credits = player.credits + stolenCredits;
                           }
-                          await storage.updatePlayer(targetPlayer.id, {
+                          const updatedTargetPlayer = await storage.updatePlayer(targetPlayer.id, {
                             credits: Math.max(0, targetPlayer.credits - stolenCredits)
                           });
                           
@@ -535,6 +535,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                             targetId: hackData.targetId,
                             success: true,
                             creditsStolen: stolenCredits
+                          });
+                          
+                          // Broadcast updated target player credits
+                          gameManager.broadcastToSession(ws.sessionId, wss, {
+                            type: 'playerUpdated',
+                            player: updatedTargetPlayer
                           });
                         }
                         gameManager.hackModes.delete(key);
@@ -728,8 +734,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                 }
                 
-                await storage.updatePlayer(player.id, {
+                const updatedPlayer = await storage.updatePlayer(player.id, {
                   credits: player.credits - cost
+                });
+                
+                // Broadcast updated player data to all clients
+                gameManager.broadcastToSession(ws.sessionId, wss, {
+                  type: 'playerUpdated',
+                  player: updatedPlayer
                 });
               }
             }

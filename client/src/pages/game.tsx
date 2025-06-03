@@ -216,6 +216,14 @@ export default function Game() {
           setGameLog(message.gameLog || []);
         };
 
+        const handlePlayerUpdated = (message: any) => {
+          setPlayers(prevPlayers => 
+            prevPlayers.map(p => 
+              p.playerId === message.player.playerId ? message.player : p
+            )
+          );
+        };
+
         wsManager.on('gameState', handleGameState);
         wsManager.on('playerJoined', handlePlayerJoined);
         wsManager.on('gameStarted', handleGameStarted);
@@ -227,6 +235,7 @@ export default function Game() {
         wsManager.on('powerUpUsed', handlePowerUpUsed);
         wsManager.on('questionSkipped', handleQuestionSkipped);
         wsManager.on('gameLogUpdated', handleGameLogUpdated);
+        wsManager.on('playerUpdated', handlePlayerUpdated);
 
         return () => {
           wsManager.off('gameState', handleGameState);
@@ -240,6 +249,7 @@ export default function Game() {
           wsManager.off('powerUpUsed', handlePowerUpUsed);
           wsManager.off('questionSkipped', handleQuestionSkipped);
           wsManager.off('gameLogUpdated', handleGameLogUpdated);
+          wsManager.off('playerUpdated', handlePlayerUpdated);
         };
 
       } catch (error) {
