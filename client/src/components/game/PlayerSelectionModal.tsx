@@ -102,7 +102,7 @@ export function PlayerSelectionModal({
                 </div>
                 <ArrowRight className="w-4 h-4 text-slate-400" />
               </Button>
-            );
+            )
           })}
         </div>
         
