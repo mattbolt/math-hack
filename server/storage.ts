@@ -144,7 +144,6 @@ export class MemStorage implements IStorage {
       name: insertPlayer.name,
       isHost: insertPlayer.isHost,
       credits: 0,
-      score: 0,
       correctAnswers: 0,
       wrongAnswers: 0,
       difficultyLevel: 1,

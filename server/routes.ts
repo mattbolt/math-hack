@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertGameSessionSchema, insertPlayerSchema, type Question, type GameState, type PowerUpEffect } from "@shared/schema";
+import { insertGameSessionSchema, insertPlayerSchema, type Question, type GameState, type PowerUpEffect, type GameLogEntry } from "@shared/schema";
 import { z } from "zod";
 
 interface GameWebSocket extends WebSocket {
@@ -16,6 +16,21 @@ class GameManager {
   private questionTimers: Map<number, NodeJS.Timeout> = new Map();
   public hackModes: Map<string, {sessionId: number, hackerId: string, targetId: string, attackerProgress: number, defenderProgress: number}> = new Map();
   public powerUpEffects: Map<string, {playerId: string, effect: string, endTime: number}> = new Map();
+
+  async logGameEvent(sessionId: number, entry: Omit<GameLogEntry, 'id' | 'timestamp'>) {
+    const session = await storage.getGameSession(sessionId);
+    if (!session) return;
+
+    const gameLog = Array.isArray(session.gameLog) ? session.gameLog : [];
+    const logEntry: GameLogEntry = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      ...entry
+    };
+
+    gameLog.push(logEntry);
+    await storage.updateGameSession(sessionId, { gameLog });
+  }
 
   generateGameCode(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -228,7 +243,7 @@ class GameManager {
     
     // Get final player rankings
     const players = await storage.getPlayersBySession(sessionId);
-    const sortedPlayers = players.sort((a, b) => b.score - a.score);
+    const sortedPlayers = players.sort((a, b) => b.credits - a.credits);
     
     // Clear timers
     const sessionTimer = this.sessionTimers.get(sessionId);
@@ -442,7 +457,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (isCorrect) {
                   const creditReward = 10 + (player.difficultyLevel * 5);
                   updates.credits = player.credits + creditReward;
-                  updates.score = player.score + (creditReward * player.difficultyLevel);
+                  
+                  // Log credit reward
+                  await gameManager.logGameEvent(ws.sessionId, {
+                    type: 'credit_change',
+                    playerId: ws.playerId,
+                    playerName: player.name,
+                    details: `Earned ${creditReward} credits for correct answer`,
+                    creditChange: creditReward
+                  });
                   
                   // Adjust difficulty and reset current level consecutive count if difficulty changes
                   const newDifficulty = gameManager.adjustDifficulty({
