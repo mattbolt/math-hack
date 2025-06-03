@@ -1,0 +1,28 @@
+// Main SCSS file with BEM methodology
+// Variables
+@import './variables';
+
+// Base styles
+@import './base';
+
+// Layout
+@import './layout';
+
+// Components
+@import './components/button';
+@import './components/card';
+@import './components/input';
+@import './components/select';
+@import './components/modal';
+@import './components/toast';
+@import './components/badge';
+@import './components/progress';
+
+// Pages
+@import './pages/game-lobby';
+@import './pages/game-waiting-room';
+@import './pages/active-game';
+@import './pages/game-results';
+
+// Utilities
+@import './utilities';

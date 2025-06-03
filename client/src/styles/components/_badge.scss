@@ -1,0 +1,133 @@
+// Badge component using BEM methodology
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-full;
+  font-size: $font-xs;
+  font-weight: $font-medium;
+  line-height: 1;
+  transition: all $transition-fast;
+
+  // Default variant
+  background-color: $color-bg-tertiary;
+  color: $color-text-primary;
+
+  // Primary variant
+  &--primary {
+    background-color: $color-primary;
+    color: white;
+  }
+
+  // Secondary variant
+  &--secondary {
+    background-color: $color-secondary;
+    color: white;
+  }
+
+  // Success variant
+  &--success {
+    background-color: $color-success;
+    color: white;
+  }
+
+  // Warning variant
+  &--warning {
+    background-color: $color-warning;
+    color: white;
+  }
+
+  // Error variant
+  &--error {
+    background-color: $color-error;
+    color: white;
+  }
+
+  // Outline variants
+  &--outline {
+    background-color: transparent;
+    border: 1px solid $color-bg-tertiary;
+    color: $color-text-primary;
+  }
+
+  &--outline-primary {
+    background-color: transparent;
+    border: 1px solid $color-primary;
+    color: $color-primary;
+  }
+
+  &--outline-secondary {
+    background-color: transparent;
+    border: 1px solid $color-secondary;
+    color: $color-secondary;
+  }
+
+  // Size variants
+  &--sm {
+    padding: 2px $spacing-xs;
+    font-size: 0.625rem;
+  }
+
+  &--lg {
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-sm;
+  }
+
+  // Game-specific badges
+  &--power-up {
+    background: linear-gradient(135deg, $color-accent, darken($color-accent, 10%));
+    color: white;
+    animation: badgePulse 2s ease-in-out infinite;
+  }
+
+  &--difficulty {
+    background: linear-gradient(135deg, $color-info, darken($color-info, 10%));
+    color: white;
+  }
+
+  &--credits {
+    background: linear-gradient(135deg, $color-warning, darken($color-warning, 10%));
+    color: white;
+  }
+
+  &--hack {
+    background: linear-gradient(135deg, $color-scramble, darken($color-scramble, 10%));
+    color: white;
+    animation: hackGlow 1.5s ease-in-out infinite alternate;
+  }
+
+  // Status badges
+  &--online {
+    background-color: $color-success;
+    color: white;
+  }
+
+  &--offline {
+    background-color: $color-text-muted;
+    color: white;
+  }
+
+  &--pending {
+    background-color: $color-warning;
+    color: white;
+  }
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes hackGlow {
+  0% {
+    box-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.8), 0 0 30px rgba(139, 92, 246, 0.6);
+  }
+}

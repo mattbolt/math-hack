@@ -1,0 +1,159 @@
+// Toast component using BEM methodology
+.toast {
+  position: fixed;
+  z-index: $z-toast;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  background: $color-bg-secondary;
+  border: 1px solid $color-bg-tertiary;
+  border-radius: $radius-md;
+  box-shadow: $shadow-lg;
+  backdrop-filter: blur(10px);
+  max-width: 24rem;
+  animation: toastSlideIn $transition-base ease-out;
+
+  &__icon {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  &__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__title {
+    font-size: $font-sm;
+    font-weight: $font-medium;
+    color: $color-text-primary;
+  }
+
+  &__description {
+    font-size: $font-xs;
+    color: $color-text-secondary;
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    color: $color-text-muted;
+    cursor: pointer;
+    padding: $spacing-xs;
+    border-radius: $radius-sm;
+    transition: all $transition-fast;
+
+    &:hover {
+      color: $color-text-primary;
+      background-color: $color-bg-tertiary;
+    }
+  }
+
+  // Variants
+  &--success {
+    border-color: $color-success;
+    .toast__icon {
+      color: $color-success;
+    }
+  }
+
+  &--error {
+    border-color: $color-error;
+    .toast__icon {
+      color: $color-error;
+    }
+  }
+
+  &--warning {
+    border-color: $color-warning;
+    .toast__icon {
+      color: $color-warning;
+    }
+  }
+
+  &--info {
+    border-color: $color-info;
+    .toast__icon {
+      color: $color-info;
+    }
+  }
+
+  // Positions
+  &--top-right {
+    top: $spacing-lg;
+    right: $spacing-lg;
+  }
+
+  &--top-left {
+    top: $spacing-lg;
+    left: $spacing-lg;
+  }
+
+  &--bottom-right {
+    bottom: $spacing-lg;
+    right: $spacing-lg;
+  }
+
+  &--bottom-left {
+    bottom: $spacing-lg;
+    left: $spacing-lg;
+  }
+
+  &--top-center {
+    top: $spacing-lg;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  &--bottom-center {
+    bottom: $spacing-lg;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  // Animations
+  &--exiting {
+    animation: toastSlideOut $transition-base ease-in;
+  }
+}
+
+.toast-container {
+  position: fixed;
+  z-index: $z-toast;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  max-height: 100vh;
+  overflow: hidden;
+  pointer-events: none;
+
+  .toast {
+    pointer-events: auto;
+  }
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}

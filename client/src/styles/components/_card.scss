@@ -1,0 +1,106 @@
+// Card component using BEM methodology
+.card {
+  background: $color-bg-card;
+  border: 1px solid $color-bg-tertiary;
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  box-shadow: $shadow-md;
+  backdrop-filter: blur(10px);
+  transition: all $transition-base;
+
+  &:hover {
+    box-shadow: $shadow-lg;
+    transform: translateY(-2px);
+  }
+
+  &__header {
+    margin-bottom: $spacing-lg;
+    padding-bottom: $spacing-lg;
+    border-bottom: 1px solid $color-bg-tertiary;
+  }
+
+  &__title {
+    font-size: $font-xl;
+    font-weight: $font-semibold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__description {
+    color: $color-text-secondary;
+    font-size: $font-sm;
+  }
+
+  &__content {
+    color: $color-text-primary;
+  }
+
+  &__footer {
+    margin-top: $spacing-lg;
+    padding-top: $spacing-lg;
+    border-top: 1px solid $color-bg-tertiary;
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-md;
+  }
+
+  // Variants
+  &--primary {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.1);
+  }
+
+  &--success {
+    border-color: $color-success;
+    box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.1);
+  }
+
+  &--warning {
+    border-color: $color-warning;
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.1);
+  }
+
+  &--error {
+    border-color: $color-error;
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.1);
+  }
+
+  // Size variants
+  &--sm {
+    padding: $spacing-md;
+  }
+
+  &--lg {
+    padding: $spacing-2xl;
+  }
+
+  // Game-specific cards
+  &--game-status {
+    background: linear-gradient(135deg, $color-bg-card, rgba(59, 130, 246, 0.1));
+    border: 2px solid $color-primary;
+  }
+
+  &--player-card {
+    position: relative;
+    transition: all $transition-base;
+
+    &:hover {
+      border-color: $color-primary;
+    }
+
+    &--active {
+      border-color: $color-secondary;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    }
+
+    &--frozen {
+      background: linear-gradient(135deg, $color-bg-card, rgba(14, 165, 233, 0.1));
+      border-color: $color-freeze;
+    }
+
+    &--slowed {
+      background: linear-gradient(135deg, $color-bg-card, rgba(249, 115, 22, 0.1));
+      border-color: $color-slow;
+    }
+  }
+}
