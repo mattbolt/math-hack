@@ -163,27 +163,41 @@ export function ActiveGame({
                   {currentQuestion?.text || "Waiting for question..."}
                 </div>
                 
-                <div className="space-y-4">
+                <div className="space-y-4 relative">
+                  {/* Answer Feedback Overlay */}
+                  {showAnswerFeedback.show && (
+                    <div className="absolute inset-0 flex items-center justify-center z-50 bg-slate-800/90 rounded-lg">
+                      <div className={`text-8xl font-bold animate-bounce ${
+                        showAnswerFeedback.correct ? 'text-green-500' : 'text-red-500'
+                      }`}>
+                        {showAnswerFeedback.correct ? '✓' : '✗'}
+                      </div>
+                    </div>
+                  )}
+                  
                   <Input
                     type="number"
                     placeholder="Your answer..."
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className="w-full px-6 py-4 bg-slate-700 border-2 border-slate-600 focus:border-blue-500 text-center text-2xl font-semibold"
+                    disabled={pendingAnswer}
+                    className={`w-full px-6 py-4 bg-slate-700 border-2 border-slate-600 focus:border-blue-500 text-center text-2xl font-semibold ${
+                      pendingAnswer ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   />
                   
                   <div className="flex space-x-3">
                     <Button 
                       onClick={handleSubmitAnswer}
-                      disabled={!answer.trim() || !currentQuestion}
-                      className="flex-1 bg-emerald-500 hover:bg-emerald-600 transition-colors transform hover:scale-105"
+                      disabled={!answer.trim() || !currentQuestion || pendingAnswer}
+                      className="flex-1 bg-emerald-500 hover:bg-emerald-600 transition-colors transform hover:scale-105 disabled:opacity-50"
                     >
-                      Submit Answer
+                      {pendingAnswer ? 'Processing...' : 'Submit Answer'}
                     </Button>
                     <Button 
                       onClick={onSkipQuestion}
-                      disabled={currentPlayer.credits < 5}
+                      disabled={currentPlayer.credits < 5 || pendingAnswer}
                       variant="outline"
                       className="px-6 bg-slate-600 hover:bg-slate-500 border-slate-500"
                     >

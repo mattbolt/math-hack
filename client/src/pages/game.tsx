@@ -28,6 +28,21 @@ export default function Game() {
   const [hackModeActive, setHackModeActive] = useState(false);
   const [hackModeData, setHackModeData] = useState<{attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string} | null>(null);
   const [pendingAnswer, setPendingAnswer] = useState(false);
+
+  // Update effect timers every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveEffects(prev => {
+        const now = Date.now();
+        const filtered = Object.fromEntries(
+          Object.entries(prev).filter(([_, endTime]) => endTime > now)
+        );
+        return filtered;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
   
   const { toast } = useToast();
 
@@ -84,27 +99,52 @@ export default function Game() {
         };
 
         const handleHackStarted = (message: any) => {
-          if (message.targetId === playerId) {
-            setIsBeingHacked(true);
-            setPlayers(prevPlayers => {
-              const hacker = prevPlayers.find(p => p.playerId === message.hackerId);
-              setHackerName(hacker?.name || "Unknown");
-              return prevPlayers;
+          if (message.targetId === playerId || message.hackerId === playerId) {
+            setHackModeActive(true);
+            setHackModeData({
+              attackerProgress: 0,
+              defenderProgress: 0,
+              isAttacker: message.hackerId === playerId,
+              opponentName: message.hackerId === playerId ? message.targetName : message.hackerName
             });
-            setHackProgress(0);
+            
+            toast({
+              title: message.hackerId === playerId ? "Hack Mode Activated!" : "You're Being Hacked!",
+              description: message.hackerId === playerId 
+                ? `You're hacking ${message.targetName}!` 
+                : `${message.hackerName} is attempting to hack you!`,
+              variant: message.hackerId === playerId ? "default" : "destructive",
+            });
+          }
+        };
+
+        const handleHackProgress = (message: any) => {
+          if (hackModeActive && hackModeData) {
+            setHackModeData(prev => prev ? {
+              ...prev,
+              attackerProgress: message.attackerProgress,
+              defenderProgress: message.defenderProgress
+            } : null);
           }
         };
 
         const handleHackCompleted = (message: any) => {
-          if (message.targetId === playerId) {
-            setIsBeingHacked(false);
-            setHackerName("");
-            setHackProgress(0);
+          if (message.hackerId === playerId || message.targetId === playerId) {
             toast({
-              title: "Hack Successful!",
-              description: `${message.stolenCredits} credits were stolen from you!`,
-              variant: "destructive",
+              title: "Hack Complete!",
+              description: message.success 
+                ? (message.hackerId === playerId ? `You stole ${message.creditsStolen} credits!` : `You lost ${message.creditsStolen} credits!`)
+                : (message.hackerId === playerId ? "Hack failed! Target defended successfully." : "You successfully defended the hack!"),
+              variant: message.success === (message.hackerId === playerId) ? "default" : "destructive",
             });
+
+            setTimeout(() => {
+              setHackModeActive(false);
+              setHackModeData(null);
+              setIsBeingHacked(false);
+              setHackerName("");
+              setHackProgress(0);
+            }, 5000);
           }
         };
 
@@ -146,6 +186,7 @@ export default function Game() {
         wsManager.on('newQuestion', handleNewQuestion);
         wsManager.on('answerSubmitted', handleAnswerSubmitted);
         wsManager.on('hackStarted', handleHackStarted);
+        wsManager.on('hackProgress', handleHackProgress);
         wsManager.on('hackCompleted', handleHackCompleted);
         wsManager.on('powerUpUsed', handlePowerUpUsed);
 
@@ -156,6 +197,7 @@ export default function Game() {
           wsManager.off('newQuestion', handleNewQuestion);
           wsManager.off('answerSubmitted', handleAnswerSubmitted);
           wsManager.off('hackStarted', handleHackStarted);
+          wsManager.off('hackProgress', handleHackProgress);
           wsManager.off('hackCompleted', handleHackCompleted);
           wsManager.off('powerUpUsed', handlePowerUpUsed);
         };
@@ -396,6 +438,8 @@ export default function Game() {
               onSkipQuestion={handleSkipQuestion}
               showAnswerFeedback={showAnswerFeedback}
               pendingAnswer={pendingAnswer}
+              hackModeActive={hackModeActive}
+              hackModeData={hackModeData}
             />
             
             {/* Active Effects Indicator */}
