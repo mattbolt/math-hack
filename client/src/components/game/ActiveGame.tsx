@@ -116,23 +116,33 @@ export function ActiveGame({
         // Show visual loading effect on the clicked button
         setSlowedButton(option);
         
-        // Clear spinner after a short visual delay but submit immediately
+        // Delay before submitting answer when slowed
         setTimeout(() => {
+          // Update current question in stack to "answered" state
+          setQuestionStack(prev => prev.map(q => 
+            q.id === currentQuestion.id 
+              ? { ...q, userAnswer: option, correct: option === currentQuestion.answer, state: 'answered' as const }
+              : q
+          ));
+          
+          // Submit the answer after delay
+          onSubmitAnswer(option);
+          setAnswer("");
           setSlowedButton(null);
-        }, 1500);
+        }, 2000);
+      } else {
+        // Normal speed - immediate submission
+        // Update current question in stack to "answered" state
+        setQuestionStack(prev => prev.map(q => 
+          q.id === currentQuestion.id 
+            ? { ...q, userAnswer: option, correct: option === currentQuestion.answer, state: 'answered' as const }
+            : q
+        ));
+        
+        // Automatically submit the answer
+        onSubmitAnswer(option);
+        setAnswer("");
       }
-      
-      // Always submit immediately regardless of slow effect
-      // Update current question in stack to "answered" state
-      setQuestionStack(prev => prev.map(q => 
-        q.id === currentQuestion.id 
-          ? { ...q, userAnswer: option, correct: option === currentQuestion.answer, state: 'answered' as const }
-          : q
-      ));
-      
-      // Automatically submit the answer
-      onSubmitAnswer(option);
-      setAnswer("");
     }
   };
 
