@@ -726,6 +726,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                   effectsToDelete.forEach(key => gameManager.powerUpEffects.delete(key));
 
+                  // Broadcast shield effect to client
+                  gameManager.broadcastToSession(ws.sessionId, wss, {
+                    type: 'powerUpUsed',
+                    effect: 'shield',
+                    targetId: ws.playerId,
+                    duration: 10
+                  });
+
                   // Log shield usage
                   await gameManager.logGameEvent(ws.sessionId, {
                     type: 'powerup',
