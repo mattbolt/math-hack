@@ -175,15 +175,15 @@ class GameManager {
     while (options.size < 4) {
       let wrongAnswer;
       if (operation === 'division') {
-        // For division, generate reasonable wrong answers
-        wrongAnswer = Math.max(1, answer + Math.floor(Math.random() * 10) - 5);
+        // For division, generate reasonable whole number wrong answers
+        wrongAnswer = Math.max(1, Math.floor(answer + Math.random() * 10 - 5));
       } else {
-        // For other operations, generate wrong answers within a reasonable range
-        const range = Math.max(5, Math.abs(answer * 0.5));
-        wrongAnswer = Math.max(0, answer + Math.floor(Math.random() * range * 2) - range);
+        // For other operations, generate whole number wrong answers within a reasonable range
+        const range = Math.max(5, Math.floor(Math.abs(answer * 0.5)));
+        wrongAnswer = Math.max(0, Math.floor(answer + Math.random() * range * 2 - range));
       }
       
-      if (wrongAnswer !== answer) {
+      if (wrongAnswer !== answer && Number.isInteger(wrongAnswer)) {
         options.add(wrongAnswer);
       }
     }

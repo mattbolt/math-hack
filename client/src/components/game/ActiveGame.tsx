@@ -96,8 +96,19 @@ export function ActiveGame({
   }, [pendingAnswer]);
 
   const handleOptionSelect = (option: number) => {
-    if (!pendingAnswer) {
+    if (!pendingAnswer && currentQuestion) {
       setAnswer(option.toString());
+      
+      // Update current question in stack to "answered" state
+      setQuestionStack(prev => prev.map(q => 
+        q.id === currentQuestion.id 
+          ? { ...q, userAnswer: option, correct: option === currentQuestion.answer, state: 'answered' as const }
+          : q
+      ));
+      
+      // Automatically submit the answer
+      onSubmitAnswer(option);
+      setAnswer("");
     }
   };
 
@@ -320,27 +331,13 @@ export function ActiveGame({
                               : 'bg-slate-600 hover:bg-slate-500 border-2 border-slate-500'
                           } ${pendingAnswer ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                          {String.fromCharCode(65 + index)}. {option}
+                          {option}
                         </Button>
                       ))}
                     </div>
                   )}
                   
-                  <div className="flex space-x-3">
-                    <Button 
-                      onClick={handleSubmitAnswer}
-                      disabled={!answer.trim() || !currentQuestion || pendingAnswer}
-                      className="flex-1 bg-emerald-500 hover:bg-emerald-600 transition-colors transform hover:scale-105 disabled:opacity-50"
-                    >
-                      {pendingAnswer ? (
-                        <div className="flex items-center space-x-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>
-                            {slowCountdown > 0 ? `Slowed (${slowCountdown}s)` : 'Processing...'}
-                          </span>
-                        </div>
-                      ) : 'Submit Answer'}
-                    </Button>
+                  <div className="flex justify-center">
                     <Button 
                       onClick={onSkipQuestion}
                       disabled={currentPlayer.credits < 5 || pendingAnswer}
