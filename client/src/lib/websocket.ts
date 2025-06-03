@@ -10,7 +10,7 @@ class WebSocketManager {
   private pendingMessages: WebSocketMessage[] = [];
 
   connect(): Promise<void> {
-    if (this.isConnecting) {
+    if (this.isConnecting || (this.ws && this.ws.readyState === WebSocket.OPEN)) {
       return Promise.resolve();
     }
 
