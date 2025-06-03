@@ -144,13 +144,23 @@ class GameManager {
   broadcastToSession(sessionId: number, wss: WebSocketServer, message: any) {
     console.log(`Broadcasting to session ${sessionId}:`, message.type);
     let clientCount = 0;
+    let totalClients = 0;
+    
     wss.clients.forEach((client: GameWebSocket) => {
+      totalClients++;
+      console.log(`  - Checking client ${(client as any).connectionId}: sessionId=${client.sessionId}, target=${sessionId}, state=${client.readyState}, match=${client.sessionId === sessionId}`);
+      
       if (client.sessionId === sessionId && client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(message));
-        clientCount++;
+        try {
+          client.send(JSON.stringify(message));
+          clientCount++;
+          console.log(`    ✓ Sent to client ${(client as any).connectionId}`);
+        } catch (error) {
+          console.log(`    ✗ Failed to send to client ${(client as any).connectionId}:`, error);
+        }
       }
     });
-    console.log(`Sent to ${clientCount} clients in session ${sessionId}`);
+    console.log(`Sent to ${clientCount}/${totalClients} clients in session ${sessionId}`);
   }
 }
 
@@ -268,7 +278,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
   wss.on('connection', (ws: GameWebSocket) => {
-    console.log('New WebSocket connection established');
+    const connectionId = Math.random().toString(36).substr(2, 9);
+    console.log(`New WebSocket connection established: ${connectionId}`);
+    (ws as any).connectionId = connectionId;
     ws.isAlive = true;
     
     ws.on('pong', () => {
@@ -281,7 +293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         switch (message.type) {
           case 'joinSession':
-            console.log(`Player ${message.playerId} joining session ${message.sessionId}`);
+            console.log(`Player ${message.playerId} (conn: ${(ws as any).connectionId}) joining session ${message.sessionId}`);
             ws.sessionId = message.sessionId;
             ws.playerId = message.playerId;
             
@@ -296,6 +308,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               session: gameState,
               players
             }));
+            
+            // Log all connections in this session
+            console.log('All WebSocket connections:');
+            wss.clients.forEach((client: GameWebSocket) => {
+              console.log(`  - Connection ${(client as any).connectionId}: sessionId=${client.sessionId}, playerId=${client.playerId}, state=${client.readyState}`);
+            });
             
             // Broadcast updated player list to ALL players in the session
             setTimeout(async () => {
@@ -468,7 +486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
 
     ws.on('close', () => {
-      // Handle player disconnection
+      console.log(`WebSocket connection ${(ws as any).connectionId} closed (session: ${ws.sessionId}, player: ${ws.playerId})`);
     });
   });
 
