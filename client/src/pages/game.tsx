@@ -139,12 +139,14 @@ export default function Game() {
       setPlayers([data.player]);
       setGamePhase('waiting');
       
-      // Join the session via WebSocket
-      wsManager.send({
-        type: 'joinSession',
-        sessionId: data.session.id,
-        playerId
-      });
+      // Ensure WebSocket is connected before joining session
+      setTimeout(() => {
+        wsManager.send({
+          type: 'joinSession',
+          sessionId: data.session.id,
+          playerId
+        });
+      }, 500);
     },
     onError: () => {
       toast({
@@ -169,12 +171,14 @@ export default function Game() {
       setPlayerName(playerName);
       setGamePhase('waiting');
       
-      // Join the session via WebSocket
-      wsManager.send({
-        type: 'joinSession',
-        sessionId: data.session.id,
-        playerId
-      });
+      // Ensure WebSocket is connected before joining session
+      setTimeout(() => {
+        wsManager.send({
+          type: 'joinSession',
+          sessionId: data.session.id,
+          playerId
+        });
+      }, 500);
     },
     onError: (error: any) => {
       toast({
