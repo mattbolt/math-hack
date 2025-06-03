@@ -59,6 +59,18 @@ export function ActiveGame({
     }
   }, [currentQuestion?.id]);
 
+  // Refocus input when it becomes enabled again
+  useEffect(() => {
+    if (!pendingAnswer) {
+      setTimeout(() => {
+        const inputElement = document.querySelector('input[type="number"]') as HTMLInputElement;
+        if (inputElement) {
+          inputElement.focus();
+        }
+      }, 100);
+    }
+  }, [pendingAnswer]);
+
   const handleSubmitAnswer = () => {
     const numAnswer = parseInt(answer);
     if (!isNaN(numAnswer) && currentQuestion) {
@@ -80,10 +92,10 @@ export function ActiveGame({
       onSubmitAnswer(numAnswer);
       setAnswer("");
       
-      // Focus the input after submission
+      // Focus the input after submission and when it's re-enabled
       setTimeout(() => {
         const inputElement = document.querySelector('input[type="number"]') as HTMLInputElement;
-        if (inputElement) {
+        if (inputElement && !inputElement.disabled) {
           inputElement.focus();
         }
       }, 100);
@@ -186,55 +198,61 @@ export function ActiveGame({
           {/* Question Card with Animation */}
           <Card className="bg-gradient-to-br from-slate-800 to-slate-700 border-slate-600">
             <CardContent className="p-8 text-center">
-              <div className="space-y-6 relative overflow-hidden min-h-[300px]">
+              <div className="space-y-6">
                 
-                {/* Previous Questions Stack */}
-                {previousQuestions.map((prevQ, index) => (
+                {/* Question Display Area */}
+                <div className="relative min-h-[200px] flex flex-col justify-center">
+                  
+                  {/* Previous Questions Stack */}
+                  {previousQuestions.map((prevQ, index) => (
+                    <div 
+                      key={`prev-${index}-${prevQ.text}`}
+                      className={`absolute w-full transition-all duration-1000 ease-in-out ${
+                        index === previousQuestions.length - 1 ? 'top-[-60px] opacity-60 scale-75' : 'top-[-120px] opacity-30 scale-50'
+                      }`}
+                      style={{ zIndex: 10 - index }}
+                    >
+                      <div className={`text-2xl font-bold ${prevQ.correct ? 'text-green-400' : 'text-red-400'}`}>
+                        {prevQ.text.replace('= ?', `= ${prevQ.userAnswer}`)}
+                        <span className="ml-2 text-3xl">
+                          {prevQ.correct ? '✓' : '✗'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Current Question with Answer Transformation */}
                   <div 
-                    key={`prev-${index}-${prevQ.text}`}
-                    className={`absolute w-full transition-all duration-1000 ease-in-out ${
-                      index === previousQuestions.length - 1 ? 'top-0 opacity-60 scale-75' : 'top-[-50px] opacity-30 scale-50'
-                    }`}
-                    style={{ zIndex: 10 - index }}
+                    key={`current-${currentQuestionKey}`}
+                    className={`transition-all duration-500 ease-in-out ${
+                      showAnswerFeedback.show 
+                        ? `opacity-60 scale-75 transform translate-y-[-60px] ${showAnswerFeedback.correct ? 'text-green-400' : 'text-red-400'}` 
+                        : 'opacity-100 scale-100 transform translate-y-0 text-white'
+                    }`} 
+                    style={{ 
+                      zIndex: 20,
+                      animation: !showAnswerFeedback.show && currentQuestionKey > 0 ? 'slideUpFromBelow 0.5s ease-out forwards' : 'none'
+                    }}
                   >
-                    <div className={`text-2xl font-bold ${prevQ.correct ? 'text-green-400' : 'text-red-400'}`}>
-                      {prevQ.text.replace('= ?', `= ${prevQ.userAnswer}`)}
-                      <span className="ml-2 text-3xl">
-                        {prevQ.correct ? '✓' : '✗'}
-                      </span>
+                    <div className="text-4xl font-bold">
+                      {showAnswerFeedback.show && currentQuestion && lastSubmittedAnswer !== null
+                        ? (
+                            <>
+                              {currentQuestion.text.replace('= ?', `= ${lastSubmittedAnswer}`)}
+                              <span className="ml-2 text-5xl">
+                                {showAnswerFeedback.correct ? '✓' : '✗'}
+                              </span>
+                            </>
+                          )
+                        : (currentQuestion?.text || "Waiting for question...")
+                      }
                     </div>
                   </div>
-                ))}
-                
-                {/* Current Question with Answer Transformation */}
-                <div 
-                  key={`current-${currentQuestionKey}`}
-                  className={`absolute w-full transition-all duration-500 ease-in-out mt-16 ${
-                    showAnswerFeedback.show 
-                      ? `opacity-60 scale-75 transform translate-y-[-100px] ${showAnswerFeedback.correct ? 'text-green-400' : 'text-red-400'}` 
-                      : 'opacity-100 scale-100 transform translate-y-0 text-white'
-                  }`} 
-                  style={{ 
-                    zIndex: 20,
-                    animation: !showAnswerFeedback.show && currentQuestionKey > 0 ? 'slideUpFromBelow 0.5s ease-out forwards' : 'none'
-                  }}
-                >
-                  <div className="text-4xl font-bold">
-                    {showAnswerFeedback.show && currentQuestion && lastSubmittedAnswer !== null
-                      ? (
-                          <>
-                            {currentQuestion.text.replace('= ?', `= ${lastSubmittedAnswer}`)}
-                            <span className="ml-2 text-5xl">
-                              {showAnswerFeedback.correct ? '✓' : '✗'}
-                            </span>
-                          </>
-                        )
-                      : (currentQuestion?.text || "Waiting for question...")
-                    }
-                  </div>
+                  
                 </div>
                 
-                <div className="space-y-4 relative mt-20" style={{ zIndex: 30 }}>
+                {/* Input Area */}
+                <div className="space-y-4">
                   <Input
                     type="number"
                     placeholder="Your answer..."
