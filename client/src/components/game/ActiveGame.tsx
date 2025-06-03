@@ -24,6 +24,7 @@ interface ActiveGameProps {
   hackModeActive: boolean;
   hackModeData: {attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string} | null;
   slowCountdown: number;
+  activeEffects: {[key: string]: number};
 }
 
 export function ActiveGame({
@@ -42,7 +43,8 @@ export function ActiveGame({
   pendingAnswer,
   hackModeActive,
   hackModeData,
-  slowCountdown
+  slowCountdown,
+  activeEffects
 }: ActiveGameProps) {
   const [answer, setAnswer] = useState("");
   const [showPlayerSelection, setShowPlayerSelection] = useState(false);
@@ -306,7 +308,7 @@ export function ActiveGame({
                   <div className="flex space-x-3">
                     <Button 
                       onClick={handleSubmitAnswer}
-                      disabled={!answer.trim() || !currentQuestion || pendingAnswer}
+                      disabled={!answer.trim() || !currentQuestion || pendingAnswer || Boolean(activeEffects.freeze && activeEffects.freeze > Date.now())}
                       className="flex-1 bg-emerald-500 hover:bg-emerald-600 transition-colors transform hover:scale-105 disabled:opacity-50"
                     >
                       {pendingAnswer ? (

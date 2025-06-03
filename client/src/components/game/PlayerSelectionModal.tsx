@@ -9,6 +9,7 @@ interface PlayerSelectionModalProps {
   onSelect: (playerId: string) => void;
   onCancel: () => void;
   title: string;
+  activeEffects?: {[key: string]: number};
 }
 
 export function PlayerSelectionModal({ 
