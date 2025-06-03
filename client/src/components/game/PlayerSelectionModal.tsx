@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Player } from "@shared/schema";
-import { ArrowRight, Coins, User, Shield, Snowflake, Zap } from "lucide-react";
+import { ArrowRight, Coins, User } from "lucide-react";
 
 interface PlayerSelectionModalProps {
   isOpen: boolean;
@@ -9,7 +9,6 @@ interface PlayerSelectionModalProps {
   onSelect: (playerId: string) => void;
   onCancel: () => void;
   title: string;
-  activeEffects?: {[key: string]: number};
 }
 
 export function PlayerSelectionModal({ 
@@ -17,8 +16,7 @@ export function PlayerSelectionModal({
   players, 
   onSelect, 
   onCancel, 
-  title,
-  activeEffects = {}
+  title 
 }: PlayerSelectionModalProps) {
   const getPlayerColor = (index: number) => {
     const colors = [
@@ -33,35 +31,6 @@ export function PlayerSelectionModal({
     return colors[index % colors.length];
   };
 
-  const getPlayerEffects = (playerId: string): string[] => {
-    const now = Date.now();
-    const effects: string[] = [];
-    
-    Object.keys(activeEffects).forEach(effectKey => {
-      if (effectKey.startsWith(playerId) && activeEffects[effectKey] > now) {
-        const effectType = effectKey.split('_')[1];
-        effects.push(effectType);
-      }
-    });
-    
-    return effects;
-  };
-
-  const getEffectIcon = (effect: string) => {
-    switch (effect) {
-      case 'shield':
-        return <Shield className="w-3 h-3 text-blue-400" />;
-      case 'freeze':
-        return <Snowflake className="w-3 h-3 text-cyan-400" />;
-      case 'slow':
-        return <Zap className="w-3 h-3 text-yellow-400" />;
-      case 'scramble':
-        return <Zap className="w-3 h-3 text-purple-400" />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onCancel}>
       <DialogContent className="bg-slate-800 border-slate-700 max-w-md">
@@ -70,40 +39,28 @@ export function PlayerSelectionModal({
         </DialogHeader>
         
         <div className="space-y-3">
-          {players.map((player, index) => {
-            const playerEffects = getPlayerEffects(player.playerId);
-            return (
-              <Button
-                key={player.id}
-                onClick={() => onSelect(player.playerId)}
-                variant="outline"
-                className="w-full flex items-center justify-between p-4 bg-slate-700/50 hover:bg-slate-700 border-slate-600 hover:border-blue-500"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 bg-gradient-to-br ${getPlayerColor(index)} rounded-full flex items-center justify-center`}>
-                    <User className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="text-left">
-                    <div className="font-medium flex items-center space-x-2">
-                      <span>{player.name}</span>
-                      {playerEffects.length > 0 && (
-                        <div className="flex space-x-1">
-                          {playerEffects.map((effect, idx) => (
-                            <span key={idx}>{getEffectIcon(effect)}</span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-sm text-slate-400 flex items-center space-x-1">
-                      <Coins className="w-3 h-3 text-yellow-500" />
-                      <span>{player.credits} credits</span>
-                    </div>
+          {players.map((player, index) => (
+            <Button
+              key={player.id}
+              onClick={() => onSelect(player.playerId)}
+              variant="outline"
+              className="w-full flex items-center justify-between p-4 bg-slate-700/50 hover:bg-slate-700 border-slate-600 hover:border-blue-500"
+            >
+              <div className="flex items-center space-x-3">
+                <div className={`w-10 h-10 bg-gradient-to-br ${getPlayerColor(index)} rounded-full flex items-center justify-center`}>
+                  <User className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium">{player.name}</div>
+                  <div className="text-sm text-slate-400 flex items-center space-x-1">
+                    <Coins className="w-3 h-3 text-yellow-500" />
+                    <span>{player.credits} credits</span>
                   </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-slate-400" />
-              </Button>
-            )
-          })}
+              </div>
+              <ArrowRight className="w-4 h-4 text-slate-400" />
+            </Button>
+          ))}
         </div>
         
         <Button 

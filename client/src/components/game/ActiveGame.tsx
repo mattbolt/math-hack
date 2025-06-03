@@ -24,7 +24,6 @@ interface ActiveGameProps {
   hackModeActive: boolean;
   hackModeData: {attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string} | null;
   slowCountdown: number;
-  activeEffects: {[key: string]: number};
 }
 
 export function ActiveGame({
@@ -43,14 +42,13 @@ export function ActiveGame({
   pendingAnswer,
   hackModeActive,
   hackModeData,
-  slowCountdown,
-  activeEffects
+  slowCountdown
 }: ActiveGameProps) {
   const [answer, setAnswer] = useState("");
   const [showPlayerSelection, setShowPlayerSelection] = useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = useState<string>("");
   const [slowDownActive, setSlowDownActive] = useState(false);
-  const [questionStack, setQuestionStack] = useState<Array<{id: string, text: string, userAnswer?: number, correct?: boolean, state: string}>>([]);
+  const [questionStack, setQuestionStack] = useState<Array<{id: string, text: string, userAnswer?: number, correct?: boolean, state: 'current' | 'answered' | 'previous'}>>([]);
   const [animationKey, setAnimationKey] = useState(0);
 
   // Handle new questions and manage stack
@@ -64,12 +62,12 @@ export function ActiveGame({
           // New question - mark old ones as previous and add new current
           const newStack = prev.map(q => ({ 
             ...q, 
-            state: 'previous'
+            state: q.state === 'answered' ? 'previous' as const : 'previous' as const
           }));
           newStack.push({
             id: currentQuestion.id,
             text: currentQuestion.text,
-            state: 'current'
+            state: 'current' as const
           });
           
           // Keep only last 2 items (current + 1 previous)
@@ -95,18 +93,12 @@ export function ActiveGame({
   }, [pendingAnswer]);
 
   const handleSubmitAnswer = () => {
-    // Check if player is frozen
-    const now = Date.now();
-    const isFrozen = activeEffects.freeze && activeEffects.freeze > now;
-    
-    if (isFrozen) return; // Prevent submission when frozen
-    
     const numAnswer = parseInt(answer);
     if (!isNaN(numAnswer) && currentQuestion) {
       // Update current question in stack to "answered" state
       setQuestionStack(prev => prev.map(q => 
         q.id === currentQuestion.id 
-          ? { ...q, userAnswer: numAnswer, correct: numAnswer === currentQuestion.answer, state: 'answered' }
+          ? { ...q, userAnswer: numAnswer, correct: numAnswer === currentQuestion.answer, state: 'answered' as const }
           : q
       ));
       
@@ -131,13 +123,8 @@ export function ActiveGame({
 
   const handlePowerUpClick = (powerUpType: string) => {
     if (currentPlayer.credits >= getPowerUpCost(powerUpType)) {
-      if (powerUpType === 'shield') {
-        // Shield applies to self, no player selection needed
-        onUsePowerUp(powerUpType, currentPlayer.playerId);
-      } else {
-        setSelectedPowerUp(powerUpType);
-        setShowPlayerSelection(true);
-      }
+      setSelectedPowerUp(powerUpType);
+      setShowPlayerSelection(true);
     }
   };
 
@@ -178,8 +165,8 @@ export function ActiveGame({
     // At max difficulty (9), no progression possible
     if (player.difficultyLevel >= 9) return 0;
     
-    // Need 5 consecutive correct to advance
-    const needed = 5 - player.consecutiveCorrect;
+    // Need 3 consecutive correct to advance
+    const needed = 3 - player.consecutiveCorrect;
     return Math.max(0, needed);
   };
 
@@ -308,7 +295,7 @@ export function ActiveGame({
                   <div className="flex space-x-3">
                     <Button 
                       onClick={handleSubmitAnswer}
-                      disabled={!answer.trim() || !currentQuestion || pendingAnswer || Boolean(activeEffects.freeze && activeEffects.freeze > Date.now())}
+                      disabled={!answer.trim() || !currentQuestion || pendingAnswer}
                       className="flex-1 bg-emerald-500 hover:bg-emerald-600 transition-colors transform hover:scale-105 disabled:opacity-50"
                     >
                       {pendingAnswer ? (
@@ -545,7 +532,6 @@ export function ActiveGame({
         onSelect={handlePlayerSelect}
         onCancel={() => setShowPlayerSelection(false)}
         title={selectedPowerUp === "hack" ? "Select Target to Hack" : "Select Target Player"}
-        activeEffects={activeEffects}
       />
     </div>
   );

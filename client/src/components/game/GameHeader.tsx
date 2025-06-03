@@ -16,17 +16,6 @@ export function GameHeader({ gameCode, playerCredits, gameTimeRemaining, onLeave
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const getTimerColor = (timeRemaining: number, totalTime: number): string => {
-    const ratio = timeRemaining / totalTime;
-    if (timeRemaining <= 60) return 'text-red-500'; // Red and flashing when 1 minute left
-    if (ratio <= 0.33) return 'text-yellow-500'; // Yellow when 1/3 left
-    return 'text-green-500'; // Green otherwise
-  };
-
-  const shouldFlash = (timeRemaining: number): boolean => {
-    return timeRemaining <= 60 && timeRemaining > 0;
-  };
-
   return (
     <Card className="bg-slate-900/50 backdrop-blur-sm border-slate-700 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,9 +39,9 @@ export function GameHeader({ gameCode, playerCredits, gameTimeRemaining, onLeave
             )}
             {gameTimeRemaining !== undefined && gameTimeRemaining > 0 && (
               <div className="hidden sm:block">
-                <div className={`flex items-center space-x-2 bg-slate-800 px-3 py-1 rounded-full ${shouldFlash(gameTimeRemaining) ? 'animate-pulse' : ''}`}>
+                <div className="flex items-center space-x-2 bg-slate-800 px-3 py-1 rounded-full">
                   <Clock className="w-4 h-4 text-orange-500" />
-                  <span className={`font-semibold ${getTimerColor(gameTimeRemaining, 900)}`}>
+                  <span className={`font-semibold ${gameTimeRemaining <= 60 ? 'text-red-500' : 'text-white'}`}>
                     {formatTime(gameTimeRemaining)}
                   </span>
                 </div>

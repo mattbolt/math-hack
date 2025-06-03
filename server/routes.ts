@@ -168,8 +168,8 @@ class GameManager {
   adjustDifficulty(player: any): number {
     let newDifficulty = player.difficultyLevel;
 
-    // Increase difficulty if player gets 5 consecutive correct answers
-    if (player.consecutiveCorrect >= 5) {
+    // Increase difficulty if player gets 3 consecutive correct answers
+    if (player.consecutiveCorrect >= 3) {
       newDifficulty = Math.min(9, player.difficultyLevel + 1);
     }
     // Decrease difficulty if player gets 2 consecutive wrong answers or skips
@@ -366,7 +366,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
   // WebSocket server setup
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const wss = new WebSocketServer({ server: httpServer, path: '/game-ws' });
 
   wss.on('connection', (ws: GameWebSocket) => {
     ws.isAlive = true;
