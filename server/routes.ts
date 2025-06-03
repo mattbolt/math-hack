@@ -27,38 +27,123 @@ class GameManager {
   }
 
   generateQuestion(difficulty: number): Question {
-    const operations = ['addition', 'subtraction', 'multiplication', 'division'] as const;
-    const operation = operations[Math.floor(Math.random() * operations.length)];
+    let operations: string[];
+    let num1: number = 0, num2: number = 0, answer: number = 0;
     
-    let num1: number, num2: number, answer: number;
+    // Define available operations based on difficulty
+    switch (difficulty) {
+      case 1:
+        operations = ['addition'];
+        break;
+      case 2:
+        operations = ['addition', 'subtraction'];
+        break;
+      case 3:
+        operations = ['addition', 'subtraction'];
+        break;
+      case 4:
+        operations = ['addition', 'subtraction', 'multiplication'];
+        break;
+      case 5:
+        operations = ['addition', 'subtraction', 'multiplication', 'division'];
+        break;
+      default:
+        operations = ['addition', 'subtraction', 'multiplication', 'division'];
+    }
     
-    const range = Math.min(difficulty * 20, 500);
-    const baseRange = Math.max(10, difficulty * 5);
+    const operation = operations[Math.floor(Math.random() * operations.length)] as any;
     
     switch (operation) {
       case 'addition':
-        num1 = Math.floor(Math.random() * range) + baseRange;
-        num2 = Math.floor(Math.random() * range) + baseRange;
+        if (difficulty <= 2) {
+          // Single digit both sides (1-9)
+          num1 = Math.floor(Math.random() * 9) + 1;
+          num2 = Math.floor(Math.random() * 9) + 1;
+        } else if (difficulty === 3) {
+          // Left side can be 2 digits (10-99), right single (1-9)
+          num1 = Math.floor(Math.random() * 90) + 10;
+          num2 = Math.floor(Math.random() * 9) + 1;
+        } else if (difficulty <= 5) {
+          // Left 2 digits, right single
+          num1 = Math.floor(Math.random() * 90) + 10;
+          num2 = Math.floor(Math.random() * 9) + 1;
+        } else if (difficulty <= 7) {
+          // Both can be double digit (10-99)
+          num1 = Math.floor(Math.random() * 90) + 10;
+          num2 = Math.floor(Math.random() * 90) + 10;
+        } else if (difficulty === 8) {
+          // Double digit both sides
+          num1 = Math.floor(Math.random() * 90) + 10;
+          num2 = Math.floor(Math.random() * 90) + 10;
+        } else {
+          // Triple digit left (100-999), double right
+          num1 = Math.floor(Math.random() * 900) + 100;
+          num2 = Math.floor(Math.random() * 90) + 10;
+        }
         answer = num1 + num2;
         break;
+        
       case 'subtraction':
-        num1 = Math.floor(Math.random() * range) + baseRange + 50;
-        num2 = Math.floor(Math.random() * (num1 - baseRange)) + baseRange;
+        if (difficulty <= 2) {
+          // Single digit both sides
+          num1 = Math.floor(Math.random() * 9) + 1;
+          num2 = Math.floor(Math.random() * num1) + 1;
+        } else if (difficulty === 3) {
+          // Left 2 digits, right single
+          num1 = Math.floor(Math.random() * 90) + 10;
+          num2 = Math.floor(Math.random() * 9) + 1;
+        } else if (difficulty <= 5) {
+          // Left 2 digits, right single
+          num1 = Math.floor(Math.random() * 90) + 10;
+          num2 = Math.floor(Math.random() * 9) + 1;
+        } else if (difficulty <= 7) {
+          // Both double digit
+          num1 = Math.floor(Math.random() * 90) + 10;
+          num2 = Math.floor(Math.random() * Math.min(num1 - 10, 90)) + 10;
+        } else if (difficulty === 8) {
+          // Double digit both sides
+          num1 = Math.floor(Math.random() * 90) + 10;
+          num2 = Math.floor(Math.random() * Math.min(num1 - 10, 90)) + 10;
+        } else {
+          // Triple digit left, double right
+          num1 = Math.floor(Math.random() * 900) + 100;
+          num2 = Math.floor(Math.random() * 90) + 10;
+        }
         answer = num1 - num2;
         break;
+        
       case 'multiplication':
-        num1 = Math.floor(Math.random() * Math.min(difficulty * 10, 50)) + 2;
-        num2 = Math.floor(Math.random() * Math.min(difficulty * 10, 50)) + 2;
+        if (difficulty <= 6) {
+          // Single digit both sides
+          num1 = Math.floor(Math.random() * 9) + 1;
+          num2 = Math.floor(Math.random() * 9) + 1;
+        } else if (difficulty === 7) {
+          // Left double digit, right single
+          num1 = Math.floor(Math.random() * 90) + 10;
+          num2 = Math.floor(Math.random() * 9) + 1;
+        } else {
+          // Both double digit
+          num1 = Math.floor(Math.random() * 90) + 10;
+          num2 = Math.floor(Math.random() * 90) + 10;
+        }
         answer = num1 * num2;
         break;
+        
       case 'division':
-        answer = Math.floor(Math.random() * Math.min(difficulty * 20, 100)) + 1;
-        num2 = Math.floor(Math.random() * Math.min(difficulty * 5, 20)) + 2;
+        if (difficulty <= 7) {
+          // Right side single digit
+          num2 = Math.floor(Math.random() * 9) + 1;
+          answer = Math.floor(Math.random() * 20) + 1;
+        } else {
+          // Right side double digit
+          num2 = Math.floor(Math.random() * 90) + 10;
+          answer = Math.floor(Math.random() * 50) + 1;
+        }
         num1 = answer * num2;
         break;
     }
 
-    const timeLimit = Math.max(10, 30 - difficulty * 2);
+    const timeLimit = Math.max(15, 35 - difficulty * 2);
 
     return {
       id: Math.random().toString(36).substr(2, 9),
@@ -81,18 +166,14 @@ class GameManager {
   }
 
   adjustDifficulty(player: any): number {
-    const totalAnswers = player.correctAnswers + player.wrongAnswers;
-    if (totalAnswers === 0) return 1;
-
-    const accuracy = player.correctAnswers / totalAnswers;
     let newDifficulty = player.difficultyLevel;
 
-    // Increase difficulty if accuracy is high and consecutive correct answers
-    if (accuracy > 0.8 && player.consecutiveCorrect >= 3) {
-      newDifficulty = Math.min(10, player.difficultyLevel + 1);
+    // Increase difficulty if player gets 3 consecutive correct answers
+    if (player.consecutiveCorrect >= 3) {
+      newDifficulty = Math.min(9, player.difficultyLevel + 1);
     }
-    // Decrease difficulty if accuracy is low
-    else if (accuracy < 0.5 && player.consecutiveCorrect === 0) {
+    // Decrease difficulty if player gets 2 consecutive wrong answers or skips
+    else if (player.consecutiveWrong >= 2) {
       newDifficulty = Math.max(1, player.difficultyLevel - 1);
     }
 
@@ -315,7 +396,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 
                 let updates: any = {
                   [isCorrect ? 'correctAnswers' : 'wrongAnswers']: isCorrect ? player.correctAnswers + 1 : player.wrongAnswers + 1,
-                  consecutiveCorrect: isCorrect ? player.consecutiveCorrect + 1 : 0
+                  consecutiveCorrect: isCorrect ? player.consecutiveCorrect + 1 : 0,
+                  consecutiveWrong: isCorrect ? 0 : player.consecutiveWrong + 1
                 };
 
                 if (isCorrect) {

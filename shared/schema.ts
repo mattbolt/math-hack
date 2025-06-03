@@ -31,6 +31,7 @@ export const players = pgTable("players", {
   wrongAnswers: integer("wrong_answers").notNull().default(0),
   difficultyLevel: integer("difficulty_level").notNull().default(1),
   consecutiveCorrect: integer("consecutive_correct").notNull().default(0),
+  consecutiveWrong: integer("consecutive_wrong").notNull().default(0),
   isHost: boolean("is_host").notNull().default(false),
   isReady: boolean("is_ready").notNull().default(false),
   isBeingHacked: boolean("is_being_hacked").notNull().default(false),
