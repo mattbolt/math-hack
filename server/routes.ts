@@ -142,11 +142,15 @@ class GameManager {
   }
 
   broadcastToSession(sessionId: number, wss: WebSocketServer, message: any) {
+    console.log(`Broadcasting to session ${sessionId}:`, message.type);
+    let clientCount = 0;
     wss.clients.forEach((client: GameWebSocket) => {
       if (client.sessionId === sessionId && client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify(message));
+        clientCount++;
       }
     });
+    console.log(`Sent to ${clientCount} clients in session ${sessionId}`);
   }
 }
 
@@ -276,12 +280,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         switch (message.type) {
           case 'joinSession':
+            console.log(`Player ${message.playerId} joining session ${message.sessionId}`);
             ws.sessionId = message.sessionId;
             ws.playerId = message.playerId;
             
             // Send current game state to the joining player
             const gameState = await storage.getGameSession(message.sessionId);
             const players = await storage.getPlayersBySession(message.sessionId);
+            
+            console.log(`Session ${message.sessionId} has ${players.length} players:`, players.map(p => p.name));
             
             ws.send(JSON.stringify({
               type: 'gameState',
@@ -290,10 +297,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }));
             
             // Broadcast updated player list to ALL players in the session
-            setTimeout(() => {
+            setTimeout(async () => {
+              const updatedPlayers = await storage.getPlayersBySession(message.sessionId);
+              console.log(`Broadcasting player update for session ${message.sessionId} with ${updatedPlayers.length} players`);
               gameManager.broadcastToSession(message.sessionId, wss, {
                 type: 'playerUpdate',
-                players
+                players: updatedPlayers
               });
             }, 100);
             break;
