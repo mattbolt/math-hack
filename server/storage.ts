@@ -104,6 +104,8 @@ export class MemStorage implements IStorage {
       currentQuestion: null,
       questionStartTime: null,
       questionNumber: 0,
+      gameDuration: insertSession.gameDuration || 15,
+      gameStartTime: null,
       createdAt: new Date(),
     };
     this.gameSessions.set(id, session);

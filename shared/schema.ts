@@ -17,6 +17,8 @@ export const gameSessions = pgTable("game_sessions", {
   currentQuestion: jsonb("current_question"),
   questionStartTime: timestamp("question_start_time"),
   questionNumber: integer("question_number").notNull().default(0),
+  gameDuration: integer("game_duration").notNull().default(15), // Duration in minutes
+  gameStartTime: timestamp("game_start_time"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -70,6 +72,7 @@ export const insertGameSessionSchema = createInsertSchema(gameSessions).pick({
   code: true,
   hostId: true,
   maxPlayers: true,
+  gameDuration: true,
 }).required({ maxPlayers: true });
 
 export const insertPlayerSchema = createInsertSchema(players).pick({
