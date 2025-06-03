@@ -161,6 +161,15 @@ export function ActiveGame({
 
   const otherPlayers = players.filter(p => p.playerId !== currentPlayer.playerId);
 
+  const calculateQuestionsUntilNext = (player: Player): number => {
+    // At max difficulty (9), no progression possible
+    if (player.difficultyLevel >= 9) return 0;
+    
+    // Need 3 consecutive correct to advance
+    const needed = 3 - player.consecutiveCorrect;
+    return Math.max(0, needed);
+  };
+
   const stats: GameStats = {
     correct: currentPlayer.correctAnswers,
     wrong: currentPlayer.wrongAnswers,
@@ -168,7 +177,8 @@ export function ActiveGame({
       ? Math.round((currentPlayer.correctAnswers / (currentPlayer.correctAnswers + currentPlayer.wrongAnswers)) * 100)
       : 0,
     hacks: 0, // This would need to be tracked separately
-    difficulty: currentPlayer.difficultyLevel
+    difficulty: currentPlayer.difficultyLevel,
+    questionsUntilNextDifficulty: calculateQuestionsUntilNext(currentPlayer)
   };
 
   return (
@@ -503,6 +513,12 @@ export function ActiveGame({
                 <div className="flex justify-between">
                   <span className="text-slate-400">Difficulty:</span>
                   <span className="font-semibold text-blue-500">{stats.difficulty}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Next Level:</span>
+                  <span className="font-semibold text-orange-500">
+                    {stats.questionsUntilNextDifficulty === 0 ? 'Max' : `${stats.questionsUntilNextDifficulty} more`}
+                  </span>
                 </div>
               </div>
             </CardContent>

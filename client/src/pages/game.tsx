@@ -182,6 +182,24 @@ export default function Game() {
           }
         };
 
+        const handleQuestionSkipped = (message: any) => {
+          // Update the player who skipped
+          setPlayers(prevPlayers => 
+            prevPlayers.map(p => 
+              p.playerId === message.playerId ? message.player : p
+            )
+          );
+
+          // Show feedback for the player who skipped
+          if (message.playerId === playerId) {
+            toast({
+              title: "Question Skipped",
+              description: "5 credits deducted. Difficulty may decrease.",
+              variant: "destructive",
+            });
+          }
+        };
+
         wsManager.on('gameState', handleGameState);
         wsManager.on('playerJoined', handlePlayerJoined);
         wsManager.on('gameStarted', handleGameStarted);
@@ -191,6 +209,7 @@ export default function Game() {
         wsManager.on('hackProgress', handleHackProgress);
         wsManager.on('hackCompleted', handleHackCompleted);
         wsManager.on('powerUpUsed', handlePowerUpUsed);
+        wsManager.on('questionSkipped', handleQuestionSkipped);
 
         return () => {
           wsManager.off('gameState', handleGameState);
@@ -202,6 +221,7 @@ export default function Game() {
           wsManager.off('hackProgress', handleHackProgress);
           wsManager.off('hackCompleted', handleHackCompleted);
           wsManager.off('powerUpUsed', handlePowerUpUsed);
+          wsManager.off('questionSkipped', handleQuestionSkipped);
         };
 
       } catch (error) {

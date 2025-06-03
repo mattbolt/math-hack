@@ -9,6 +9,7 @@ export interface GameStats {
   accuracy: number;
   hacks: number;
   difficulty: number;
+  questionsUntilNextDifficulty: number;
 }
 
 export interface PowerUpType {
