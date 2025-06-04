@@ -49,8 +49,8 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
   const currentPlayer = players.find(p => p.playerId === currentPlayerId);
   const nonHostPlayers = players.filter(p => !p.isHost);
   const allNonHostPlayersReady = players.length >= 2 && nonHostPlayers.every(p => p.isReady);
-  const readyPlayersCount = nonHostPlayers.filter(p => p.isReady).length;
-  const totalPlayersCount = nonHostPlayers.length;
+  const readyPlayersCount = nonHostPlayers.filter(p => p.isReady).length + 1; // +1 for host who is always ready
+  const totalPlayersCount = players.length;
 
   return (
     <div className="space-y-8">
@@ -74,66 +74,6 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
           {readyPlayersCount} of {totalPlayersCount} players ready
         </div>
       </div>
-
-      {/* How to Play Instructions */}
-      <Card className="bg-slate-800/50 border-slate-700 max-w-4xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-center text-xl">How to Play MathHack</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <Target className="w-5 h-5 text-blue-400 mt-0.5" />
-                <div>
-                  <h3 className="font-semibold text-blue-400">Objective</h3>
-                  <p className="text-sm text-slate-300">Answer math questions to earn credits. Player with the most credits wins!</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-3">
-                <Clock className="w-5 h-5 text-emerald-400 mt-0.5" />
-                <div>
-                  <h3 className="font-semibold text-emerald-400">Questions</h3>
-                  <p className="text-sm text-slate-300">Questions get harder as you answer correctly. Each correct answer earns more credits at higher difficulties.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <Skull className="w-5 h-5 text-purple-400 mt-0.5" />
-                <div>
-                  <h3 className="font-semibold text-purple-400">Hacking</h3>
-                  <p className="text-sm text-slate-300">Use credits to hack other players and steal their credits. Answer 5 questions correctly to succeed!</p>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="font-semibold text-yellow-400">Power-ups</h3>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="flex items-center space-x-2">
-                    <Zap className="w-3 h-3 text-yellow-400" />
-                    <span className="text-slate-300">Slow (50 credits)</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Snowflake className="w-3 h-3 text-blue-400" />
-                    <span className="text-slate-300">Freeze (100 credits)</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Shuffle className="w-3 h-3 text-purple-400" />
-                    <span className="text-slate-300">Scramble (100 credits)</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Shield className="w-3 h-3 text-emerald-400" />
-                    <span className="text-slate-300">Shield (150 credits)</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
         {players.map((player, index) => (
@@ -213,6 +153,86 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
           </div>
         )}
       </div>
+
+      {/* How to Play Instructions */}
+      <Card className="bg-slate-800/50 border-slate-700 max-w-4xl mx-auto">
+        <CardHeader>
+          <CardTitle className="text-center text-xl">How to Play MathHack</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <Target className="w-5 h-5 text-blue-400 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-blue-400">Objective</h3>
+                  <p className="text-sm text-slate-300">Answer math questions to earn credits. Player with the most credits wins!</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <Clock className="w-5 h-5 text-emerald-400 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-emerald-400">Questions</h3>
+                  <p className="text-sm text-slate-300">Questions get harder as you answer correctly. Each correct answer earns more credits at higher difficulties.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <Skull className="w-5 h-5 text-purple-400 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-purple-400">Hacking</h3>
+                  <p className="text-sm text-slate-300">Use credits to hack other players and steal their credits. Answer 5 questions correctly to succeed!</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <Zap className="w-5 h-5 text-yellow-400 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-yellow-400">Power-ups</h3>
+                  <p className="text-sm text-slate-300">Spend credits to use special abilities that affect other players or protect yourself.</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 ml-8">
+                <div className="flex items-start space-x-2">
+                  <Zap className="w-4 h-4 text-yellow-400 mt-0.5" />
+                  <div>
+                    <span className="text-sm font-medium text-yellow-400">Slow (50 credits)</span>
+                    <p className="text-xs text-slate-300">Delays opponent's answer submission by 2 seconds</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-2">
+                  <Snowflake className="w-4 h-4 text-blue-400 mt-0.5" />
+                  <div>
+                    <span className="text-sm font-medium text-blue-400">Freeze (100 credits)</span>
+                    <p className="text-xs text-slate-300">Prevents opponent from submitting answers temporarily</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-2">
+                  <Shuffle className="w-4 h-4 text-purple-400 mt-0.5" />
+                  <div>
+                    <span className="text-sm font-medium text-purple-400">Scramble (100 credits)</span>
+                    <p className="text-xs text-slate-300">Makes opponent's screen shake and harder to read</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-2">
+                  <Shield className="w-4 h-4 text-emerald-400 mt-0.5" />
+                  <div>
+                    <span className="text-sm font-medium text-emerald-400">Shield (150 credits)</span>
+                    <p className="text-xs text-slate-300">Protects you from all power-up effects</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
