@@ -54,13 +54,27 @@ export function PlayerSelectionModal({
   };
 
   const isPlayerInHack = (player: Player) => {
-    return player.isBeingHacked || player.hackedBy;
+    // Check if this player is being hacked
+    if (player.isBeingHacked) return true;
+    
+    // Check if this player is hacking someone else (look for any player being hacked by this player)
+    const isHackingOthers = players.some(p => p.hackedBy === player.playerId);
+    return isHackingOthers;
   };
 
   const getHackStatus = (player: Player) => {
     if (player.isBeingHacked) return 'being_hacked';
-    if (player.hackedBy) return 'hacking';
+    
+    // Check if this player is hacking someone else
+    const isHackingOthers = players.some(p => p.hackedBy === player.playerId);
+    if (isHackingOthers) return 'hacking';
+    
     return null;
+  };
+
+  const shouldDisableForHack = (player: Player) => {
+    // Only disable if trying to hack and player is already involved in hacking
+    return title.toLowerCase().includes('hack') && isPlayerInHack(player);
   };
 
   return (
@@ -75,7 +89,8 @@ export function PlayerSelectionModal({
             const shielded = isPlayerShielded(player.playerId);
             const inHack = isPlayerInHack(player);
             const hackStatus = getHackStatus(player);
-            const disabled = shielded || inHack;
+            const hackDisabled = shouldDisableForHack(player);
+            const disabled = shielded || hackDisabled;
             
             return (
               <Button
@@ -86,8 +101,8 @@ export function PlayerSelectionModal({
                 className={`w-full flex items-center justify-between px-4 py-3 transition-all duration-200 ${
                   shielded 
                     ? 'bg-emerald-900/30 border-emerald-600/50 cursor-not-allowed opacity-60' 
-                    : inHack
-                    ? 'bg-red-900/30 border-red-600/50 cursor-not-allowed opacity-60'
+                    : hackDisabled
+                    ? 'bg-purple-900/30 border-purple-600/50 cursor-not-allowed opacity-60'
                     : 'bg-slate-700/50 hover:bg-slate-700 border-slate-600 hover:border-blue-500'
                 }`}
               >
@@ -116,8 +131,8 @@ export function PlayerSelectionModal({
                 }
                 {/* Hack status indicator */}
                 {hackStatus && (
-                  <div className="flex items-center p-1 bg-red-600/50 rounded">
-                    <Skull className="w-4 h-4 text-red-400" />
+                  <div className="flex items-center p-1 bg-purple-600/50 rounded">
+                    <Skull className="w-4 h-4 text-purple-400" />
                   </div>
                 )}
               </div>
