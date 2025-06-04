@@ -582,6 +582,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                             player: updatedTargetPlayer
                           });
                         }
+                        
+                        // Clear hack status on target player
+                        if (targetPlayer) {
+                          await storage.updatePlayer(targetPlayer.id, {
+                            isBeingHacked: false,
+                            hackedBy: null
+                          });
+                        }
+                        
                         gameManager.hackModes.delete(key);
                       } else if (hackData.defenderProgress >= 5) {
                         const targetPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, hackData.targetId);
@@ -605,6 +614,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                           success: false,
                           creditsStolen: 0
                         });
+                        
+                        // Clear hack status on target player
+                        if (targetPlayer) {
+                          await storage.updatePlayer(targetPlayer.id, {
+                            isBeingHacked: false,
+                            hackedBy: null
+                          });
+                        }
+                        
                         gameManager.hackModes.delete(key);
                       }
                       break;
@@ -681,6 +699,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     });
                     
                     const targetPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, message.targetId);
+                    
+                    // Update hack status on target player
+                    if (targetPlayer) {
+                      const updatedTargetPlayer = await storage.updatePlayer(targetPlayer.id, {
+                        isBeingHacked: true,
+                        hackedBy: ws.playerId
+                      });
+                      
+                      // Broadcast updated target player status
+                      gameManager.broadcastToSession(ws.sessionId, wss, {
+                        type: 'playerUpdated',
+                        player: updatedTargetPlayer
+                      });
+                    }
+                    
+                    // Deduct credits from hacker
+                    const updatedHacker = await storage.updatePlayer(player.id, {
+                      credits: player.credits - cost
+                    });
+                    
+                    // Broadcast updated hacker status
+                    gameManager.broadcastToSession(ws.sessionId, wss, {
+                      type: 'playerUpdated',
+                      player: updatedHacker
+                    });
                     
                     console.log('Hack mode started:', {
                       hackId,
