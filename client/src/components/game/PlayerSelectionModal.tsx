@@ -78,35 +78,23 @@ export function PlayerSelectionModal({
                 <div className={`w-10 h-10 bg-gradient-to-br ${getPlayerColor(index)} rounded-full flex items-center justify-center`}>
                   <User className="w-5 h-5 text-white" />
                 </div>
-                <div className="text-left">
-                  <div className="font-medium flex items-center space-x-2">
-                    <span>{player.name}</span>
-                    {shielded && (
-                      <div className="flex items-center space-x-1 px-2 py-1 bg-emerald-800/50 rounded-full">
-                        <Shield className="w-3 h-3 text-emerald-400" />
-                        <span className="text-xs text-emerald-400 font-medium">Protected</span>
-                      </div>
-                    )}
-                  </div>
+                <div className="text-left flex-1">
+                  <div className="font-medium">{player.name}</div>
                   <div className="text-sm text-slate-400 flex items-center space-x-1">
                     <Coins className="w-3 h-3 text-yellow-500" />
                     <span>{player.credits} credits</span>
                   </div>
-                  {activeEffects[player.playerId] && Object.keys(activeEffects[player.playerId]).length > 0 && (
-                    <div className="flex items-center space-x-2 mt-1">
-                      <span className="text-xs text-slate-500">Effects:</span>
-                      <div className="flex items-center space-x-1">
-                        {Object.keys(activeEffects[player.playerId]).map((effect) => (
-                          <div key={effect} className="flex items-center p-1 bg-slate-600/50 rounded">
-                            {getPowerUpIcon(effect)}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
+                {activeEffects[player.playerId] && Object.keys(activeEffects[player.playerId]).length > 0 && (
+                  <div className="flex items-center space-x-1">
+                    {Object.keys(activeEffects[player.playerId]).map((effect) => (
+                      <div key={effect} className="flex items-center p-1 bg-slate-600/50 rounded">
+                        {getPowerUpIcon(effect)}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <ArrowRight className="w-4 h-4 text-slate-400" />
             </Button>
             )
           })}
