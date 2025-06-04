@@ -427,6 +427,16 @@ export default function Game() {
     }
   };
 
+  const handleToggleReady = () => {
+    if (gameSession && playerId) {
+      wsManager.send({
+        type: 'toggleReady',
+        sessionId: gameSession.id,
+        playerId: playerId
+      });
+    }
+  };
+
   const handleSubmitAnswer = (answer: number) => {
     if (gameSession && currentQuestion && !pendingAnswer) {
       // Check if freeze effect is active

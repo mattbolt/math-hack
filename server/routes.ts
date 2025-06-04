@@ -458,6 +458,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
             break;
 
+          case 'toggleReady':
+            if (ws.sessionId && ws.playerId) {
+              const currentPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, ws.playerId);
+              if (currentPlayer) {
+                const updatedPlayer = await storage.updatePlayer(currentPlayer.id, {
+                  isReady: !currentPlayer.isReady
+                });
+                
+                // Broadcast updated player state to all players in session
+                const players = await storage.getPlayersBySession(ws.sessionId);
+                gameManager.broadcastToSession(ws.sessionId, wss, {
+                  type: 'playerUpdated',
+                  players
+                });
+              }
+            }
+            break;
+
           case 'startGame':
             if (ws.sessionId) {
               const session = await storage.updateGameSession(ws.sessionId, { 
