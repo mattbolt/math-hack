@@ -585,9 +585,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         
                         // Clear hack status on target player
                         if (targetPlayer) {
-                          await storage.updatePlayer(targetPlayer.id, {
+                          const clearedTargetPlayer = await storage.updatePlayer(targetPlayer.id, {
                             isBeingHacked: false,
                             hackedBy: null
+                          });
+                          
+                          // Broadcast updated target player status
+                          gameManager.broadcastToSession(ws.sessionId, wss, {
+                            type: 'playerUpdated',
+                            player: clearedTargetPlayer
                           });
                         }
                         
@@ -617,9 +623,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         
                         // Clear hack status on target player
                         if (targetPlayer) {
-                          await storage.updatePlayer(targetPlayer.id, {
+                          const clearedTargetPlayer = await storage.updatePlayer(targetPlayer.id, {
                             isBeingHacked: false,
                             hackedBy: null
+                          });
+                          
+                          // Broadcast updated target player status
+                          gameManager.broadcastToSession(ws.sessionId, wss, {
+                            type: 'playerUpdated',
+                            player: clearedTargetPlayer
                           });
                         }
                         
