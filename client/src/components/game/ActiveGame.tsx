@@ -221,18 +221,17 @@ export function ActiveGame({
 
   const otherPlayers = players.filter(p => p.playerId !== currentPlayer.playerId);
 
-  // Build active effects data for player selection modal
-  const getActiveEffects = () => {
+  // Build active effects data for player selection modal from client activeEffects state
+  const getActiveEffectsForModal = () => {
     const effects: {[playerId: string]: {[effect: string]: number}} = {};
     
-    players.forEach(player => {
-      const powerUps = Array.isArray(player.powerUpsActive) ? player.powerUpsActive : [];
-      if (powerUps.length > 0) {
-        effects[player.playerId] = {};
-        powerUps.forEach((powerUp: string) => {
-          // Extract effect type from powerUp string (assuming format like "slow", "freeze", etc.)
-          effects[player.playerId][powerUp] = 1; // Just marking as active
-        });
+    // Add current player's active effects
+    Object.keys(activeEffects).forEach(effect => {
+      if (activeEffects[effect] > Date.now()) {
+        if (!effects[currentPlayer.playerId]) {
+          effects[currentPlayer.playerId] = {};
+        }
+        effects[currentPlayer.playerId][effect] = activeEffects[effect];
       }
     });
     
@@ -648,7 +647,7 @@ export function ActiveGame({
         onSelect={handlePlayerSelect}
         onCancel={() => setShowPlayerSelection(false)}
         title={selectedPowerUp === "hack" ? "Select Target to Hack" : "Select Target Player"}
-        activeEffects={getActiveEffects()}
+        activeEffects={getActiveEffectsForModal()}
       />
     </div>
   );
