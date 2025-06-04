@@ -548,7 +548,9 @@ export default function Game() {
             gameCode={gameSession.code}
             players={players}
             isHost={currentPlayer?.isHost || false}
+            currentPlayerId={playerId || ''}
             onStartGame={handleStartGame}
+            onToggleReady={handleToggleReady}
           />
         )}
 
