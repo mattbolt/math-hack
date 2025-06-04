@@ -30,18 +30,18 @@ export function GameWaitingRoom({ gameCode, players, isHost, onStartGame }: Game
     }
   };
 
-  const getPlayerColor = (index: number) => {
+  const getPlayerColor = (colorIndex: number) => {
     const colors = [
-      "from-blue-500 to-blue-600",
-      "from-emerald-500 to-emerald-600", 
-      "from-orange-500 to-orange-600",
-      "from-purple-500 to-purple-600",
-      "from-pink-500 to-pink-600",
-      "from-yellow-500 to-yellow-600",
-      "from-red-500 to-red-600",
-      "from-cyan-500 to-cyan-600"
+      "bg-blue-500",
+      "bg-emerald-500", 
+      "bg-orange-500",
+      "bg-purple-500",
+      "bg-pink-500",
+      "bg-yellow-500",
+      "bg-red-500",
+      "bg-cyan-500"
     ];
-    return colors[index % colors.length];
+    return colors[colorIndex % colors.length];
   };
 
   return (
@@ -68,8 +68,10 @@ export function GameWaitingRoom({ gameCode, players, isHost, onStartGame }: Game
         {players.map((player, index) => (
           <Card key={player.id} className="bg-slate-800/50 border-slate-700">
             <CardContent className="p-4 text-center">
-              <div className={`w-12 h-12 bg-gradient-to-br ${getPlayerColor(index)} rounded-full flex items-center justify-center mx-auto mb-2`}>
-                <User className="w-6 h-6 text-white" />
+              <div className={`w-12 h-12 ${getPlayerColor(player.colorIndex)} rounded-full flex items-center justify-center mx-auto mb-2`}>
+                <span className="text-sm font-bold text-white">
+                  {player.name.charAt(0).toUpperCase()}
+                </span>
               </div>
               <div className="font-semibold">
                 {player.name}

@@ -76,8 +76,8 @@ export function PlayerSelectionModal({
                 }`}
               >
               <div className="flex items-center space-x-3 flex-1">
-                <div className={`w-10 h-10 ${getPlayerColor(index)} rounded-full flex items-center justify-center`}>
-                  <span className="text-sm font-bold text-white">
+                <div className={`w-8 h-8 ${getPlayerColor(player.colorIndex)} rounded-full flex items-center justify-center`}>
+                  <span className="text-xs font-bold text-white">
                     {player.name.charAt(0).toUpperCase()}
                   </span>
                 </div>

@@ -137,6 +137,12 @@ export class MemStorage implements IStorage {
   // Player methods
   async createPlayer(insertPlayer: InsertPlayer): Promise<Player> {
     const id = this.currentId++;
+    
+    // Assign color index based on existing players in the session
+    const sessionPlayers = Array.from(this.players.values())
+      .filter(p => p.sessionId === insertPlayer.sessionId);
+    const colorIndex = sessionPlayers.length;
+    
     const player: Player = {
       id,
       sessionId: insertPlayer.sessionId,
@@ -158,6 +164,7 @@ export class MemStorage implements IStorage {
       hackedBy: null,
       hackProgress: 0,
       powerUpsActive: [],
+      colorIndex,
       joinedAt: new Date(),
     };
     this.players.set(id, player);

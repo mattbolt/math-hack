@@ -286,7 +286,7 @@ export function ActiveGame({
                   className="flex items-center justify-between bg-slate-700/50 rounded-lg p-3"
                 >
                   <div className="flex items-center space-x-3">
-                    <div className={`w-8 h-8 ${getPlayerColor(index)} rounded-full flex items-center justify-center relative`}>
+                    <div className={`w-8 h-8 ${getPlayerColor(player.colorIndex)} rounded-full flex items-center justify-center relative`}>
                       <span className="text-xs font-bold text-white">
                         {player.name.charAt(0).toUpperCase()}
                       </span>

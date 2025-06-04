@@ -44,6 +44,7 @@ export const players = pgTable("players", {
   questionsSkipped: integer("questions_skipped").notNull().default(0),
   hackAttempts: integer("hack_attempts").notNull().default(0),
   powerUpsActive: jsonb("power_ups_active").default([]),
+  colorIndex: integer("color_index").notNull().default(0),
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
 });
 
