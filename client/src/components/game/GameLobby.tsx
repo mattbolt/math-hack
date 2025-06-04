@@ -67,6 +67,14 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
             </CardContent>
           </Card>
         </div>
+
+        {/* Copyright and Attribution */}
+        <div className="text-center text-xs text-slate-500 mt-12 space-y-1">
+          <div>© 2024 Phixx Creative Pty Ltd. All rights reserved.</div>
+          <div>
+            Created by <a href="https://phixx.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">Matt Bolt</a>
+          </div>
+        </div>
       </div>
     );
   }
@@ -140,6 +148,14 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
             </div>
           </CardContent>
         </Card>
+
+        {/* Copyright and Attribution */}
+        <div className="text-center text-xs text-slate-500 mt-8 space-y-1">
+          <div>© 2024 Phixx Creative Pty Ltd. All rights reserved.</div>
+          <div>
+            Created by <a href="https://phixx.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">Matt Bolt</a>
+          </div>
+        </div>
       </div>
     );
   }
@@ -198,6 +214,14 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
             </div>
           </CardContent>
         </Card>
+
+        {/* Copyright and Attribution */}
+        <div className="text-center text-xs text-slate-500 mt-8 space-y-1">
+          <div>© 2024 Phixx Creative Pty Ltd. All rights reserved.</div>
+          <div>
+            Created by <a href="https://phixx.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">Matt Bolt</a>
+          </div>
+        </div>
       </div>
     );
   }
