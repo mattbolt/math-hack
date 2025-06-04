@@ -262,11 +262,16 @@ class GameManager {
   }
 
   broadcastToSession(sessionId: number, wss: WebSocketServer, message: any) {
+    let clientCount = 0;
+    let matchingClients = 0;
     wss.clients.forEach((client: GameWebSocket) => {
+      clientCount++;
       if (client.sessionId === sessionId && client.readyState === WebSocket.OPEN) {
+        matchingClients++;
         client.send(JSON.stringify(message));
       }
     });
+    console.log(`Broadcast to session ${sessionId}: ${matchingClients}/${clientCount} clients received message`);
   }
 
   async endGame(sessionId: number, wss: WebSocketServer) {
@@ -413,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
   // WebSocket server setup
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const wss = new WebSocketServer({ server: httpServer, path: '/game-ws' });
 
   wss.on('connection', (ws: GameWebSocket) => {
     ws.isAlive = true;
@@ -440,6 +445,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           case 'joinSession':
             ws.sessionId = message.sessionId;
             ws.playerId = message.playerId;
+            console.log(`Player ${ws.playerId} joined session ${ws.sessionId}`);
             
             // Send current game state
             const gameState = await storage.getGameSession(message.sessionId);
@@ -451,7 +457,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               players
             }));
             
-            // Broadcast player joined
+            // Broadcast player joined to ALL clients in session
+            console.log(`Broadcasting playerJoined to session ${message.sessionId}, ${players.length} players`);
             gameManager.broadcastToSession(message.sessionId, wss, {
               type: 'playerJoined',
               players
