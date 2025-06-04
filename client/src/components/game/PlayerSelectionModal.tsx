@@ -61,7 +61,7 @@ export function PlayerSelectionModal({
         </DialogHeader>
         
         <div className="space-y-3">
-          {players.map((player, index) => {
+          {[...players].sort((a, b) => b.credits - a.credits).map((player, index) => {
             const shielded = isPlayerShielded(player.playerId);
             return (
               <Button
@@ -69,7 +69,7 @@ export function PlayerSelectionModal({
                 onClick={() => !shielded && onSelect(player.playerId)}
                 variant="outline"
                 disabled={!!shielded}
-                className={`w-full flex items-center justify-between px-4 py-6 transition-all duration-200 ${
+                className={`w-full flex items-center justify-between px-4 py-3 transition-all duration-200 ${
                   shielded 
                     ? 'bg-emerald-900/30 border-emerald-600/50 cursor-not-allowed opacity-60' 
                     : 'bg-slate-700/50 hover:bg-slate-700 border-slate-600 hover:border-blue-500'
