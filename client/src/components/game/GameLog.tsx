@@ -15,10 +15,7 @@ export function GameLog({ gameLog }: GameLogProps) {
   useEffect(() => {
     const checkScrollable = () => {
       if (scrollAreaRef.current) {
-        const scrollElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-        if (scrollElement) {
-          setIsScrollable(scrollElement.scrollHeight > scrollElement.clientHeight);
-        }
+        setIsScrollable(scrollAreaRef.current.scrollHeight > scrollAreaRef.current.clientHeight);
       }
     };
 
@@ -86,7 +83,14 @@ export function GameLog({ gameLog }: GameLogProps) {
       </CardHeader>
       <CardContent className="p-0">
         <div className="relative">
-          <ScrollArea ref={scrollAreaRef} className="max-h-80 px-4">
+          <div 
+            ref={scrollAreaRef}
+            className="max-h-80 overflow-y-auto px-4 scrollbar-thin scrollbar-track-slate-800 scrollbar-thumb-slate-500 hover:scrollbar-thumb-slate-400"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#64748b #1e293b'
+            }}
+          >
             {sortedLog.length === 0 ? (
               <div className="text-center text-slate-500 py-8">
                 <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
@@ -122,14 +126,14 @@ export function GameLog({ gameLog }: GameLogProps) {
                 ))}
               </div>
             )}
-          </ScrollArea>
+          </div>
           {/* Scroll indicator - shows when content is scrollable */}
           {isScrollable && (
-            <div className="absolute right-1 top-4 bottom-4 flex flex-col justify-center pointer-events-none">
-              <div className="flex flex-col items-center space-y-1">
-                <div className="w-1 h-3 bg-slate-400/80 rounded-full"></div>
-                <div className="w-1 h-1 bg-slate-400/60 rounded-full animate-pulse"></div>
-                <div className="w-1 h-3 bg-slate-400/80 rounded-full"></div>
+            <div className="absolute right-2 top-4 bottom-4 flex flex-col justify-center pointer-events-none">
+              <div className="flex flex-col items-center space-y-1 bg-slate-800/80 rounded-full p-1">
+                <div className="w-1 h-3 bg-slate-300 rounded-full"></div>
+                <div className="w-1 h-1 bg-slate-400 rounded-full animate-pulse"></div>
+                <div className="w-1 h-3 bg-slate-300 rounded-full"></div>
               </div>
             </div>
           )}
