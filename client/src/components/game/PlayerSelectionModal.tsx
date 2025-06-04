@@ -22,13 +22,14 @@ export function PlayerSelectionModal({
 }: PlayerSelectionModalProps) {
   const getPlayerColor = (index: number) => {
     const colors = [
-      "from-emerald-500 to-emerald-600",
-      "from-orange-500 to-orange-600",
-      "from-purple-500 to-purple-600",
-      "from-pink-500 to-pink-600",
-      "from-yellow-500 to-yellow-600",
-      "from-red-500 to-red-600",
-      "from-cyan-500 to-cyan-600"
+      "bg-blue-500",
+      "bg-emerald-500", 
+      "bg-orange-500",
+      "bg-purple-500",
+      "bg-pink-500",
+      "bg-yellow-500",
+      "bg-red-500",
+      "bg-cyan-500"
     ];
     return colors[index % colors.length];
   };
@@ -75,8 +76,10 @@ export function PlayerSelectionModal({
                 }`}
               >
               <div className="flex items-center space-x-3 flex-1">
-                <div className={`w-10 h-10 bg-gradient-to-br ${getPlayerColor(index)} rounded-full flex items-center justify-center`}>
-                  <User className="w-5 h-5 text-white" />
+                <div className={`w-10 h-10 ${getPlayerColor(index)} rounded-full flex items-center justify-center`}>
+                  <span className="text-sm font-bold text-white">
+                    {player.name.charAt(0).toUpperCase()}
+                  </span>
                 </div>
                 <div className="text-left flex-1">
                   <div className="font-medium">{player.name}</div>
