@@ -12,8 +12,8 @@ export function GameLog({ gameLog }: GameLogProps) {
     switch (type) {
       case 'powerup':
         if (details.includes('Shield')) return <Shield className="w-4 h-4 text-blue-400" />;
-        if (details.includes('Slow')) return <Snowflake className="w-4 h-4 text-blue-300" />;
-        if (details.includes('Freeze')) return <Zap className="w-4 h-4 text-yellow-400" />;
+        if (details.includes('Slow')) return <Zap className="w-4 h-4 text-yellow-400" />;
+        if (details.includes('Freeze')) return <Snowflake className="w-4 h-4 text-blue-300" />;
         if (details.includes('Scramble')) return <Shuffle className="w-4 h-4 text-purple-400" />;
         return <Shield className="w-4 h-4 text-gray-400" />;
       case 'hack_start':

@@ -39,9 +39,9 @@ export function PlayerSelectionModal({
       case 'shield':
         return <Shield className="w-4 h-4 text-emerald-400" />;
       case 'slow':
-        return <Snowflake className="w-4 h-4 text-orange-400" />;
+        return <Zap className="w-4 h-4 text-orange-400" />;
       case 'freeze':
-        return <Zap className="w-4 h-4 text-cyan-400" />;
+        return <Snowflake className="w-4 h-4 text-cyan-400" />;
       case 'scramble':
         return <Shuffle className="w-4 h-4 text-purple-400" />;
       default:
