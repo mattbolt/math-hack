@@ -454,10 +454,7 @@ export function ActiveGame({
               </CardContent>
             </Card>
           )}
-        </div>
 
-        {/* Sidebar - Power-ups & Actions */}
-        <div className="space-y-6">
           {/* Power-ups Panel */}
           <Card className="bg-slate-800/50 border-slate-700">
             <CardContent className="p-6">
@@ -466,23 +463,23 @@ export function ActiveGame({
                 <span>Power-ups</span>
               </h3>
               
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
                 <Button
                   onClick={() => handlePowerUpClick("slow")}
                   disabled={currentPlayer.credits < 50}
                   variant="outline"
-                  className="w-full bg-slate-700 hover:bg-slate-600 border-slate-600 text-left justify-between"
+                  className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-left justify-between p-4 h-auto"
                 >
-                  <div className="flex items-center space-x-3">
-                    <Zap className="w-4 h-4 text-orange-500" />
-                    <div>
+                  <div className="flex flex-col items-start space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <Zap className="w-4 h-4 text-orange-500" />
                       <div className="font-medium">Slow Down</div>
-                      <div className="text-xs text-slate-400">Reduce opponent speed</div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Coins className="w-3 h-3 text-yellow-500" />
-                    <span className="text-xs font-semibold">50</span>
+                    <div className="text-xs text-slate-400">Reduce opponent speed</div>
+                    <div className="flex items-center space-x-1">
+                      <Coins className="w-3 h-3 text-yellow-500" />
+                      <span className="text-xs font-semibold">50</span>
+                    </div>
                   </div>
                 </Button>
                 
@@ -490,18 +487,18 @@ export function ActiveGame({
                   onClick={() => handlePowerUpClick("freeze")}
                   disabled={currentPlayer.credits < 100}
                   variant="outline"
-                  className="w-full bg-slate-700 hover:bg-slate-600 border-slate-600 text-left justify-between"
+                  className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-left justify-between p-4 h-auto"
                 >
-                  <div className="flex items-center space-x-3">
-                    <Snowflake className="w-4 h-4 text-cyan-400" />
-                    <div>
+                  <div className="flex flex-col items-start space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <Snowflake className="w-4 h-4 text-cyan-400" />
                       <div className="font-medium">Freeze</div>
-                      <div className="text-xs text-slate-400">Pause their timer</div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Coins className="w-3 h-3 text-yellow-500" />
-                    <span className="text-xs font-semibold">100</span>
+                    <div className="text-xs text-slate-400">Pause their timer</div>
+                    <div className="flex items-center space-x-1">
+                      <Coins className="w-3 h-3 text-yellow-500" />
+                      <span className="text-xs font-semibold">100</span>
+                    </div>
                   </div>
                 </Button>
 
@@ -509,18 +506,18 @@ export function ActiveGame({
                   onClick={() => handlePowerUpClick("shield")}
                   disabled={currentPlayer.credits < 150}
                   variant="outline"
-                  className="w-full bg-slate-700 hover:bg-slate-600 border-slate-600 text-left justify-between"
+                  className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-left justify-between p-4 h-auto"
                 >
-                  <div className="flex items-center space-x-3">
-                    <Shield className="w-4 h-4 text-emerald-500" />
-                    <div>
+                  <div className="flex flex-col items-start space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <Shield className="w-4 h-4 text-emerald-500" />
                       <div className="font-medium">Shield</div>
-                      <div className="text-xs text-slate-400">Block attacks</div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Coins className="w-3 h-3 text-yellow-500" />
-                    <span className="text-xs font-semibold">150</span>
+                    <div className="text-xs text-slate-400">Block attacks</div>
+                    <div className="flex items-center space-x-1">
+                      <Coins className="w-3 h-3 text-yellow-500" />
+                      <span className="text-xs font-semibold">150</span>
+                    </div>
                   </div>
                 </Button>
 
@@ -528,23 +525,27 @@ export function ActiveGame({
                   onClick={() => handlePowerUpClick("hack")}
                   disabled={currentPlayer.credits < 250}
                   variant="outline"
-                  className="w-full bg-purple-700 hover:bg-purple-600 border-purple-600 text-left justify-between"
+                  className="bg-purple-700 hover:bg-purple-600 border-purple-600 text-left justify-between p-4 h-auto"
                 >
-                  <div className="flex items-center space-x-3">
-                    <Skull className="w-4 h-4 text-purple-400" />
-                    <div>
+                  <div className="flex flex-col items-start space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <Skull className="w-4 h-4 text-purple-400" />
                       <div className="font-medium">Hack Player</div>
-                      <div className="text-xs text-slate-400">Steal their credits</div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Coins className="w-3 h-3 text-yellow-500" />
-                    <span className="text-xs font-semibold">250</span>
+                    <div className="text-xs text-slate-400">Steal their credits</div>
+                    <div className="flex items-center space-x-1">
+                      <Coins className="w-3 h-3 text-yellow-500" />
+                      <span className="text-xs font-semibold">250</span>
+                    </div>
                   </div>
                 </Button>
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Sidebar - Stats & Game Log */}
+        <div className="space-y-6">
 
           {/* Hack Mode Panel - Only show when hack mode is active */}
           {hackModeActive && hackModeData && (

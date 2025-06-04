@@ -66,7 +66,7 @@ export function GameLog({ gameLog }: GameLogProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-64 px-4">
+        <ScrollArea className="h-96 px-4">
           {sortedLog.length === 0 ? (
             <div className="text-center text-slate-500 py-8">
               <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
