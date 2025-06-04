@@ -71,7 +71,7 @@ export function ActiveGame({
           // New question - mark old ones as previous and add new current
           const newStack = prev.map(q => ({ 
             ...q, 
-            state: q.state === 'answered' ? 'previous' as const : 'previous' as const
+            state: 'previous' as const
           }));
           newStack.push({
             id: currentQuestion.id,
