@@ -573,6 +573,7 @@ export default function Game() {
               slowCountdown={slowCountdown}
               gameLog={gameLog}
               activeEffects={activeEffects}
+              globalPlayerEffects={globalPlayerEffects}
             />
             
             {/* Active Effects Indicator */}
