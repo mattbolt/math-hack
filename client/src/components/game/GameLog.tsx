@@ -2,12 +2,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GameLogEntry } from "@shared/schema";
 import { Clock, Coins, Shield, Snowflake, Zap, Shuffle, Skull, User } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 
 interface GameLogProps {
   gameLog: GameLogEntry[];
 }
 
 export function GameLog({ gameLog }: GameLogProps) {
+  const [isScrollable, setIsScrollable] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkScrollable = () => {
+      if (scrollAreaRef.current) {
+        const scrollElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (scrollElement) {
+          setIsScrollable(scrollElement.scrollHeight > scrollElement.clientHeight);
+        }
+      }
+    };
+
+    checkScrollable();
+    const timeoutId = setTimeout(checkScrollable, 100); // Check again after render
+    return () => clearTimeout(timeoutId);
+  }, [gameLog]);
+
   const getEventIcon = (type: string, details: string) => {
     switch (type) {
       case 'powerup':
@@ -67,7 +86,7 @@ export function GameLog({ gameLog }: GameLogProps) {
       </CardHeader>
       <CardContent className="p-0">
         <div className="relative">
-          <ScrollArea className="max-h-80 px-4 scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-slate-500">
+          <ScrollArea ref={scrollAreaRef} className="max-h-80 px-4">
             {sortedLog.length === 0 ? (
               <div className="text-center text-slate-500 py-8">
                 <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
@@ -104,10 +123,14 @@ export function GameLog({ gameLog }: GameLogProps) {
               </div>
             )}
           </ScrollArea>
-          {/* Scroll indicator - shows when content overflows */}
-          {sortedLog.length > 4 && (
-            <div className="absolute right-1 top-4 bottom-4 flex flex-col justify-center">
-              <div className="w-1 h-8 bg-slate-500/60 rounded-full animate-pulse"></div>
+          {/* Scroll indicator - shows when content is scrollable */}
+          {isScrollable && (
+            <div className="absolute right-1 top-4 bottom-4 flex flex-col justify-center pointer-events-none">
+              <div className="flex flex-col items-center space-y-1">
+                <div className="w-1 h-3 bg-slate-400/80 rounded-full"></div>
+                <div className="w-1 h-1 bg-slate-400/60 rounded-full animate-pulse"></div>
+                <div className="w-1 h-3 bg-slate-400/80 rounded-full"></div>
+              </div>
             </div>
           )}
         </div>
