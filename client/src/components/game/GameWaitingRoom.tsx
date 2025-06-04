@@ -219,7 +219,7 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
                   <Shield className="w-4 h-4 text-emerald-400 mt-0.5" />
                   <div>
                     <span className="text-sm font-medium text-emerald-400">Shield (150 credits)</span>
-                    <p className="text-xs text-slate-300">Protects you from all power-up effects</p>
+                    <p className="text-xs text-slate-300">Protects you from all power-up effects for 20 seconds</p>
                   </div>
                 </div>
               </div>

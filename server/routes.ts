@@ -793,7 +793,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   gameManager.powerUpEffects.set(effectKey, {
                     playerId: ws.playerId,
                     effect: 'shield',
-                    endTime: Date.now() + 10000 // 10 seconds
+                    endTime: Date.now() + 20000 // 20 seconds
                   });
                   
                   // Clear all existing effects on this player
@@ -810,7 +810,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     type: 'powerUpUsed',
                     effect: 'shield',
                     targetId: ws.playerId,
-                    duration: 10
+                    duration: 20
                   });
 
                   // Log shield usage
