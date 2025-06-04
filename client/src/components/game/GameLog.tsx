@@ -58,7 +58,7 @@ export function GameLog({ gameLog }: GameLogProps) {
   const sortedLog = [...gameLog].sort((a, b) => b.timestamp - a.timestamp);
 
   return (
-    <Card className="bg-slate-800/50 border-slate-700 h-full">
+    <Card className="bg-slate-800/50 border-slate-700">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center space-x-2">
           <Clock className="w-5 h-5 text-blue-400" />
@@ -66,43 +66,51 @@ export function GameLog({ gameLog }: GameLogProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-96 px-4">
-          {sortedLog.length === 0 ? (
-            <div className="text-center text-slate-500 py-8">
-              <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p>No events yet</p>
-            </div>
-          ) : (
-            <div className="space-y-2 pb-4">
-              {sortedLog.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="flex items-start space-x-3 p-2 rounded-lg bg-slate-700/30 hover:bg-slate-700/50 transition-colors"
-                >
-                  <div className="flex-shrink-0 mt-0.5">
-                    {getEventIcon(entry.type, entry.details)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className={`text-sm ${getEventColor(entry.type)}`}>
-                      {entry.details}
+        <div className="relative">
+          <ScrollArea className="max-h-80 px-4 scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-slate-500">
+            {sortedLog.length === 0 ? (
+              <div className="text-center text-slate-500 py-8">
+                <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p>No events yet</p>
+              </div>
+            ) : (
+              <div className="space-y-2 pb-4">
+                {sortedLog.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="flex items-start space-x-3 p-2 rounded-lg bg-slate-700/30 hover:bg-slate-700/50 transition-colors"
+                  >
+                    <div className="flex-shrink-0 mt-0.5">
+                      {getEventIcon(entry.type, entry.details)}
                     </div>
-                    {entry.creditChange && (
-                      <div className={`text-xs flex items-center space-x-1 mt-1 ${
-                        entry.creditChange > 0 ? 'text-green-400' : 'text-red-400'
-                      }`}>
-                        <Coins className="w-3 h-3" />
-                        <span>{entry.creditChange > 0 ? '+' : ''}{entry.creditChange} credits</span>
+                    <div className="flex-1 min-w-0">
+                      <div className={`text-sm ${getEventColor(entry.type)}`}>
+                        {entry.details}
                       </div>
-                    )}
+                      {entry.creditChange && (
+                        <div className={`text-xs flex items-center space-x-1 mt-1 ${
+                          entry.creditChange > 0 ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          <Coins className="w-3 h-3" />
+                          <span>{entry.creditChange > 0 ? '+' : ''}{entry.creditChange} credits</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0 text-xs text-slate-500">
+                      {formatTimestamp(entry.timestamp)}
+                    </div>
                   </div>
-                  <div className="flex-shrink-0 text-xs text-slate-500">
-                    {formatTimestamp(entry.timestamp)}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+          {/* Scroll indicator - shows when content overflows */}
+          {sortedLog.length > 4 && (
+            <div className="absolute right-1 top-4 bottom-4 flex flex-col justify-center">
+              <div className="w-1 h-8 bg-slate-500/60 rounded-full animate-pulse"></div>
             </div>
           )}
-        </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   );
