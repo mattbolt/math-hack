@@ -178,7 +178,7 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
 
       <div className="text-center space-y-4">
         {/* Ready Toggle for Current Player */}
-        {currentPlayer && (
+        {currentPlayer && currentPlayerId && (
           <Button
             onClick={onToggleReady}
             variant={currentPlayer.isReady ? "default" : "outline"}

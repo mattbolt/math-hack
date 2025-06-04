@@ -428,12 +428,15 @@ export default function Game() {
   };
 
   const handleToggleReady = () => {
+    console.log('handleToggleReady called', { gameSession: !!gameSession, playerId });
     if (gameSession && playerId) {
       wsManager.send({
         type: 'toggleReady',
         sessionId: gameSession.id,
         playerId: playerId
       });
+    } else {
+      console.error('Cannot toggle ready - missing gameSession or playerId', { gameSession: !!gameSession, playerId });
     }
   };
 
