@@ -47,7 +47,8 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
   };
 
   const currentPlayer = players.find(p => p.playerId === currentPlayerId);
-  const allPlayersReady = players.length >= 2 && players.every(p => p.isReady);
+  const nonHostPlayers = players.filter(p => !p.isHost);
+  const allNonHostPlayersReady = players.length >= 2 && nonHostPlayers.every(p => p.isReady);
   const readyCount = players.filter(p => p.isReady).length;
 
   return (
@@ -69,7 +70,7 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
           </div>
         </div>
         <div className="text-sm text-slate-400">
-          {readyCount} of {players.length} players ready
+          {nonHostPlayers.filter(p => p.isReady).length} of {nonHostPlayers.length} non-host players ready
         </div>
       </div>
 
@@ -177,8 +178,8 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
       </div>
 
       <div className="text-center space-y-4">
-        {/* Ready Toggle for Current Player */}
-        {currentPlayer && currentPlayerId && (
+        {/* Ready Toggle for Non-Host Players Only */}
+        {currentPlayer && currentPlayerId && !currentPlayer.isHost && (
           <Button
             onClick={onToggleReady}
             variant={currentPlayer.isReady ? "default" : "outline"}
@@ -197,15 +198,15 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
           <div>
             <Button
               onClick={onStartGame}
-              disabled={!allPlayersReady}
+              disabled={!allNonHostPlayersReady}
               className="bg-gradient-to-r from-blue-500 to-emerald-500 hover:from-blue-600 hover:to-emerald-600 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Play className="w-4 h-4 mr-2" />
               Start Game
             </Button>
-            {!allPlayersReady && (
+            {!allNonHostPlayersReady && (
               <p className="text-xs text-slate-400 mt-2">
-                {players.length < 2 ? "Need at least 2 players" : "All players must be ready"}
+                {players.length < 2 ? "Need at least 2 players" : "All non-host players must be ready"}
               </p>
             )}
           </div>
