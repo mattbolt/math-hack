@@ -68,13 +68,13 @@ export function PlayerSelectionModal({
                 onClick={() => !shielded && onSelect(player.playerId)}
                 variant="outline"
                 disabled={!!shielded}
-                className={`w-full flex items-center justify-between p-4 transition-all duration-200 ${
+                className={`w-full flex items-center justify-between px-4 py-6 transition-all duration-200 ${
                   shielded 
                     ? 'bg-emerald-900/30 border-emerald-600/50 cursor-not-allowed opacity-60' 
                     : 'bg-slate-700/50 hover:bg-slate-700 border-slate-600 hover:border-blue-500'
                 }`}
               >
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 flex-1">
                 <div className={`w-10 h-10 bg-gradient-to-br ${getPlayerColor(index)} rounded-full flex items-center justify-center`}>
                   <User className="w-5 h-5 text-white" />
                 </div>
@@ -85,16 +85,16 @@ export function PlayerSelectionModal({
                     <span>{player.credits} credits</span>
                   </div>
                 </div>
-                {activeEffects[player.playerId] && Object.keys(activeEffects[player.playerId]).length > 0 && (
-                  <div className="flex items-center space-x-1">
-                    {Object.keys(activeEffects[player.playerId]).map((effect) => (
-                      <div key={effect} className="flex items-center p-1 bg-slate-600/50 rounded">
-                        {getPowerUpIcon(effect)}
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
+              {activeEffects[player.playerId] && Object.keys(activeEffects[player.playerId]).length > 0 && (
+                <div className="flex items-center space-x-1 ml-auto">
+                  {Object.keys(activeEffects[player.playerId]).map((effect) => (
+                    <div key={effect} className="flex items-center p-1 bg-slate-600/50 rounded">
+                      {getPowerUpIcon(effect)}
+                    </div>
+                  ))}
+                </div>
+              )}
             </Button>
             )
           })}
