@@ -1,33 +1,33 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/lib/queryClient";
-import { wsManager } from "@/lib/websocket";
-import { GameHeader } from "@/components/game/GameHeader";
-import { GameLobby } from "@/components/game/GameLobby";
-import { GameWaitingRoom } from "@/components/game/GameWaitingRoom";
-import { ActiveGame } from "@/components/game/ActiveGame";
-import { GameResults } from "@/components/game/GameResults";
-import { type GamePhase } from "@/lib/gameTypes";
-import { type GameSession, type Player, type Question, type GameLogEntry } from "@shared/schema";
-import { useToast } from "@/hooks/use-toast";
-import { nanoid } from "nanoid";
+import {useState, useEffect} from 'react';
+import {useQuery, useMutation} from '@tanstack/react-query';
+import {queryClient, apiRequest} from '@/lib/queryClient';
+import {wsManager} from '@/lib/websocket';
+import {GameHeader} from '@/components/game/GameHeader';
+import {GameLobby} from '@/components/game/GameLobby';
+import {GameWaitingRoom} from '@/components/game/GameWaitingRoom';
+import {ActiveGame} from '@/components/game/ActiveGame';
+import {GameResults} from '@/components/game/GameResults';
+import {type GamePhase} from '@/lib/gameTypes';
+import {type GameSession, type Player, type Question, type GameLogEntry} from '@shared/schema';
+import {useToast} from '@/hooks/use-toast';
+import {nanoid} from 'nanoid';
 
 export default function Game() {
-  const [gamePhase, setGamePhase] = useState<GamePhase>("lobby");
+  const [gamePhase, setGamePhase] = useState<GamePhase>('lobby');
   const [playerId] = useState(() => nanoid());
-  const [playerName, setPlayerName] = useState("");
+  const [playerName, setPlayerName] = useState('');
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<Question | undefined>();
   const [timeRemaining, setTimeRemaining] = useState(15);
   const [isBeingHacked, setIsBeingHacked] = useState(false);
-  const [hackerName, setHackerName] = useState("");
+  const [hackerName, setHackerName] = useState('');
   const [hackProgress, setHackProgress] = useState(0);
-  const [activeEffects, setActiveEffects] = useState<{[key: string]: number}>({});
-  const [globalPlayerEffects, setGlobalPlayerEffects] = useState<{[playerId: string]: {[effect: string]: number}}>({});
-  const [showAnswerFeedback, setShowAnswerFeedback] = useState<{show: boolean, correct: boolean}>({show: false, correct: false});
+  const [activeEffects, setActiveEffects] = useState<{ [key: string]: number }>({});
+  const [globalPlayerEffects, setGlobalPlayerEffects] = useState<{ [playerId: string]: { [effect: string]: number } }>({});
+  const [showAnswerFeedback, setShowAnswerFeedback] = useState<{ show: boolean, correct: boolean }>({show: false, correct: false});
   const [hackModeActive, setHackModeActive] = useState(false);
-  const [hackModeData, setHackModeData] = useState<{attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string} | null>(null);
+  const [hackModeData, setHackModeData] = useState<{ attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string } | null>(null);
   const [pendingAnswer, setPendingAnswer] = useState(false);
   const [slowCountdown, setSlowCountdown] = useState(0);
   const [gameTimeRemaining, setGameTimeRemaining] = useState<number>(0);
@@ -37,7 +37,7 @@ export default function Game() {
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      
+
       // Clean up current player's active effects
       setActiveEffects(prev => {
         const filtered = Object.fromEntries(
@@ -48,7 +48,7 @@ export default function Game() {
 
       // Clean up global player effects
       setGlobalPlayerEffects(prev => {
-        const updated = { ...prev };
+        const updated = {...prev};
         Object.keys(updated).forEach(playerId => {
           const playerEffects = Object.fromEntries(
             Object.entries(updated[playerId]).filter(([_, endTime]) => endTime > now)
@@ -65,8 +65,8 @@ export default function Game() {
 
     return () => clearInterval(interval);
   }, []);
-  
-  const { toast } = useToast();
+
+  const {toast} = useToast();
 
   const currentPlayer = players.find(p => p.playerId === playerId);
 
@@ -75,7 +75,7 @@ export default function Game() {
     const connectWebSocket = async () => {
       try {
         await wsManager.connect();
-        
+
         const handleGameState = (message: any) => {
           if (message.session) setGameSession(message.session);
           if (message.players) {
@@ -114,17 +114,17 @@ export default function Game() {
         const handleAnswerSubmitted = (message: any) => {
           // Show feedback for the player who submitted the answer
           if (message.playerId === playerId) {
-            setShowAnswerFeedback({ show: true, correct: message.isCorrect });
+            setShowAnswerFeedback({show: true, correct: message.isCorrect});
             setPendingAnswer(false);
-            
+
             // Hide feedback after short duration
             setTimeout(() => {
-              setShowAnswerFeedback({ show: false, correct: false });
+              setShowAnswerFeedback({show: false, correct: false});
             }, 1000);
           }
-          
-          setPlayers(prevPlayers => 
-            prevPlayers.map(p => 
+
+          setPlayers(prevPlayers =>
+            prevPlayers.map(p =>
               p.playerId === message.playerId ? message.player : p
             )
           );
@@ -139,13 +139,13 @@ export default function Game() {
               isAttacker: message.hackerId === playerId,
               opponentName: message.hackerId === playerId ? message.targetName : message.hackerName
             });
-            
+
             toast({
-              title: message.hackerId === playerId ? "Hack Mode Activated!" : "You're Being Hacked!",
-              description: message.hackerId === playerId 
-                ? `You're hacking ${message.targetName}!` 
+              title: message.hackerId === playerId ? 'Hack Mode Activated!' : 'You\'re Being Hacked!',
+              description: message.hackerId === playerId
+                ? `You're hacking ${message.targetName}!`
                 : `${message.hackerName} is attempting to hack you!`,
-              variant: message.hackerId === playerId ? "default" : "destructive",
+              variant: message.hackerId === playerId ? 'default' : 'destructive'
             });
           }
         };
@@ -163,18 +163,18 @@ export default function Game() {
         const handleHackCompleted = (message: any) => {
           if (message.hackerId === playerId || message.targetId === playerId) {
             toast({
-              title: "Hack Complete!",
-              description: message.success 
+              title: 'Hack Complete!',
+              description: message.success
                 ? (message.hackerId === playerId ? `You stole ${message.creditsStolen} credits!` : `You lost ${message.creditsStolen} credits!`)
-                : (message.hackerId === playerId ? "Hack failed! Target defended successfully." : "You successfully defended the hack!"),
-              variant: message.success === (message.hackerId === playerId) ? "default" : "destructive",
+                : (message.hackerId === playerId ? 'Hack failed! Target defended successfully.' : 'You successfully defended the hack!'),
+              variant: message.success === (message.hackerId === playerId) ? 'default' : 'destructive'
             });
 
             setTimeout(() => {
               setHackModeActive(false);
               setHackModeData(null);
               setIsBeingHacked(false);
-              setHackerName("");
+              setHackerName('');
               setHackProgress(0);
             }, 5000);
           }
@@ -183,17 +183,17 @@ export default function Game() {
         const handlePowerUpUsed = (message: any) => {
           // Update global player effects for all players
           setGlobalPlayerEffects(prev => {
-            const updated = { ...prev };
-            
+            const updated = {...prev};
+
             if (message.effect === 'shield') {
               // Shield removes all existing effects for the target player
-              updated[message.targetId] = { shield: Date.now() + (message.duration * 1000) };
+              updated[message.targetId] = {shield: Date.now() + (message.duration * 1000)};
             } else {
               // Check if target has shield protection
-              const hasShield = updated[message.targetId] && 
-                               updated[message.targetId]['shield'] && 
-                               updated[message.targetId]['shield'] > Date.now();
-              
+              const hasShield = updated[message.targetId] &&
+                updated[message.targetId]['shield'] &&
+                updated[message.targetId]['shield'] > Date.now();
+
               if (!hasShield) {
                 if (!updated[message.targetId]) {
                   updated[message.targetId] = {};
@@ -201,7 +201,7 @@ export default function Game() {
                 updated[message.targetId][message.effect] = Date.now() + (message.duration * 1000);
               }
             }
-            
+
             return updated;
           });
 
@@ -209,16 +209,16 @@ export default function Game() {
           if (message.targetId === playerId) {
             if (message.effect === 'shield') {
               // Shield removes all active effects and prevents new ones
-              setActiveEffects({ shield: Date.now() + (message.duration * 1000) });
+              setActiveEffects({shield: Date.now() + (message.duration * 1000)});
             } else {
               // Other effects - if shield is active, ignore them
               setActiveEffects(prev => {
                 if (prev.shield && prev.shield > Date.now()) {
                   return prev; // Shield blocks new effects
                 }
-                return { 
-                  ...prev, 
-                  [message.effect]: Date.now() + (message.duration * 1000) 
+                return {
+                  ...prev,
+                  [message.effect]: Date.now() + (message.duration * 1000)
                 };
               });
             }
@@ -226,21 +226,21 @@ export default function Game() {
             toast({
               title: `${message.effect.charAt(0).toUpperCase() + message.effect.slice(1)} Effect Applied!`,
               description: `You've been affected for ${message.duration || 5} seconds!`,
-              variant: "destructive",
+              variant: 'destructive'
             });
           } else {
             const targetPlayer = players.find(p => p.playerId === message.targetId);
             toast({
-              title: "Power-up Used!",
-              description: `${message.effect.charAt(0).toUpperCase() + message.effect.slice(1)} used on ${targetPlayer?.name || 'Unknown'}!`,
+              title: 'Power-up Used!',
+              description: `${message.effect.charAt(0).toUpperCase() + message.effect.slice(1)} used on ${targetPlayer?.name || 'Unknown'}!`
             });
           }
         };
 
         const handleQuestionSkipped = (message: any) => {
           // Update the player who skipped
-          setPlayers(prevPlayers => 
-            prevPlayers.map(p => 
+          setPlayers(prevPlayers =>
+            prevPlayers.map(p =>
               p.playerId === message.playerId ? message.player : p
             )
           );
@@ -248,9 +248,9 @@ export default function Game() {
           // Show feedback for the player who skipped
           if (message.playerId === playerId) {
             toast({
-              title: "Question Skipped",
-              description: "5 credits deducted. Difficulty may decrease.",
-              variant: "destructive",
+              title: 'Question Skipped',
+              description: '5 credits deducted. Difficulty may decrease.',
+              variant: 'destructive'
             });
           }
         };
@@ -265,8 +265,8 @@ export default function Game() {
             setPlayers(message.players);
           } else if (message.player) {
             // Server sends single player update
-            setPlayers(prevPlayers => 
-              prevPlayers.map(p => 
+            setPlayers(prevPlayers =>
+              prevPlayers.map(p =>
                 p.playerId === message.player.playerId ? message.player : p
               )
             );
@@ -276,11 +276,11 @@ export default function Game() {
         const handleGameEnded = (message: any) => {
           setGamePhase('results');
           setPlayers(message.players || []);
-          
+
           toast({
-            title: "Game Over!",
-            description: message.reason === 'timeUp' ? "Time's up! Check the final scores." : "Game has ended.",
-            variant: "default",
+            title: 'Game Over!',
+            description: message.reason === 'timeUp' ? 'Time\'s up! Check the final scores.' : 'Game has ended.',
+            variant: 'default'
           });
         };
 
@@ -317,9 +317,9 @@ export default function Game() {
       } catch (error) {
         console.error('Failed to connect to WebSocket:', error);
         toast({
-          title: "Connection Error",
-          description: "Failed to connect to game server.",
-          variant: "destructive",
+          title: 'Connection Error',
+          description: 'Failed to connect to game server.',
+          variant: 'destructive'
         });
       }
     };
@@ -338,7 +338,7 @@ export default function Game() {
       const timer = setTimeout(() => {
         setTimeRemaining(prev => prev - 1);
       }, 1000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [gamePhase, timeRemaining]);
@@ -349,13 +349,13 @@ export default function Game() {
       const timer = setTimeout(() => {
         setGameTimeRemaining(prev => prev - 1);
       }, 1000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [gamePhase, gameTimeRemaining]);
 
   const createGameMutation = useMutation({
-    mutationFn: async ({ hostName, maxPlayers, gameDuration }: { hostName: string; maxPlayers: number; gameDuration: number }) => {
+    mutationFn: async ({hostName, maxPlayers, gameDuration}: { hostName: string; maxPlayers: number; gameDuration: number }) => {
       const response = await apiRequest('POST', '/api/game/create', {
         hostId: playerId,
         hostName,
@@ -369,7 +369,7 @@ export default function Game() {
       setPlayerName(data.player.name);
       setPlayers([data.player]);
       setGamePhase('waiting');
-      
+
       // Join the session via WebSocket
       wsManager.send({
         type: 'joinSession',
@@ -379,15 +379,15 @@ export default function Game() {
     },
     onError: () => {
       toast({
-        title: "Failed to create game",
-        description: "Could not create a new game session.",
-        variant: "destructive",
+        title: 'Failed to create game',
+        description: 'Could not create a new game session.',
+        variant: 'destructive'
       });
     }
   });
 
   const joinGameMutation = useMutation({
-    mutationFn: async ({ playerName, gameCode }: { playerName: string; gameCode: string }) => {
+    mutationFn: async ({playerName, gameCode}: { playerName: string; gameCode: string }) => {
       const response = await apiRequest('POST', '/api/game/join', {
         code: gameCode,
         playerId,
@@ -399,7 +399,7 @@ export default function Game() {
       setGameSession(data.session);
       setPlayerName(playerName);
       setGamePhase('waiting');
-      
+
       // Join the session via WebSocket
       wsManager.send({
         type: 'joinSession',
@@ -409,19 +409,19 @@ export default function Game() {
     },
     onError: (error: any) => {
       toast({
-        title: "Failed to join game",
-        description: error.message || "Could not join the game session.",
-        variant: "destructive",
+        title: 'Failed to join game',
+        description: error.message || 'Could not join the game session.',
+        variant: 'destructive'
       });
     }
   });
 
   const handleHostGame = (hostName: string, maxPlayers: number, gameDuration: number) => {
-    createGameMutation.mutate({ hostName, maxPlayers, gameDuration });
+    createGameMutation.mutate({hostName, maxPlayers, gameDuration});
   };
 
   const handleJoinGame = (joinName: string, gameCode: string) => {
-    joinGameMutation.mutate({ playerName: joinName, gameCode });
+    joinGameMutation.mutate({playerName: joinName, gameCode});
   };
 
   const handleStartGame = () => {
@@ -434,7 +434,7 @@ export default function Game() {
   };
 
   const handleToggleReady = () => {
-    console.log('handleToggleReady called', { gameSession: !!gameSession, playerId });
+    console.log('handleToggleReady called', {gameSession: !!gameSession, playerId});
     if (gameSession && playerId) {
       wsManager.send({
         type: 'toggleReady',
@@ -442,7 +442,7 @@ export default function Game() {
         playerId: playerId
       });
     } else {
-      console.error('Cannot toggle ready - missing gameSession or playerId', { gameSession: !!gameSession, playerId });
+      console.error('Cannot toggle ready - missing gameSession or playerId', {gameSession: !!gameSession, playerId});
     }
   };
 
@@ -451,18 +451,18 @@ export default function Game() {
       // Check if freeze effect is active
       if (activeEffects.freeze && activeEffects.freeze > Date.now()) {
         toast({
-          title: "Frozen!",
-          description: "You cannot submit answers while frozen!",
-          variant: "destructive",
+          title: 'Frozen!',
+          description: 'You cannot submit answers while frozen!',
+          variant: 'destructive'
         });
         return;
       }
 
       setPendingAnswer(true);
-      
+
       // Check if slow effect is active
       const delay = (activeEffects.slow && activeEffects.slow > Date.now()) ? 2000 : 0;
-      
+
       if (delay > 0) {
         setSlowCountdown(2);
         const countdownInterval = setInterval(() => {
@@ -474,23 +474,21 @@ export default function Game() {
             return prev - 1;
           });
         }, 1000);
-        
+
         toast({
-          title: "Slowed Down!",
-          description: "Your answer is being processed slowly due to a power-up effect...",
-          variant: "destructive",
+          title: 'Slowed Down!',
+          description: 'Your answer is being processed slowly due to a power-up effect...',
+          variant: 'destructive'
         });
       }
 
-      setTimeout(() => {
-        wsManager.send({
-          type: 'submitAnswer',
-          sessionId: gameSession.id,
-          playerId,
-          answer,
-          correctAnswer: currentQuestion.answer
-        });
-      }, delay);
+      wsManager.send({
+        type: 'submitAnswer',
+        sessionId: gameSession.id,
+        playerId,
+        answer,
+        correctAnswer: currentQuestion.answer
+      });
     }
   };
 
@@ -596,7 +594,7 @@ export default function Game() {
               activeEffects={activeEffects}
               globalPlayerEffects={globalPlayerEffects}
             />
-            
+
             {/* Active Effects Indicator */}
             {Object.keys(activeEffects).filter(effect => activeEffects[effect] > Date.now()).length > 0 && (
               <div className="fixed top-20 right-4 space-y-2 z-50">
@@ -607,9 +605,9 @@ export default function Game() {
                     return (
                       <div key={effect} className={`px-3 py-2 rounded-lg border-2 animate-pulse ${
                         effect === 'slow' ? 'bg-orange-500/20 border-orange-500 text-orange-500' :
-                        effect === 'freeze' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-500' :
-                        effect === 'scramble' ? 'bg-purple-500/20 border-purple-500 text-purple-500' :
-                        'bg-green-500/20 border-green-500 text-green-500'
+                          effect === 'freeze' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-500' :
+                            effect === 'scramble' ? 'bg-purple-500/20 border-purple-500 text-purple-500' :
+                              'bg-green-500/20 border-green-500 text-green-500'
                       }`}>
                         <div className="text-sm font-semibold">
                           {effect.charAt(0).toUpperCase() + effect.slice(1)} Active

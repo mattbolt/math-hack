@@ -66,11 +66,11 @@ export function ActiveGame({
       setQuestionStack(prev => {
         // Find if this question already exists
         const existingIndex = prev.findIndex(q => q.id === currentQuestion.id);
-        
+
         if (existingIndex === -1) {
           // New question - mark old ones as previous and add new current
-          const newStack = prev.map(q => ({ 
-            ...q, 
+          const newStack = prev.map(q => ({
+            ...q,
             state: 'previous' as const
           }));
           newStack.push({
@@ -78,11 +78,11 @@ export function ActiveGame({
             text: currentQuestion.text,
             state: 'current' as const
           });
-          
+
           // Keep only last 2 items (current + 1 previous)
           return newStack.slice(-2);
         }
-        
+
         return prev;
       });
       setAnimationKey(prev => prev + 1);
@@ -103,31 +103,31 @@ export function ActiveGame({
 
   const handleOptionSelect = (option: number) => {
     // Check if player is frozen - disable all interactions
-    const isFrozen = Object.keys(activeEffects).some(effect => 
+    const isFrozen = Object.keys(activeEffects).some(effect =>
       effect === 'freeze' && activeEffects[effect] > Date.now()
     );
-    
+
     // Check if player is slowed
-    const isSlowed = Object.keys(activeEffects).some(effect => 
+    const isSlowed = Object.keys(activeEffects).some(effect =>
       effect === 'slow' && activeEffects[effect] > Date.now()
     );
-    
+
     if (!pendingAnswer && currentQuestion && !isFrozen) {
       setAnswer(option.toString());
-      
+
       if (isSlowed) {
         // Show visual loading effect on the clicked button
         setSlowedButton(option);
-        
+
         // Delay before submitting answer when slowed
         setTimeout(() => {
           // Update current question in stack to "answered" state
-          setQuestionStack(prev => prev.map(q => 
-            q.id === currentQuestion.id 
+          setQuestionStack(prev => prev.map(q =>
+            q.id === currentQuestion.id
               ? { ...q, userAnswer: option, correct: option === currentQuestion.answer, state: 'answered' as const }
               : q
           ));
-          
+
           // Submit the answer after delay
           onSubmitAnswer(option);
           setAnswer("");
@@ -136,12 +136,12 @@ export function ActiveGame({
       } else {
         // Normal speed - immediate submission
         // Update current question in stack to "answered" state
-        setQuestionStack(prev => prev.map(q => 
-          q.id === currentQuestion.id 
+        setQuestionStack(prev => prev.map(q =>
+          q.id === currentQuestion.id
             ? { ...q, userAnswer: option, correct: option === currentQuestion.answer, state: 'answered' as const }
             : q
         ));
-        
+
         // Automatically submit the answer
         onSubmitAnswer(option);
         setAnswer("");
@@ -153,15 +153,15 @@ export function ActiveGame({
     const numAnswer = parseInt(answer);
     if (!isNaN(numAnswer) && currentQuestion) {
       // Update current question in stack to "answered" state
-      setQuestionStack(prev => prev.map(q => 
-        q.id === currentQuestion.id 
+      setQuestionStack(prev => prev.map(q =>
+        q.id === currentQuestion.id
           ? { ...q, userAnswer: numAnswer, correct: numAnswer === currentQuestion.answer, state: 'answered' as const }
           : q
       ));
-      
+
       onSubmitAnswer(numAnswer);
       setAnswer("");
-      
+
       // Focus the input after submission and when it's re-enabled
       setTimeout(() => {
         const inputElement = document.querySelector('input[type="number"]') as HTMLInputElement;
@@ -209,7 +209,7 @@ export function ActiveGame({
   const getPlayerColor = (index: number) => {
     const colors = [
       "bg-blue-500",
-      "bg-emerald-500", 
+      "bg-emerald-500",
       "bg-orange-500",
       "bg-purple-500",
       "bg-pink-500",
@@ -225,7 +225,7 @@ export function ActiveGame({
   // Build active effects data for player selection modal from client activeEffects state
   const getActiveEffectsForModal = () => {
     const effects: {[playerId: string]: {[effect: string]: number}} = {};
-    
+
     // Add current player's active effects
     Object.keys(activeEffects).forEach(effect => {
       if (activeEffects[effect] > Date.now()) {
@@ -235,14 +235,14 @@ export function ActiveGame({
         effects[currentPlayer.playerId][effect] = activeEffects[effect];
       }
     });
-    
+
     return effects;
   };
 
   const calculateQuestionsUntilNext = (player: Player): number => {
     // At max difficulty (9), no progression possible
     if (player.difficultyLevel >= 9) return 0;
-    
+
     // Need 5 consecutive correct to advance
     const needed = 5 - player.consecutiveCorrect;
     return Math.max(0, needed);
@@ -256,7 +256,7 @@ export function ActiveGame({
   const stats: GameStats = {
     correct: currentPlayer.correctAnswers,
     wrong: currentPlayer.wrongAnswers,
-    accuracy: currentPlayer.correctAnswers + currentPlayer.wrongAnswers > 0 
+    accuracy: currentPlayer.correctAnswers + currentPlayer.wrongAnswers > 0
       ? Math.round((currentPlayer.correctAnswers / (currentPlayer.correctAnswers + currentPlayer.wrongAnswers)) * 100)
       : 0,
     hacks: 0, // This would need to be tracked separately
@@ -278,7 +278,7 @@ export function ActiveGame({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  transition={{ 
+                  transition={{
                     duration: 0.3,
                     layout: { duration: 0.4, ease: "easeInOut" }
                   }}
@@ -299,7 +299,7 @@ export function ActiveGame({
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <motion.div 
+                    <motion.div
                       className="flex items-center space-x-1"
                       animate={{ scale: player.credits > 0 ? [1, 1.1, 1] : 1 }}
                       transition={{ duration: 0.2 }}
@@ -331,19 +331,19 @@ export function ActiveGame({
           }`}>
             <CardContent className="p-8 text-center">
               <div className="space-y-6">
-                
+
                 {/* Question Display Area */}
-                <div className="relative min-h-[120px] flex flex-col justify-center mt-[50px]">
-                  
+                <div className="relative min-h-[60px] flex flex-col justify-center mt-[50px]">
+
                   {/* Question Stack */}
                   {questionStack.map((question, index) => {
                     const isNewest = index === questionStack.length - 1;
-                    
+
                     let position = 'top-0';
                     let opacity = 'opacity-100';
                     let scale = 'scale-100';
                     let color = 'text-white';
-                    
+
                     if (question.state === 'answered') {
                       position = 'top-[-40px]';
                       opacity = 'opacity-60';
@@ -355,12 +355,12 @@ export function ActiveGame({
                       scale = 'scale-75';
                       color = question.correct ? 'text-green-400' : 'text-red-400';
                     }
-                    
+
                     return (
-                      <div 
+                      <div
                         key={`question-${question.id}-${animationKey}`}
                         className={`absolute w-full transition-all duration-500 ease-in-out ${position} ${opacity} ${scale} ${color}`}
-                        style={{ 
+                        style={{
                           zIndex: isNewest ? 30 : 20,
                           animation: question.state === 'current' && animationKey > 0 ? 'slideUpFromBelow 0.5s ease-out forwards' : 'none'
                         }}
@@ -383,20 +383,20 @@ export function ActiveGame({
                       </div>
                     );
                   })}
-                  
+
                 </div>
-                
+
                 {/* Multiple Choice Options */}
                 <div className="space-y-4">
                   {currentQuestion?.options && (
                     <div className="grid grid-cols-2 gap-3">
                       {currentQuestion.options.map((option, index) => {
-                        const isFrozen = Object.keys(activeEffects).some(effect => 
+                        const isFrozen = Object.keys(activeEffects).some(effect =>
                           effect === 'freeze' && activeEffects[effect] > Date.now()
                         );
                         const isButtonSlowed = slowedButton === option;
                         const isAnyButtonSlowed = slowedButton !== null;
-                        
+
                         return (
                           <Button
                             key={option}
@@ -418,9 +418,9 @@ export function ActiveGame({
                       })}
                     </div>
                   )}
-                  
+
                   <div className="flex justify-center">
-                    <Button 
+                    <Button
                       onClick={onSkipQuestion}
                       disabled={currentPlayer.credits < 5 || pendingAnswer || Object.keys(activeEffects).some(effect => effect === 'freeze' && activeEffects[effect] > Date.now())}
                       variant="outline"
@@ -462,7 +462,7 @@ export function ActiveGame({
                 <Dumbbell className="w-5 h-5 text-yellow-500" />
                 <span>Power-ups</span>
               </h3>
-              
+
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   onClick={() => handlePowerUpClick("slow")}
@@ -482,7 +482,7 @@ export function ActiveGame({
                     </div>
                   </div>
                 </Button>
-                
+
                 <Button
                   onClick={() => handlePowerUpClick("freeze")}
                   disabled={currentPlayer.credits < 100}
@@ -555,15 +555,15 @@ export function ActiveGame({
                   <Skull className="w-5 h-5" />
                   <span>HACK MODE ACTIVE</span>
                 </h3>
-                
+
                 <div className="space-y-4">
                   <div className="text-center text-sm text-slate-300">
-                    {hackModeData.isAttacker 
-                      ? `Hacking ${hackModeData.opponentName}` 
+                    {hackModeData.isAttacker
+                      ? `Hacking ${hackModeData.opponentName}`
                       : `Defending against ${hackModeData.opponentName}`
                     }
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div className="space-y-1">
                       <div className="flex justify-between text-sm">
@@ -571,30 +571,30 @@ export function ActiveGame({
                         <span className="font-semibold">{hackModeData.attackerProgress}/5</span>
                       </div>
                       <div className="w-full bg-slate-700 rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-gradient-to-r from-red-600 to-red-400 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${(hackModeData.attackerProgress / 5) * 100}%` }}
                         />
                       </div>
                     </div>
-                    
+
                     <div className="space-y-1">
                       <div className="flex justify-between text-sm">
                         <span className="text-blue-400">Defender Progress</span>
                         <span className="font-semibold">{hackModeData.defenderProgress}/5</span>
                       </div>
                       <div className="w-full bg-slate-700 rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-gradient-to-r from-blue-600 to-blue-400 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${(hackModeData.defenderProgress / 5) * 100}%` }}
                         />
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="text-xs text-center text-slate-400">
-                    {hackModeData.isAttacker 
-                      ? "Get 5 correct answers to steal credits!" 
+                    {hackModeData.isAttacker
+                      ? "Get 5 correct answers to steal credits!"
                       : "Get 5 correct answers to defend yourself!"
                     }
                   </div>
