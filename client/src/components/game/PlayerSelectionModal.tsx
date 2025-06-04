@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Player } from "@shared/schema";
-import { ArrowRight, Coins, User, Shield, Snowflake, Zap, Shuffle } from "lucide-react";
+import { ArrowRight, Coins, User, Shield, Snowflake, Zap, Shuffle, Skull } from "lucide-react";
 
 interface PlayerSelectionModalProps {
   isOpen: boolean;
@@ -53,6 +53,16 @@ export function PlayerSelectionModal({
     return activeEffects[playerId] && activeEffects[playerId]['shield'];
   };
 
+  const isPlayerInHack = (player: Player) => {
+    return player.isBeingHacked || player.hackedBy;
+  };
+
+  const getHackStatus = (player: Player) => {
+    if (player.isBeingHacked) return 'being_hacked';
+    if (player.hackedBy) return 'hacking';
+    return null;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onCancel}>
       <DialogContent className="bg-slate-800 border-slate-700 max-w-md">
@@ -63,15 +73,21 @@ export function PlayerSelectionModal({
         <div className="space-y-3">
           {[...players].sort((a, b) => b.credits - a.credits).map((player, index) => {
             const shielded = isPlayerShielded(player.playerId);
+            const inHack = isPlayerInHack(player);
+            const hackStatus = getHackStatus(player);
+            const disabled = shielded || inHack;
+            
             return (
               <Button
                 key={player.id}
-                onClick={() => !shielded && onSelect(player.playerId)}
+                onClick={() => !disabled && onSelect(player.playerId)}
                 variant="outline"
-                disabled={!!shielded}
+                disabled={!!disabled}
                 className={`w-full flex items-center justify-between px-4 py-3 transition-all duration-200 ${
                   shielded 
                     ? 'bg-emerald-900/30 border-emerald-600/50 cursor-not-allowed opacity-60' 
+                    : inHack
+                    ? 'bg-red-900/30 border-red-600/50 cursor-not-allowed opacity-60'
                     : 'bg-slate-700/50 hover:bg-slate-700 border-slate-600 hover:border-blue-500'
                 }`}
               >
@@ -89,15 +105,22 @@ export function PlayerSelectionModal({
                   </div>
                 </div>
               </div>
-              {activeEffects[player.playerId] && Object.keys(activeEffects[player.playerId]).length > 0 && (
-                <div className="flex items-center space-x-1 ml-auto">
-                  {Object.keys(activeEffects[player.playerId]).map((effect) => (
+              <div className="flex items-center space-x-1 ml-auto">
+                {/* Power-up effects */}
+                {activeEffects[player.playerId] && Object.keys(activeEffects[player.playerId]).length > 0 && 
+                  Object.keys(activeEffects[player.playerId]).map((effect) => (
                     <div key={effect} className="flex items-center p-1 bg-slate-600/50 rounded">
                       {getPowerUpIcon(effect)}
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                }
+                {/* Hack status indicator */}
+                {hackStatus && (
+                  <div className="flex items-center p-1 bg-red-600/50 rounded">
+                    <Skull className="w-4 h-4 text-red-400" />
+                  </div>
+                )}
+              </div>
             </Button>
             )
           })}
