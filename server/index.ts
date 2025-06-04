@@ -3,6 +3,30 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Domain redirection middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  // Define your primary domain here
+  const PRIMARY_DOMAIN = process.env.PRIMARY_DOMAIN || 'math-hack-mattbolt.replit.app';
+  
+  // Skip redirection in development
+  if (app.get("env") === "development") {
+    return next();
+  }
+  
+  const host = req.get('host');
+  const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
+  
+  // Check if the current host is not the primary domain
+  if (host && host !== PRIMARY_DOMAIN) {
+    const redirectUrl = `${protocol}://${PRIMARY_DOMAIN}${req.originalUrl}`;
+    log(`Redirecting from ${host} to ${PRIMARY_DOMAIN}`);
+    return res.redirect(301, redirectUrl);
+  }
+  
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
