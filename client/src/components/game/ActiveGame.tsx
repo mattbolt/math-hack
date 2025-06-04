@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Player, Question, GameLogEntry } from "@shared/schema";
 import { type GameStats } from "@/lib/gameTypes";
-import { Clock, Coins, Shield, Snowflake, Zap, User, Skull } from "lucide-react";
+import { Clock, Coins, Shield, Snowflake, Zap, User, Skull, Dumbbell } from "lucide-react";
 import { PlayerSelectionModal } from "./PlayerSelectionModal";
 import { GameLog } from "./GameLog";
 import { motion, AnimatePresence } from "framer-motion";
@@ -462,7 +462,7 @@ export function ActiveGame({
           <Card className="bg-slate-800/50 border-slate-700">
             <CardContent className="p-6">
               <h3 className="font-semibold mb-4 flex items-center space-x-2">
-                <Zap className="w-5 h-5 text-orange-500" />
+                <Dumbbell className="w-5 h-5 text-yellow-500" />
                 <span>Power-ups</span>
               </h3>
               
