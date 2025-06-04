@@ -260,11 +260,17 @@ export default function Game() {
         };
 
         const handlePlayerUpdated = (message: any) => {
-          setPlayers(prevPlayers => 
-            prevPlayers.map(p => 
-              p.playerId === message.player.playerId ? message.player : p
-            )
-          );
+          if (message.players) {
+            // Server sends full players array
+            setPlayers(message.players);
+          } else if (message.player) {
+            // Server sends single player update
+            setPlayers(prevPlayers => 
+              prevPlayers.map(p => 
+                p.playerId === message.player.playerId ? message.player : p
+              )
+            );
+          }
         };
 
         const handleGameEnded = (message: any) => {
