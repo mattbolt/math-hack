@@ -71,12 +71,12 @@ export function ActiveGame({
           // New question - mark old ones as previous and add new current
           const newStack = prev.map(q => ({ 
             ...q, 
-            state: 'previous' as 'current' | 'answered' | 'previous'
+            state: 'previous' as const
           }));
           newStack.push({
             id: currentQuestion.id,
             text: currentQuestion.text,
-            state: 'current' as 'current' | 'answered' | 'previous'
+            state: 'current' as const
           });
           
           // Keep only last 2 items (current + 1 previous)
