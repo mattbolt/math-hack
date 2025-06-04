@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Copyright } from "@/components/ui/copyright";
 import { Player, Question, GameLogEntry } from "@shared/schema";
 import { type GameStats } from "@/lib/gameTypes";
 import { Clock, Coins, Shield, Snowflake, Zap, User, Skull, Dumbbell } from "lucide-react";
@@ -652,13 +653,7 @@ export function ActiveGame({
         activeEffects={globalPlayerEffects}
       />
 
-      {/* Copyright and Attribution */}
-      <div className="text-center text-xs text-slate-500 mt-4 space-y-1">
-        <div>© {new Date().getFullYear()} Phixx Creative Pty Ltd. All rights reserved.</div>
-        <div>
-          Created by <a href="https://phixx.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">Matt Bolt</a>
-        </div>
-      </div>
+      <Copyright className="mt-4" />
     </div>
   );
 }
