@@ -49,7 +49,8 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
   const currentPlayer = players.find(p => p.playerId === currentPlayerId);
   const nonHostPlayers = players.filter(p => !p.isHost);
   const allNonHostPlayersReady = players.length >= 2 && nonHostPlayers.every(p => p.isReady);
-  const readyCount = players.filter(p => p.isReady).length;
+  const readyPlayersCount = nonHostPlayers.filter(p => p.isReady).length;
+  const totalPlayersCount = nonHostPlayers.length;
 
   return (
     <div className="space-y-8">
@@ -70,7 +71,7 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
           </div>
         </div>
         <div className="text-sm text-slate-400">
-          {nonHostPlayers.filter(p => p.isReady).length} of {nonHostPlayers.length} non-host players ready
+          {readyPlayersCount} of {totalPlayersCount} players ready
         </div>
       </div>
 
@@ -148,7 +149,7 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
                 {player.isHost && " (Host)"}
               </div>
               <div className="flex items-center justify-center mt-2">
-                {player.isReady ? (
+                {player.isHost || player.isReady ? (
                   <div className="flex items-center space-x-1 text-emerald-400">
                     <CheckCircle className="w-4 h-4" />
                     <span className="text-xs font-medium">Ready</span>
@@ -206,7 +207,7 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
             </Button>
             {!allNonHostPlayersReady && (
               <p className="text-xs text-slate-400 mt-2">
-                {players.length < 2 ? "Need at least 2 players" : "All non-host players must be ready"}
+                {players.length < 2 ? "Need at least 2 players" : "All players must be ready"}
               </p>
             )}
           </div>
