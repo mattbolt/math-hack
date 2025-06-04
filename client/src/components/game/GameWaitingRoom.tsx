@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Copyright } from "@/components/ui/copyright";
 import { Player } from "@shared/schema";
 import { Copy, Play, Plus, User, CheckCircle, Clock, Zap, Shield, Snowflake, Skull, Target, Dumbbell } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -228,13 +229,7 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
         </CardContent>
       </Card>
 
-      {/* Copyright and Attribution */}
-      <div className="text-center text-xs text-slate-500 mt-8 space-y-1">
-        <div>© {new Date().getFullYear()} Phixx Creative Pty Ltd. All rights reserved.</div>
-        <div>
-          Created by <a href="https://phixx.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">Matt Bolt</a>
-        </div>
-      </div>
+      <Copyright className="mt-8" />
     </div>
   );
 }
