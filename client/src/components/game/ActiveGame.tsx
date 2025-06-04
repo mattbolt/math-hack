@@ -200,7 +200,6 @@ export function ActiveGame({
     switch (type) {
       case "slow": return 50;
       case "freeze": return 75;
-      case "scramble": return 100;
       case "shield": return 150;
       case "hack": return 50;
       default: return 0;

@@ -709,7 +709,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const powerUpCosts = {
                 slow: 50,
                 freeze: 100,
-                scramble: 100,
                 shield: 150,
                 hack: 250
               };
@@ -830,8 +829,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   
                   if (!shieldEffect) {
                     const duration = message.powerUpType === 'slow' ? 10 : 
-                                   message.powerUpType === 'freeze' ? 8 : 
-                                   message.powerUpType === 'scramble' ? 12 : 5;
+                                   message.powerUpType === 'freeze' ? 8 : 5;
                     
                     const effectKey = `${message.targetId}-${message.powerUpType}`;
                     gameManager.powerUpEffects.set(effectKey, {

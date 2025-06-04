@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Player } from "@shared/schema";
-import { Copy, Play, Plus, User, CheckCircle, Clock, Zap, Shield, Snowflake, Shuffle, Skull, Target } from "lucide-react";
+import { Copy, Play, Plus, User, CheckCircle, Clock, Zap, Shield, Snowflake, Skull, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface GameWaitingRoomProps {
@@ -213,13 +213,7 @@ export function GameWaitingRoom({ gameCode, players, isHost, currentPlayerId, on
                   </div>
                 </div>
                 
-                <div className="flex items-start space-x-2">
-                  <Shuffle className="w-4 h-4 text-purple-400 mt-0.5" />
-                  <div>
-                    <span className="text-sm font-medium text-purple-400">Scramble (100 credits)</span>
-                    <p className="text-xs text-slate-300">Makes opponent's screen shake and harder to read</p>
-                  </div>
-                </div>
+
                 
                 <div className="flex items-start space-x-2">
                   <Shield className="w-4 h-4 text-emerald-400 mt-0.5" />

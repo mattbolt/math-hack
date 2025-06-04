@@ -574,7 +574,7 @@ export default function Game() {
         )}
 
         {gamePhase === 'active' && currentPlayer && (
-          <div className={`${activeEffects.freeze && activeEffects.freeze > Date.now() ? 'animate-pulse' : ''} ${activeEffects.slow && activeEffects.slow > Date.now() ? 'transition-all duration-1000' : ''} ${activeEffects.scramble && activeEffects.scramble > Date.now() ? 'animate-bounce' : ''}`}>
+          <div className={`${activeEffects.freeze && activeEffects.freeze > Date.now() ? 'animate-pulse' : ''} ${activeEffects.slow && activeEffects.slow > Date.now() ? 'transition-all duration-1000' : ''}`}>
             <ActiveGame
               players={players}
               currentPlayer={currentPlayer}
