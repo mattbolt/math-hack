@@ -28,6 +28,7 @@ interface ActiveGameProps {
   slowCountdown: number;
   gameLog?: GameLogEntry[];
   activeEffects?: {[effect: string]: number};
+  globalPlayerEffects?: {[playerId: string]: {[effect: string]: number}};
 }
 
 export function ActiveGame({
@@ -48,7 +49,8 @@ export function ActiveGame({
   hackModeData,
   slowCountdown,
   gameLog = [],
-  activeEffects = {}
+  activeEffects = {},
+  globalPlayerEffects = {}
 }: ActiveGameProps) {
   const [answer, setAnswer] = useState("");
   const [showPlayerSelection, setShowPlayerSelection] = useState(false);
@@ -647,7 +649,7 @@ export function ActiveGame({
         onSelect={handlePlayerSelect}
         onCancel={() => setShowPlayerSelection(false)}
         title={selectedPowerUp === "hack" ? "Select Target to Hack" : "Select Target Player"}
-        activeEffects={getActiveEffectsForModal()}
+        activeEffects={globalPlayerEffects}
       />
     </div>
   );

@@ -24,6 +24,7 @@ export default function Game() {
   const [hackerName, setHackerName] = useState("");
   const [hackProgress, setHackProgress] = useState(0);
   const [activeEffects, setActiveEffects] = useState<{[key: string]: number}>({});
+  const [globalPlayerEffects, setGlobalPlayerEffects] = useState<{[playerId: string]: {[effect: string]: number}}>({});
   const [showAnswerFeedback, setShowAnswerFeedback] = useState<{show: boolean, correct: boolean}>({show: false, correct: false});
   const [hackModeActive, setHackModeActive] = useState(false);
   const [hackModeData, setHackModeData] = useState<{attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string} | null>(null);
@@ -35,12 +36,30 @@ export default function Game() {
   // Update effect timers every second
   useEffect(() => {
     const interval = setInterval(() => {
+      const now = Date.now();
+      
+      // Clean up current player's active effects
       setActiveEffects(prev => {
-        const now = Date.now();
         const filtered = Object.fromEntries(
           Object.entries(prev).filter(([_, endTime]) => endTime > now)
         );
         return filtered;
+      });
+
+      // Clean up global player effects
+      setGlobalPlayerEffects(prev => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach(playerId => {
+          const playerEffects = Object.fromEntries(
+            Object.entries(updated[playerId]).filter(([_, endTime]) => endTime > now)
+          );
+          if (Object.keys(playerEffects).length === 0) {
+            delete updated[playerId];
+          } else {
+            updated[playerId] = playerEffects;
+          }
+        });
+        return updated;
       });
     }, 1000);
 
@@ -162,6 +181,31 @@ export default function Game() {
         };
 
         const handlePowerUpUsed = (message: any) => {
+          // Update global player effects for all players
+          setGlobalPlayerEffects(prev => {
+            const updated = { ...prev };
+            
+            if (message.effect === 'shield') {
+              // Shield removes all existing effects for the target player
+              updated[message.targetId] = { shield: Date.now() + (message.duration * 1000) };
+            } else {
+              // Check if target has shield protection
+              const hasShield = updated[message.targetId] && 
+                               updated[message.targetId]['shield'] && 
+                               updated[message.targetId]['shield'] > Date.now();
+              
+              if (!hasShield) {
+                if (!updated[message.targetId]) {
+                  updated[message.targetId] = {};
+                }
+                updated[message.targetId][message.effect] = Date.now() + (message.duration * 1000);
+              }
+            }
+            
+            return updated;
+          });
+
+          // Handle current player's local effects
           if (message.targetId === playerId) {
             if (message.effect === 'shield') {
               // Shield removes all active effects and prevents new ones
