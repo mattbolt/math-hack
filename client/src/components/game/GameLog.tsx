@@ -1,29 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { GameLogEntry } from "@shared/schema";
 import { Clock, Coins, Shield, Snowflake, Zap, Shuffle, Skull, User } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
 
 interface GameLogProps {
   gameLog: GameLogEntry[];
 }
 
 export function GameLog({ gameLog }: GameLogProps) {
-  const [isScrollable, setIsScrollable] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const checkScrollable = () => {
-      if (scrollAreaRef.current) {
-        setIsScrollable(scrollAreaRef.current.scrollHeight > scrollAreaRef.current.clientHeight);
-      }
-    };
-
-    checkScrollable();
-    const timeoutId = setTimeout(checkScrollable, 100); // Check again after render
-    return () => clearTimeout(timeoutId);
-  }, [gameLog]);
-
   const getEventIcon = (type: string, details: string) => {
     switch (type) {
       case 'powerup':
@@ -82,59 +65,46 @@ export function GameLog({ gameLog }: GameLogProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="relative">
-          <div 
-            ref={scrollAreaRef}
-            className="max-h-80 overflow-y-auto px-4 scrollbar-thin scrollbar-track-slate-800 scrollbar-thumb-slate-500 hover:scrollbar-thumb-slate-400"
-            style={{
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#64748b #1e293b'
-            }}
-          >
-            {sortedLog.length === 0 ? (
-              <div className="text-center text-slate-500 py-8">
-                <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p>No events yet</p>
-              </div>
-            ) : (
-              <div className="space-y-2 pb-4">
-                {sortedLog.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="flex items-start space-x-3 p-2 rounded-lg bg-slate-700/30 hover:bg-slate-700/50 transition-colors"
-                  >
-                    <div className="flex-shrink-0 mt-0.5">
-                      {getEventIcon(entry.type, entry.details)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className={`text-sm ${getEventColor(entry.type)}`}>
-                        {entry.details}
-                      </div>
-                      {entry.creditChange && (
-                        <div className={`text-xs flex items-center space-x-1 mt-1 ${
-                          entry.creditChange > 0 ? 'text-green-400' : 'text-red-400'
-                        }`}>
-                          <Coins className="w-3 h-3" />
-                          <span>{entry.creditChange > 0 ? '+' : ''}{entry.creditChange} credits</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-shrink-0 text-xs text-slate-500">
-                      {formatTimestamp(entry.timestamp)}
-                    </div>
+        <div 
+          className="max-h-80 overflow-y-auto px-4 scrollbar-thin scrollbar-track-slate-800 scrollbar-thumb-slate-500 hover:scrollbar-thumb-slate-400"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#64748b #1e293b'
+          }}
+        >
+          {sortedLog.length === 0 ? (
+            <div className="text-center text-slate-500 py-8">
+              <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p>No events yet</p>
+            </div>
+          ) : (
+            <div className="space-y-2 pb-4">
+              {sortedLog.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="flex items-start space-x-3 p-2 rounded-lg bg-slate-700/30 hover:bg-slate-700/50 transition-colors"
+                >
+                  <div className="flex-shrink-0 mt-0.5">
+                    {getEventIcon(entry.type, entry.details)}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* Scroll indicator - shows when content is scrollable */}
-          {isScrollable && (
-            <div className="absolute right-2 top-4 bottom-4 flex flex-col justify-center pointer-events-none">
-              <div className="flex flex-col items-center space-y-1 bg-slate-800/80 rounded-full p-1">
-                <div className="w-1 h-3 bg-slate-300 rounded-full"></div>
-                <div className="w-1 h-1 bg-slate-400 rounded-full animate-pulse"></div>
-                <div className="w-1 h-3 bg-slate-300 rounded-full"></div>
-              </div>
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-sm ${getEventColor(entry.type)}`}>
+                      {entry.details}
+                    </div>
+                    {entry.creditChange && (
+                      <div className={`text-xs flex items-center space-x-1 mt-1 ${
+                        entry.creditChange > 0 ? 'text-green-400' : 'text-red-400'
+                      }`}>
+                        <Coins className="w-3 h-3" />
+                        <span>{entry.creditChange > 0 ? '+' : ''}{entry.creditChange} credits</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-shrink-0 text-xs text-slate-500">
+                    {formatTimestamp(entry.timestamp)}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
