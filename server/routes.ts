@@ -307,18 +307,13 @@ class GameManager {
 export async function registerRoutes(app: Express): Promise<Server> {
   const gameManager = new GameManager();
   
-  // Create game session (requires authentication via simple system)
+  // Create game session
   app.post("/api/game/create", async (req, res) => {
     try {
       const { hostId, maxPlayers = 4, hostName, gameDuration = 15 } = req.body;
       
       if (!hostId || !hostName) {
         return res.status(400).json({ message: "Host ID and name are required" });
-      }
-
-      // Basic validation for simple auth system
-      if (!hostId.startsWith('user_')) {
-        return res.status(400).json({ message: "Invalid user ID format" });
       }
 
       const code = gameManager.generateGameCode();

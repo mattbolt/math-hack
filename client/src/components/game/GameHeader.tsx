@@ -1,6 +1,5 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AuthButton } from "@/components/auth/AuthButton";
 import { Calculator, Coins, LogOut, Clock } from "lucide-react";
 
 interface GameHeaderProps {
@@ -58,7 +57,6 @@ export function GameHeader({ gameCode, playerCredits, gameTimeRemaining, onLeave
                 <span className="font-semibold">{playerCredits}</span>
               </div>
             )}
-            <AuthButton showUserButton={false} />
             {isGameActive && (
               <Button
                 variant="ghost"
