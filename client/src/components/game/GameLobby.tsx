@@ -7,7 +7,6 @@ import { Copyright } from "@/components/ui/copyright";
 import { AuthButton } from "@/components/auth/AuthButton";
 import { useAuth } from "@/hooks/use-auth";
 import { Crown, Users, Lock } from "lucide-react";
-import { SignInButton } from '@clerk/clerk-react';
 
 interface GameLobbyProps {
   onHostGame: (playerName: string, maxPlayers: number, gameDuration: number) => void;
@@ -21,7 +20,7 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
   const [gameCode, setGameCode] = useState("");
   const [maxPlayers, setMaxPlayers] = useState("4");
   const [gameDuration, setGameDuration] = useState("5");
-  const { isAuthenticated, isLoaded, username } = useAuth();
+  const { isAuthenticated, isLoaded, username, signIn } = useAuth();
 
   const handleHostGame = () => {
     const name = hostName.trim() || username;
@@ -72,11 +71,7 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
                   {isAuthenticated ? 'Create a new game session' : 'Sign in required to host'}
                 </p>
                 {!isAuthenticated && (
-                  <SignInButton mode="modal">
-                    <Button size="sm" variant="outline" className="mt-2">
-                      Sign In to Host
-                    </Button>
-                  </SignInButton>
+                  <AuthButton showUserButton={false} />
                 )}
               </div>
             </CardContent>
