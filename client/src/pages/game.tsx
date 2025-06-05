@@ -11,8 +11,14 @@ import {type GamePhase} from '@/lib/gameTypes';
 import {type GameSession, type Player, type Question, type GameLogEntry} from '@shared/schema';
 import {useToast} from '@/hooks/use-toast';
 import {nanoid} from 'nanoid';
+import {useAuth, SignInButton, UserButton} from '@clerk/clerk-react';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {useLocation} from 'wouter';
 
 export default function Game() {
+  const { isSignedIn, isLoaded } = useAuth();
+  const [, setLocation] = useLocation();
   const [gamePhase, setGamePhase] = useState<GamePhase>('lobby');
   const [playerId] = useState(() => nanoid());
   const [playerName, setPlayerName] = useState('');
@@ -67,6 +73,51 @@ export default function Game() {
   }, []);
 
   const {toast} = useToast();
+
+  // Show loading while Clerk is initializing
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to auth if not signed in
+  if (!isSignedIn) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Math Challenge Arena
+            </CardTitle>
+            <p className="text-muted-foreground">Sign in to join the ultimate math competition</p>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Join players from around the world in exciting math battles. Test your skills, earn credits, and climb the leaderboard!
+            </p>
+            <SignInButton mode="modal">
+              <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                Sign In to Play
+              </Button>
+            </SignInButton>
+            <Button 
+              variant="outline" 
+              onClick={() => setLocation('/auth')}
+              className="w-full"
+            >
+              Create Account
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const currentPlayer = players.find(p => p.playerId === playerId);
 
