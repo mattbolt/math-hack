@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AuthButton } from "@/components/auth/AuthButton";
 import { Calculator, Coins, LogOut, Clock } from "lucide-react";
 
 interface GameHeaderProps {

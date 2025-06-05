@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Copyright } from "@/components/ui/copyright";
-import { Crown, Users } from "lucide-react";
+import { AuthButton } from "@/components/auth/AuthButton";
+import { useAuth } from "@/hooks/use-auth";
+import { Crown, Users, Lock } from "lucide-react";
+import { SignInButton } from '@clerk/clerk-react';
 
 interface GameLobbyProps {
   onHostGame: (playerName: string, maxPlayers: number, gameDuration: number) => void;
@@ -18,6 +21,7 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
   const [gameCode, setGameCode] = useState("");
   const [maxPlayers, setMaxPlayers] = useState("4");
   const [gameDuration, setGameDuration] = useState("5");
+  const { isAuthenticated, isLoaded, username } = useAuth();
 
   const handleHostGame = () => {
     if (hostName.trim()) {
@@ -43,14 +47,33 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
           {/* Host Game Button */}
-          <Card className="bg-slate-800/50 backdrop-blur border-slate-700 hover:border-blue-500/50 transition-all group cursor-pointer" onClick={() => setStep('host')}>
+          <Card className={`bg-slate-800/50 backdrop-blur border-slate-700 transition-all group ${
+            isAuthenticated ? 'hover:border-blue-500/50 cursor-pointer' : 'opacity-75'
+          }`} onClick={() => isAuthenticated && setStep('host')}>
             <CardContent className="p-8">
               <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-                  <Crown className="w-8 h-8 text-blue-500" />
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto transition-transform ${
+                  isAuthenticated 
+                    ? 'bg-blue-500/20 group-hover:scale-110' 
+                    : 'bg-slate-600/20'
+                }`}>
+                  {isAuthenticated ? (
+                    <Crown className="w-8 h-8 text-blue-500" />
+                  ) : (
+                    <Lock className="w-8 h-8 text-slate-500" />
+                  )}
                 </div>
                 <h3 className="text-xl font-semibold">Host Game</h3>
-                <p className="text-slate-400 text-sm">Create a new game session</p>
+                <p className="text-slate-400 text-sm">
+                  {isAuthenticated ? 'Create a new game session' : 'Sign in required to host'}
+                </p>
+                {!isAuthenticated && (
+                  <SignInButton mode="modal">
+                    <Button size="sm" variant="outline" className="mt-2">
+                      Sign In to Host
+                    </Button>
+                  </SignInButton>
+                )}
               </div>
             </CardContent>
           </Card>
