@@ -20,17 +20,7 @@ export default function Game() {
   const [playerName, setPlayerName] = useState('');
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
   const { userId, isAuthenticated } = useAuth();
-  
-  // Get auth token for API requests
-  const getAuthToken = async (): Promise<string | null> => {
-    try {
-      const { getToken } = await import('@clerk/clerk-react');
-      return await getToken();
-    } catch (error) {
-      console.error('Failed to get auth token:', error);
-      return null;
-    }
-  };
+  const { getToken } = useClerkAuth();
   const [players, setPlayers] = useState<Player[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<Question | undefined>();
   const [timeRemaining, setTimeRemaining] = useState(15);
@@ -373,7 +363,7 @@ export default function Game() {
       if (!isAuthenticated || !userId) {
         throw new Error('Authentication required to host a game');
       }
-      const authToken = await getAuthToken();
+      const authToken = getToken ? await getToken() : null;
       const response = await apiRequest('POST', '/api/game/create', {
         hostId: userId, // Use authenticated user's ID for hosting
         hostName,
