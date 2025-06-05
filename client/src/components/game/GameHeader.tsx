@@ -58,6 +58,7 @@ export function GameHeader({ gameCode, playerCredits, gameTimeRemaining, onLeave
                 <span className="font-semibold">{playerCredits}</span>
               </div>
             )}
+            <AuthButton showUserButton={false} />
             {isGameActive && (
               <Button
                 variant="ghost"

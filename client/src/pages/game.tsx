@@ -10,6 +10,7 @@ import {GameResults} from '@/components/game/GameResults';
 import {type GamePhase} from '@/lib/gameTypes';
 import {type GameSession, type Player, type Question, type GameLogEntry} from '@shared/schema';
 import {useToast} from '@/hooks/use-toast';
+import {useAuth} from '@/hooks/use-auth';
 import {nanoid} from 'nanoid';
 
 export default function Game() {
@@ -17,6 +18,7 @@ export default function Game() {
   const [playerId] = useState(() => nanoid());
   const [playerName, setPlayerName] = useState('');
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
+  const { userId, isAuthenticated } = useAuth();
   const [players, setPlayers] = useState<Player[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<Question | undefined>();
   const [timeRemaining, setTimeRemaining] = useState(15);
@@ -356,8 +358,11 @@ export default function Game() {
 
   const createGameMutation = useMutation({
     mutationFn: async ({hostName, maxPlayers, gameDuration}: { hostName: string; maxPlayers: number; gameDuration: number }) => {
+      if (!isAuthenticated || !userId) {
+        throw new Error('Authentication required to host a game');
+      }
       const response = await apiRequest('POST', '/api/game/create', {
-        hostId: playerId,
+        hostId: userId, // Use authenticated user's ID for hosting
         hostName,
         maxPlayers,
         gameDuration

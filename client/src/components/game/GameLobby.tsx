@@ -24,10 +24,14 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
   const { isAuthenticated, isLoaded, username } = useAuth();
 
   const handleHostGame = () => {
-    if (hostName.trim()) {
-      onHostGame(hostName.trim(), parseInt(maxPlayers), parseInt(gameDuration));
+    const name = hostName.trim() || username;
+    if (name) {
+      onHostGame(name, parseInt(maxPlayers), parseInt(gameDuration));
     }
   };
+
+  // Pre-fill host name with authenticated user's name
+  const displayHostName = hostName || username;
 
   const handleJoinGame = () => {
     if (joinName.trim() && gameCode.trim()) {
@@ -124,7 +128,7 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
                 <Input
                   type="text"
                   placeholder="Your name"
-                  value={hostName}
+                  value={displayHostName}
                   onChange={(e) => setHostName(e.target.value)}
                   className="bg-slate-700 border-slate-600 focus:border-blue-500"
                 />
