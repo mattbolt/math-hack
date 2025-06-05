@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UserButton } from "@clerk/clerk-react";
+import { UserButton, useAuth } from "@clerk/clerk-react";
 import { Calculator, Coins, LogOut, Clock } from "lucide-react";
 
 interface GameHeaderProps {
@@ -12,6 +12,8 @@ interface GameHeaderProps {
 }
 
 export function GameHeader({ gameCode, playerCredits, gameTimeRemaining, onLeaveGame, isGameActive = false }: GameHeaderProps) {
+  const { isSignedIn } = useAuth();
+  
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -58,15 +60,17 @@ export function GameHeader({ gameCode, playerCredits, gameTimeRemaining, onLeave
                 <span className="font-semibold">{playerCredits}</span>
               </div>
             )}
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8",
-                  userButtonPopoverCard: "bg-slate-800 border-slate-700",
-                  userButtonPopoverActions: "text-white",
-                }
-              }}
-            />
+            {isSignedIn && (
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "w-8 h-8",
+                    userButtonPopoverCard: "bg-slate-800 border-slate-700",
+                    userButtonPopoverActions: "text-white",
+                  }
+                }}
+              />
+            )}
             {isGameActive && (
               <Button
                 variant="ghost"

@@ -16,57 +16,47 @@ import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {useLocation} from 'wouter';
 
-function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isSignedIn, isLoaded } = useAuth();
-  const [, setLocation] = useLocation();
+function AuthModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: () => void }) {
+  const { isSignedIn } = useAuth();
 
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (isSignedIn && isOpen) {
+      onSuccess();
+      onClose();
+    }
+  }, [isSignedIn, isOpen, onSuccess, onClose]);
 
-  if (!isSignedIn) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Math Challenge Arena
-            </CardTitle>
-            <p className="text-muted-foreground">Sign in to join the ultimate math competition</p>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Join players from around the world in exciting math battles. Test your skills, earn credits, and climb the leaderboard!
-            </p>
-            <SignInButton mode="modal">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                Sign In to Play
-              </Button>
-            </SignInButton>
-            <Button 
-              variant="outline" 
-              onClick={() => setLocation('/auth')}
-              className="w-full"
-            >
-              Create Account
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Sign In Required
+          </CardTitle>
+          <p className="text-muted-foreground">You need to sign in to host a game</p>
+        </CardHeader>
+        <CardContent className="text-center space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Hosting games requires authentication to manage game sessions and track scores.
+          </p>
+          <SignInButton mode="modal">
+            <Button className="w-full bg-blue-600 hover:bg-blue-700">
+              Sign In to Host
             </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return <>{children}</>;
+          </SignInButton>
+          <Button variant="outline" onClick={onClose} className="w-full">
+            Cancel
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 
 function GameContent() {
+  const { isSignedIn } = useAuth();
   const [gamePhase, setGamePhase] = useState<GamePhase>('lobby');
   const [playerId] = useState(() => nanoid());
   const [playerName, setPlayerName] = useState('');
@@ -86,6 +76,8 @@ function GameContent() {
   const [slowCountdown, setSlowCountdown] = useState(0);
   const [gameTimeRemaining, setGameTimeRemaining] = useState<number>(0);
   const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [pendingHostData, setPendingHostData] = useState<{hostName: string, maxPlayers: number, gameDuration: number} | null>(null);
 
   // Update effect timers every second
   useEffect(() => {
@@ -471,7 +463,19 @@ function GameContent() {
   });
 
   const handleHostGame = (hostName: string, maxPlayers: number, gameDuration: number) => {
+    if (!isSignedIn) {
+      setPendingHostData({hostName, maxPlayers, gameDuration});
+      setShowAuthModal(true);
+      return;
+    }
     createGameMutation.mutate({hostName, maxPlayers, gameDuration});
+  };
+
+  const handleAuthSuccess = () => {
+    if (pendingHostData) {
+      createGameMutation.mutate(pendingHostData);
+      setPendingHostData(null);
+    }
   };
 
   const handleJoinGame = (joinName: string, gameCode: string) => {
@@ -683,15 +687,17 @@ function GameContent() {
             onPlayAgain={handlePlayAgain}
           />
         )}
+
+        <AuthModal 
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={handleAuthSuccess}
+        />
       </main>
     </div>
   );
 }
 
 export default function Game() {
-  return (
-    <AuthGuard>
-      <GameContent />
-    </AuthGuard>
-  );
+  return <GameContent />;
 }
