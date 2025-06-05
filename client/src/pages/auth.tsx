@@ -32,7 +32,7 @@ export default function Auth() {
             <TabsContent value="signin" className="mt-6">
               <SignIn 
                 routing="hash"
-                redirectUrl="/"
+                fallbackRedirectUrl="/"
                 appearance={{
                   elements: {
                     formButtonPrimary: 
@@ -47,7 +47,7 @@ export default function Auth() {
             <TabsContent value="signup" className="mt-6">
               <SignUp 
                 routing="hash"
-                redirectUrl="/"
+                fallbackRedirectUrl="/"
                 appearance={{
                   elements: {
                     formButtonPrimary: 
