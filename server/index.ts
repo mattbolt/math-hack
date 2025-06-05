@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import { clerkMiddleware, requireAuth } from "@clerk/express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -29,6 +30,12 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Add Clerk middleware
+app.use(clerkMiddleware({
+  publishableKey: process.env.VITE_CLERK_PUBLISHABLE_KEY,
+  secretKey: process.env.CLERK_SECRET_KEY,
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
