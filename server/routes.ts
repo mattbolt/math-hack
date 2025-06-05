@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import { clerkClient } from "@clerk/clerk-sdk-node";
 import { storage } from "./storage";
 import { insertGameSessionSchema, insertPlayerSchema, type Question, type GameState, type PowerUpEffect, type GameLogEntry } from "@shared/schema";
 import { z } from "zod";
@@ -304,16 +305,38 @@ class GameManager {
   }
 }
 
+// Authentication middleware
+async function verifyAuthentication(req: any, res: any, next: any) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const token = authHeader.substring(7);
+    const user = await clerkClient.verifyToken(token);
+    (req as any).user = user;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid authentication token" });
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const gameManager = new GameManager();
   
-  // Create game session
-  app.post("/api/game/create", async (req, res) => {
+  // Create game session (requires authentication)
+  app.post("/api/game/create", verifyAuthentication, async (req, res) => {
     try {
       const { hostId, maxPlayers = 4, hostName, gameDuration = 15 } = req.body;
       
       if (!hostId || !hostName) {
         return res.status(400).json({ message: "Host ID and name are required" });
+      }
+
+      // Verify that the hostId matches the authenticated user
+      if (hostId !== (req as any).user.sub) {
+        return res.status(403).json({ message: "Host ID must match authenticated user" });
       }
 
       const code = gameManager.generateGameCode();
