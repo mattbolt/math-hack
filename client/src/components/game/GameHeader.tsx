@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UserButton, useAuth, SignInButton } from "@clerk/clerk-react";
+import { UserButton, useAuth, SignInButton, SignUpButton } from "@clerk/clerk-react";
 import { Calculator, Coins, LogOut, Clock, User, UserPlus } from "lucide-react";
 
 interface GameHeaderProps {
@@ -82,7 +82,7 @@ export function GameHeader({ gameCode, playerCredits, gameTimeRemaining, onLeave
                     Sign In
                   </Button>
                 </SignInButton>
-                <SignInButton mode="modal">
+                <SignUpButton mode="modal">
                   <Button
                     size="sm"
                     className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -90,7 +90,7 @@ export function GameHeader({ gameCode, playerCredits, gameTimeRemaining, onLeave
                     <UserPlus className="w-4 h-4 mr-2" />
                     Sign Up
                   </Button>
-                </SignInButton>
+                </SignUpButton>
               </div>
             )}
             {isGameActive && (

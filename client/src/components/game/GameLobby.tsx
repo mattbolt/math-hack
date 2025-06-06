@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Copyright } from "@/components/ui/copyright";
+import { useUser } from "@clerk/clerk-react";
 import { Crown, Users } from "lucide-react";
 
 interface GameLobbyProps {
@@ -14,12 +15,20 @@ interface GameLobbyProps {
 }
 
 export function GameLobby({ onHostGame, onJoinGame, onRequireAuth, isAuthenticated }: GameLobbyProps) {
+  const { user } = useUser();
   const [step, setStep] = useState<'choose' | 'host' | 'join'>('choose');
   const [hostName, setHostName] = useState("");
   const [joinName, setJoinName] = useState("");
   const [gameCode, setGameCode] = useState("");
   const [maxPlayers, setMaxPlayers] = useState("4");
   const [gameDuration, setGameDuration] = useState("5");
+
+  // Pre-populate host name with user's first name when they navigate to host form
+  useEffect(() => {
+    if (step === 'host' && isAuthenticated && user?.firstName && !hostName) {
+      setHostName(user.firstName);
+    }
+  }, [step, isAuthenticated, user?.firstName, hostName]);
 
   const handleHostGame = () => {
     if (hostName.trim()) {
