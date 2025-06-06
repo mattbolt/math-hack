@@ -23,12 +23,15 @@ export function GameLobby({ onHostGame, onJoinGame, onRequireAuth, isAuthenticat
   const [maxPlayers, setMaxPlayers] = useState("4");
   const [gameDuration, setGameDuration] = useState("5");
 
-  // Pre-populate host name with user's first name when they navigate to host form
+  // Pre-populate name fields with user's first name when they navigate to forms
   useEffect(() => {
     if (step === 'host' && isAuthenticated && user?.firstName && !hostName) {
       setHostName(user.firstName);
     }
-  }, [step, isAuthenticated, user?.firstName, hostName]);
+    if (step === 'join' && isAuthenticated && user?.firstName && !joinName) {
+      setJoinName(user.firstName);
+    }
+  }, [step, isAuthenticated, user?.firstName, hostName, joinName]);
 
   const handleHostGame = () => {
     if (hostName.trim()) {

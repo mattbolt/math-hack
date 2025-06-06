@@ -14,6 +14,7 @@ import {nanoid} from 'nanoid';
 import {useAuth, SignInButton, UserButton} from '@clerk/clerk-react';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
+import {Footer} from '@/components/ui/footer';
 import {useLocation} from 'wouter';
 
 function AuthModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: () => void }) {
@@ -691,6 +692,7 @@ function GameContent() {
           onSuccess={handleAuthSuccess}
         />
       </main>
+      <Footer />
     </div>
   );
 }
