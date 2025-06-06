@@ -463,11 +463,6 @@ function GameContent() {
   });
 
   const handleHostGame = (hostName: string, maxPlayers: number, gameDuration: number) => {
-    if (!isSignedIn) {
-      setPendingHostData({hostName, maxPlayers, gameDuration});
-      setShowAuthModal(true);
-      return;
-    }
     createGameMutation.mutate({hostName, maxPlayers, gameDuration});
   };
 
@@ -615,6 +610,8 @@ function GameContent() {
           <GameLobby
             onHostGame={handleHostGame}
             onJoinGame={handleJoinGame}
+            onRequireAuth={() => setShowAuthModal(true)}
+            isAuthenticated={!!isSignedIn}
           />
         )}
 

@@ -9,9 +9,11 @@ import { Crown, Users } from "lucide-react";
 interface GameLobbyProps {
   onHostGame: (playerName: string, maxPlayers: number, gameDuration: number) => void;
   onJoinGame: (playerName: string, gameCode: string) => void;
+  onRequireAuth: () => void;
+  isAuthenticated: boolean;
 }
 
-export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
+export function GameLobby({ onHostGame, onJoinGame, onRequireAuth, isAuthenticated }: GameLobbyProps) {
   const [step, setStep] = useState<'choose' | 'host' | 'join'>('choose');
   const [hostName, setHostName] = useState("");
   const [joinName, setJoinName] = useState("");
@@ -43,7 +45,13 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
           {/* Host Game Button */}
-          <Card className="bg-slate-800/50 backdrop-blur border-slate-700 hover:border-blue-500/50 transition-all group cursor-pointer" onClick={() => setStep('host')}>
+          <Card className="bg-slate-800/50 backdrop-blur border-slate-700 hover:border-blue-500/50 transition-all group cursor-pointer" onClick={() => {
+            if (!isAuthenticated) {
+              onRequireAuth();
+            } else {
+              setStep('host');
+            }
+          }}>
             <CardContent className="p-8">
               <div className="text-center space-y-4">
                 <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
@@ -51,6 +59,9 @@ export function GameLobby({ onHostGame, onJoinGame }: GameLobbyProps) {
                 </div>
                 <h3 className="text-xl font-semibold">Host Game</h3>
                 <p className="text-slate-400 text-sm">Create a new game session</p>
+                {!isAuthenticated && (
+                  <p className="text-xs text-blue-400">Sign in required</p>
+                )}
               </div>
             </CardContent>
           </Card>
