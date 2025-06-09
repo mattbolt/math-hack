@@ -65,8 +65,8 @@ export function GameLog({ gameLog }: GameLogProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div 
-          className="max-h-80 overflow-y-auto px-4 scrollbar-thin scrollbar-track-slate-800 scrollbar-thumb-slate-500 hover:scrollbar-thumb-slate-400"
+        <div
+          className="max-h-[70vh] overflow-y-auto px-4 scrollbar-thin scrollbar-track-slate-800 scrollbar-thumb-slate-500 hover:scrollbar-thumb-slate-400"
           style={{
             scrollbarWidth: 'thin',
             scrollbarColor: '#64748b #1e293b'

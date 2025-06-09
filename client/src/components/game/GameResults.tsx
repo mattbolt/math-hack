@@ -1,6 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copyright } from "@/components/ui/copyright";
 import { Player } from "@shared/schema";
 import { Trophy, Share, RotateCcw } from "lucide-react";
 
@@ -71,16 +70,16 @@ export function GameResults({ players, onPlayAgain }: GameResultsProps) {
               <Trophy className="w-6 h-6 mr-2" />
               Final Leaderboard
             </h3>
-            
+
             <div className="space-y-4">
               {sortedPlayers.map((player, index) => {
                 const rank = index + 1;
-                const accuracy = player.correctAnswers + player.wrongAnswers > 0 
+                const accuracy = player.correctAnswers + player.wrongAnswers > 0
                   ? Math.round((player.correctAnswers / (player.correctAnswers + player.wrongAnswers)) * 100)
                   : 0;
 
                 return (
-                  <div 
+                  <div
                     key={player.id}
                     className={`flex items-center justify-between p-4 rounded-lg border ${getCardBackground(player, rank)}`}
                   >
@@ -114,15 +113,15 @@ export function GameResults({ players, onPlayAgain }: GameResultsProps) {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <Button 
+        <Button
           onClick={onPlayAgain}
           className="bg-gradient-to-r from-blue-500 to-emerald-500 hover:from-blue-600 hover:to-emerald-600 transition-all duration-300"
         >
           <RotateCcw className="w-4 h-4 mr-2" />
           Play Again
         </Button>
-        
-        <Button 
+
+        <Button
           onClick={shareResults}
           variant="outline"
           className="bg-slate-700 hover:bg-slate-600 border-slate-600"
@@ -131,8 +130,6 @@ export function GameResults({ players, onPlayAgain }: GameResultsProps) {
           Share Results
         </Button>
       </div>
-
-      <Copyright className="mt-8" />
     </div>
   );
 }

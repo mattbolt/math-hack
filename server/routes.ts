@@ -30,7 +30,7 @@ class GameManager {
 
     gameLog.push(logEntry);
     await storage.updateGameSession(sessionId, { gameLog });
-    
+
     // Broadcast updated game log to all clients
     if (wss) {
       this.broadcastToSession(sessionId, wss, {
@@ -52,7 +52,7 @@ class GameManager {
   generateQuestion(difficulty: number): Question {
     let operations: string[];
     let num1: number = 0, num2: number = 0, answer: number = 0;
-    
+
     // Define available operations based on difficulty
     switch (difficulty) {
       case 1:
@@ -73,9 +73,9 @@ class GameManager {
       default:
         operations = ['addition', 'subtraction', 'multiplication', 'division'];
     }
-    
+
     const operation = operations[Math.floor(Math.random() * operations.length)] as any;
-    
+
     switch (operation) {
       case 'addition':
         if (difficulty <= 2) {
@@ -105,7 +105,7 @@ class GameManager {
         }
         answer = num1 + num2;
         break;
-        
+
       case 'subtraction':
         if (difficulty <= 2) {
           // Single digit both sides
@@ -134,7 +134,7 @@ class GameManager {
         }
         answer = num1 - num2;
         break;
-        
+
       case 'multiplication':
         if (difficulty <= 6) {
           // Single digit both sides
@@ -151,7 +151,7 @@ class GameManager {
         }
         answer = num1 * num2;
         break;
-        
+
       case 'division':
         if (difficulty <= 7) {
           // Right side single digit
@@ -171,7 +171,7 @@ class GameManager {
     // Generate 3 incorrect options
     const options = new Set<number>();
     options.add(answer); // Add correct answer
-    
+
     while (options.size < 4) {
       let wrongAnswer;
       if (operation === 'division') {
@@ -182,12 +182,12 @@ class GameManager {
         const range = Math.max(5, Math.floor(Math.abs(answer * 0.5)));
         wrongAnswer = Math.max(0, Math.floor(answer + Math.random() * range * 2 - range));
       }
-      
+
       if (wrongAnswer !== answer && Number.isInteger(wrongAnswer)) {
         options.add(wrongAnswer);
       }
     }
-    
+
     // Convert to array and shuffle
     const shuffledOptions = Array.from(options).sort(() => Math.random() - 0.5);
 
@@ -230,7 +230,7 @@ class GameManager {
   async startQuestion(sessionId: number, wss: WebSocketServer) {
     const session = await storage.getGameSession(sessionId);
     const players = await storage.getPlayersBySession(sessionId);
-    
+
     if (!session || players.length === 0) return;
 
     await storage.updateGameSession(sessionId, {
@@ -240,7 +240,7 @@ class GameManager {
     // Generate individual questions for each player
     for (const player of players) {
       const question = this.generateQuestion(player.difficultyLevel);
-      
+
       // Send individual question to each player
       wss.clients.forEach((client: GameWebSocket) => {
         if (client.playerId === player.playerId && client.readyState === WebSocket.OPEN) {
@@ -277,24 +277,24 @@ class GameManager {
   async endGame(sessionId: number, wss: WebSocketServer) {
     // Update session status to finished
     await storage.updateGameSession(sessionId, { status: 'finished' });
-    
+
     // Get final player rankings
     const players = await storage.getPlayersBySession(sessionId);
     const sortedPlayers = players.sort((a, b) => b.credits - a.credits);
-    
+
     // Clear timers
     const sessionTimer = this.sessionTimers.get(sessionId);
     if (sessionTimer) {
       clearTimeout(sessionTimer);
       this.sessionTimers.delete(sessionId);
     }
-    
+
     const questionTimer = this.questionTimers.get(sessionId);
     if (questionTimer) {
       clearTimeout(questionTimer);
       this.questionTimers.delete(sessionId);
     }
-    
+
     // Broadcast game end
     this.broadcastToSession(sessionId, wss, {
       type: 'gameEnded',
@@ -306,12 +306,12 @@ class GameManager {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const gameManager = new GameManager();
-  
+
   // Create game session
   app.post("/api/game/create", async (req, res) => {
     try {
-      const { hostId, maxPlayers = 4, hostName, gameDuration = 15 } = req.body;
-      
+      const { hostId, maxPlayers = 8, hostName, gameDuration = 5 } = req.body;
+
       if (!hostId || !hostName) {
         return res.status(400).json({ message: "Host ID and name are required" });
       }
@@ -342,7 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/game/join", async (req, res) => {
     try {
       const { code, playerId, name } = req.body;
-      
+
       if (!code || !playerId || !name) {
         return res.status(400).json({ message: "Code, player ID, and name are required" });
       }
@@ -386,13 +386,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const sessionId = parseInt(req.params.sessionId);
       const session = await storage.getGameSession(sessionId);
-      
+
       if (!session) {
         return res.status(404).json({ message: "Game session not found" });
       }
 
       const players = await storage.getPlayersBySession(sessionId);
-      
+
       const gameState: GameState = {
         session,
         players,
@@ -416,14 +416,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
-  
+
   // WebSocket server setup
   const wss = new WebSocketServer({ server: httpServer, path: '/game-ws' });
 
   wss.on('connection', (ws: GameWebSocket) => {
     ws.isAlive = true;
     console.log('WebSocket connection established');
-    
+
     ws.on('pong', () => {
       ws.isAlive = true;
     });
@@ -435,28 +435,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ws.on('message', async (data) => {
       try {
         const message = JSON.parse(data.toString());
-        
+
         switch (message.type) {
           case 'ping':
             // Respond to keep-alive ping
             ws.send(JSON.stringify({ type: 'pong' }));
             break;
-            
+
           case 'joinSession':
             ws.sessionId = message.sessionId;
             ws.playerId = message.playerId;
             console.log(`Player ${ws.playerId} joined session ${ws.sessionId}`);
-            
+
             // Send current game state
             const gameState = await storage.getGameSession(message.sessionId);
             const players = await storage.getPlayersBySession(message.sessionId);
-            
+
             ws.send(JSON.stringify({
               type: 'gameState',
               session: gameState,
               players
             }));
-            
+
             // Broadcast player joined to ALL clients in session
             console.log(`Broadcasting playerJoined to session ${message.sessionId}, ${players.length} players`);
             gameManager.broadcastToSession(message.sessionId, wss, {
@@ -472,7 +472,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 const updatedPlayer = await storage.updatePlayer(currentPlayer.id, {
                   isReady: !currentPlayer.isReady
                 });
-                
+
                 // Broadcast updated player state to all players in session
                 const players = await storage.getPlayersBySession(ws.sessionId);
                 gameManager.broadcastToSession(ws.sessionId, wss, {
@@ -485,7 +485,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           case 'startGame':
             if (ws.sessionId) {
-              const session = await storage.updateGameSession(ws.sessionId, { 
+              const session = await storage.updateGameSession(ws.sessionId, {
                 status: 'active',
                 gameStartTime: new Date()
               });
@@ -493,12 +493,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 type: 'gameStarted',
                 session
               });
-              
+
               // Start first question
               setTimeout(() => {
                 gameManager.startQuestion(ws.sessionId!, wss);
               }, 1000);
-              
+
               // Set overall game timer
               const gameTimer = setTimeout(async () => {
                 await gameManager.endGame(ws.sessionId!, wss);
@@ -510,10 +510,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (ws.sessionId && ws.playerId) {
               const player = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, ws.playerId);
               const session = await storage.getGameSession(ws.sessionId);
-              
+
               if (player && session) {
                 const isCorrect = message.answer === message.correctAnswer;
-                
+
                 let updates: any = {
                   [isCorrect ? 'correctAnswers' : 'wrongAnswers']: isCorrect ? player.correctAnswers + 1 : player.wrongAnswers + 1,
                   consecutiveCorrect: isCorrect ? player.consecutiveCorrect + 1 : 0,
@@ -524,7 +524,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (isCorrect) {
                   const creditReward = 10 + (player.difficultyLevel * 5);
                   updates.credits = player.credits + creditReward;
-                  
+
                   // Log credit reward
                   await gameManager.logGameEvent(ws.sessionId, {
                     type: 'credit_change',
@@ -533,21 +533,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     details: `${player.name} earned ${creditReward} credits for correct answer`,
                     creditChange: creditReward
                   }, wss);
-                  
+
                   // Adjust difficulty and reset current level consecutive count if difficulty changes
                   const newDifficulty = gameManager.adjustDifficulty({
                     ...player,
                     consecutiveCorrect: updates.consecutiveCorrect,
                     consecutiveWrong: updates.consecutiveWrong
                   });
-                  
+
                   updates.difficultyLevel = newDifficulty;
-                  
+
                   // Track maximum difficulty reached
                   if (newDifficulty > (player.maxDifficultyReached || 1)) {
                     updates.maxDifficultyReached = newDifficulty;
                   }
-                  
+
                   // Reset current level consecutive count if difficulty increased
                   if (newDifficulty > player.difficultyLevel) {
                     updates.consecutiveCorrect = 0;
@@ -556,13 +556,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   // Check hack progress only for correct answers
                   for (const [key, hackData] of Array.from(gameManager.hackModes.entries())) {
                     if (hackData.sessionId === ws.sessionId && (hackData.hackerId === ws.playerId || hackData.targetId === ws.playerId)) {
-                      
+
                       if (hackData.hackerId === ws.playerId) {
                         hackData.attackerProgress++;
                       } else {
                         hackData.defenderProgress++;
                       }
-                      
+
                       gameManager.broadcastToSession(ws.sessionId, wss, {
                         type: 'hackProgress',
                         hackerId: hackData.hackerId,
@@ -570,7 +570,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         attackerProgress: hackData.attackerProgress,
                         defenderProgress: hackData.defenderProgress
                       });
-                      
+
                       if (hackData.attackerProgress >= 5) {
                         const targetPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, hackData.targetId);
                         if (targetPlayer) {
@@ -581,7 +581,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                           const updatedTargetPlayer = await storage.updatePlayer(targetPlayer.id, {
                             credits: Math.max(0, targetPlayer.credits - stolenCredits)
                           });
-                          
+
                           // Log successful hack
                           await gameManager.logGameEvent(ws.sessionId, {
                             type: 'hack_complete',
@@ -592,7 +592,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                             details: `${player.name} successfully hacked ${targetPlayer?.name} for ${stolenCredits} credits`,
                             creditChange: stolenCredits
                           }, wss);
-                          
+
                           gameManager.broadcastToSession(ws.sessionId, wss, {
                             type: 'hackCompleted',
                             hackerId: hackData.hackerId,
@@ -600,33 +600,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
                             success: true,
                             creditsStolen: stolenCredits
                           });
-                          
+
                           // Broadcast updated target player credits
                           gameManager.broadcastToSession(ws.sessionId, wss, {
                             type: 'playerUpdated',
                             player: updatedTargetPlayer
                           });
                         }
-                        
+
                         // Clear hack status on target player
                         if (targetPlayer) {
                           const clearedTargetPlayer = await storage.updatePlayer(targetPlayer.id, {
                             isBeingHacked: false,
                             hackedBy: null
                           });
-                          
+
                           // Broadcast updated target player status
                           gameManager.broadcastToSession(ws.sessionId, wss, {
                             type: 'playerUpdated',
                             player: clearedTargetPlayer
                           });
                         }
-                        
+
                         gameManager.hackModes.delete(key);
                       } else if (hackData.defenderProgress >= 5) {
                         const targetPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, hackData.targetId);
                         const hackerPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, hackData.hackerId);
-                        
+
                         // Log failed hack
                         await gameManager.logGameEvent(ws.sessionId, {
                           type: 'hack_complete',
@@ -637,7 +637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                           details: `${targetPlayer?.name} successfully defended against ${hackerPlayer?.name}'s hack`,
                           creditChange: 0
                         }, wss);
-                        
+
                         gameManager.broadcastToSession(ws.sessionId, wss, {
                           type: 'hackCompleted',
                           hackerId: hackData.hackerId,
@@ -645,21 +645,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
                           success: false,
                           creditsStolen: 0
                         });
-                        
+
                         // Clear hack status on target player
                         if (targetPlayer) {
                           const clearedTargetPlayer = await storage.updatePlayer(targetPlayer.id, {
                             isBeingHacked: false,
                             hackedBy: null
                           });
-                          
+
                           // Broadcast updated target player status
                           gameManager.broadcastToSession(ws.sessionId, wss, {
                             type: 'playerUpdated',
                             player: clearedTargetPlayer
                           });
                         }
-                        
+
                         gameManager.hackModes.delete(key);
                       }
                       break;
@@ -672,9 +672,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     consecutiveCorrect: updates.consecutiveCorrect,
                     consecutiveWrong: updates.consecutiveWrong
                   });
-                  
+
                   updates.difficultyLevel = newDifficulty;
-                  
+
                   // Reset consecutive counts if difficulty decreased
                   if (newDifficulty < player.difficultyLevel) {
                     updates.consecutiveWrong = 0;
@@ -682,16 +682,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
 
                 const updatedPlayer = await storage.updatePlayer(player.id, updates);
-                
+
                 // Generate new question for this player immediately
                 const newQuestion = gameManager.generateQuestion(updates.difficultyLevel || player.difficultyLevel);
-                
+
                 // Send new question to this player
                 ws.send(JSON.stringify({
                   type: 'newQuestion',
                   question: newQuestion
                 }));
-                
+
                 // Broadcast answer result to all players in session
                 gameManager.broadcastToSession(ws.sessionId, wss, {
                   type: 'answerSubmitted',
@@ -712,17 +712,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 shield: 150,
                 hack: 250
               };
-              
+
               const cost = powerUpCosts[message.powerUpType as keyof typeof powerUpCosts];
-              
+
               if (player && player.credits >= cost) {
                 if (message.powerUpType === 'hack') {
                   // Check if either player is already in a hack
-                  const existingHack = Array.from(gameManager.hackModes.values()).find(hack => 
+                  const existingHack = Array.from(gameManager.hackModes.values()).find(hack =>
                     hack.hackerId === ws.playerId || hack.targetId === ws.playerId ||
                     hack.hackerId === message.targetId || hack.targetId === message.targetId
                   );
-                  
+
                   if (!existingHack) {
                     // Start hack mode
                     const hackId = `${ws.playerId}-${message.targetId}-${Date.now()}`;
@@ -733,34 +733,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       attackerProgress: 0,
                       defenderProgress: 0
                     });
-                    
+
                     const targetPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, message.targetId);
-                    
+
                     // Update hack status on target player
                     if (targetPlayer) {
                       const updatedTargetPlayer = await storage.updatePlayer(targetPlayer.id, {
                         isBeingHacked: true,
                         hackedBy: ws.playerId
                       });
-                      
+
                       // Broadcast updated target player status
                       gameManager.broadcastToSession(ws.sessionId, wss, {
                         type: 'playerUpdated',
                         player: updatedTargetPlayer
                       });
                     }
-                    
+
                     // Deduct credits from hacker
                     const updatedHacker = await storage.updatePlayer(player.id, {
                       credits: player.credits - cost
                     });
-                    
+
                     // Broadcast updated hacker status
                     gameManager.broadcastToSession(ws.sessionId, wss, {
                       type: 'playerUpdated',
                       player: updatedHacker
                     });
-                    
+
                     console.log('Hack mode started:', {
                       hackId,
                       hackerId: ws.playerId,
@@ -795,7 +795,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     effect: 'shield',
                     endTime: Date.now() + 20000 // 20 seconds
                   });
-                  
+
                   // Clear all existing effects on this player
                   const effectsToDelete: string[] = [];
                   for (const [key, effect] of Array.from(gameManager.powerUpEffects.entries())) {
@@ -823,21 +823,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }, wss);
                 } else {
                   // Check if target has shield protection
-                  const shieldEffect = Array.from(gameManager.powerUpEffects.values()).find(effect => 
+                  const shieldEffect = Array.from(gameManager.powerUpEffects.values()).find(effect =>
                     effect.playerId === message.targetId && effect.effect === 'shield' && effect.endTime > Date.now()
                   );
-                  
+
                   if (!shieldEffect) {
-                    const duration = message.powerUpType === 'slow' ? 10 : 
+                    const duration = message.powerUpType === 'slow' ? 10 :
                                    message.powerUpType === 'freeze' ? 8 : 5;
-                    
+
                     const effectKey = `${message.targetId}-${message.powerUpType}`;
                     gameManager.powerUpEffects.set(effectKey, {
                       playerId: message.targetId,
                       effect: message.powerUpType,
                       endTime: Date.now() + (duration * 1000)
                     });
-                    
+
                     // Log power-up usage
                     const targetPlayer = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, message.targetId);
                     await gameManager.logGameEvent(ws.sessionId, {
@@ -858,12 +858,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     });
                   }
                 }
-                
+
                 const updatedPlayer = await storage.updatePlayer(player.id, {
                   credits: player.credits - cost,
                   hackAttempts: (player.hackAttempts || 0) + 1
                 });
-                
+
                 // Broadcast updated player data to all clients
                 gameManager.broadcastToSession(ws.sessionId, wss, {
                   type: 'playerUpdated',
@@ -876,7 +876,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           case 'skipQuestion':
             if (ws.sessionId && ws.playerId) {
               const player = await storage.getPlayerBySessionAndPlayerId(ws.sessionId, ws.playerId);
-              
+
               if (player && player.credits >= 5) {
                 // Deduct credits and treat as wrong answer for difficulty scaling
                 const updates: any = {
@@ -892,9 +892,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   consecutiveWrong: updates.consecutiveWrong,
                   consecutiveCorrect: 0
                 });
-                
+
                 updates.difficultyLevel = newDifficulty;
-                
+
                 // Reset consecutive counts if difficulty decreased
                 if (newDifficulty < player.difficultyLevel) {
                   updates.consecutiveWrong = 0;
@@ -910,16 +910,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }, wss);
 
                 const updatedPlayer = await storage.updatePlayer(player.id, updates);
-                
+
                 // Generate new question for this player immediately
                 const newQuestion = gameManager.generateQuestion(updates.difficultyLevel || player.difficultyLevel);
-                
+
                 // Send new question to this player
                 ws.send(JSON.stringify({
                   type: 'newQuestion',
                   question: newQuestion
                 }));
-                
+
                 // Broadcast skip result to all players in session
                 gameManager.broadcastToSession(ws.sessionId, wss, {
                   type: 'questionSkipped',
@@ -956,7 +956,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Terminating inactive WebSocket connection');
         return ws.terminate();
       }
-      
+
       ws.isAlive = false;
       ws.ping();
     });

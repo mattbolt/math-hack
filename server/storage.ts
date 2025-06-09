@@ -1,10 +1,10 @@
-import { 
-  users, 
-  gameSessions, 
-  players, 
-  powerUps, 
+import {
+  users,
+  gameSessions,
+  players,
+  powerUps,
   hackAttempts,
-  type User, 
+  type User,
   type InsertUser,
   type GameSession,
   type InsertGameSession,
@@ -103,7 +103,7 @@ export class MemStorage implements IStorage {
       currentQuestion: null,
       questionStartTime: null,
       questionNumber: 0,
-      gameDuration: insertSession.gameDuration || 15,
+      gameDuration: insertSession.gameDuration || 5,
       gameStartTime: null,
       gameLog: [],
       createdAt: new Date(),
@@ -136,12 +136,12 @@ export class MemStorage implements IStorage {
   // Player methods
   async createPlayer(insertPlayer: InsertPlayer): Promise<Player> {
     const id = this.currentId++;
-    
+
     // Assign color index based on existing players in the session
     const sessionPlayers = Array.from(this.players.values())
       .filter(p => p.sessionId === insertPlayer.sessionId);
     const colorIndex = sessionPlayers.length;
-    
+
     const player: Player = {
       id,
       sessionId: insertPlayer.sessionId,
@@ -200,7 +200,7 @@ export class MemStorage implements IStorage {
   // Power-up methods
   async createPowerUp(insertPowerUp: InsertPowerUp): Promise<PowerUp> {
     const id = this.currentId++;
-    const powerUp: PowerUp = { 
+    const powerUp: PowerUp = {
       id,
       name: insertPowerUp.name,
       cost: insertPowerUp.cost,
@@ -235,9 +235,9 @@ export class MemStorage implements IStorage {
 
   async getActiveHackAttempt(sessionId: number, hackerId: string, targetId: string): Promise<HackAttempt | undefined> {
     return Array.from(this.hackAttempts.values()).find(
-      hack => hack.sessionId === sessionId && 
-              hack.hackerId === hackerId && 
-              hack.targetId === targetId && 
+      hack => hack.sessionId === sessionId &&
+              hack.hackerId === hackerId &&
+              hack.targetId === targetId &&
               hack.isActive
     );
   }

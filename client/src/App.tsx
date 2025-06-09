@@ -1,44 +1,36 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { ClerkProvider } from "@clerk/clerk-react";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import Game from "@/pages/game";
-import NotFound from "@/pages/not-found";
-import Auth from "@/pages/auth";
-import PrivacyPolicy from "@/pages/privacy-policy";
-import TermsOfService from "@/pages/terms-of-service";
+import {Layout} from './Layout.tsx';
+import {queryClient} from '@/lib/queryClient';
+import {ClerkProvider} from '@clerk/clerk-react';
+import {Toaster} from '@/components/ui/toaster';
+import {TooltipProvider} from '@/components/ui/tooltip';
+import {Game, NotFound, PrivacyPolicy, Terms} from '@/pages';
+import {QueryClientProvider} from '@tanstack/react-query';
+import {Switch, Route} from 'wouter';
+
+import type {ReactElement} from 'react';
+
 
 const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+if (!publishableKey) throw new Error('Missing Publishable Key');
 
-if (!publishableKey) {
-  throw new Error("Missing Publishable Key");
-}
+const Router = (): ReactElement => {
+  return <Switch>
+    <Route path="/" component={Game}/>
+    <Route path="/privacy-policy" component={PrivacyPolicy}/>
+    <Route path="/terms-of-service" component={Terms}/>
+    <Route component={NotFound}/>
+  </Switch>;
+};
 
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Game} />
-      <Route path="/auth" component={Auth} />
-      <Route path="/privacy-policy" component={PrivacyPolicy} />
-      <Route path="/terms-of-service" component={TermsOfService} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
-
-function App() {
-  return (
-    <ClerkProvider publishableKey={publishableKey}>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ClerkProvider>
-  );
-}
-
-export default App;
+export const App = (): ReactElement => {
+  return <ClerkProvider publishableKey={publishableKey}>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster/>
+        <Layout>
+          <Router/>
+        </Layout>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ClerkProvider>;
+};

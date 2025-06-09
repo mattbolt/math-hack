@@ -1,84 +1,45 @@
-import {useState, useEffect} from 'react';
-import {useQuery, useMutation} from '@tanstack/react-query';
-import {queryClient, apiRequest} from '@/lib/queryClient';
-import {wsManager} from '@/lib/websocket';
-import {GameHeader} from '@/components/game/GameHeader';
-import {GameLobby} from '@/components/game/GameLobby';
-import {GameWaitingRoom} from '@/components/game/GameWaitingRoom';
 import {ActiveGame} from '@/components/game/ActiveGame';
+import {GameLobby} from '@/components/game/GameLobby';
 import {GameResults} from '@/components/game/GameResults';
-import {type GamePhase} from '@/lib/gameTypes';
-import {type GameSession, type Player, type Question, type GameLogEntry} from '@shared/schema';
+import {GameWaitingRoom} from '@/components/game/GameWaitingRoom';
 import {useToast} from '@/hooks/use-toast';
+
+import type {GamePhase} from '@/lib/gameTypes';
+import {apiRequest} from '@/lib/queryClient';
+import {wsManager} from '@/lib/websocket';
+import {useAuth} from '@clerk/clerk-react';
+import type {GameLogEntry, GameSession, Player, Question} from '@shared/schema';
+import {useMutation} from '@tanstack/react-query';
 import {nanoid} from 'nanoid';
-import {useAuth, SignInButton, UserButton} from '@clerk/clerk-react';
-import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import {Button} from '@/components/ui/button';
-import {Footer} from '@/components/ui/footer';
-import {useLocation} from 'wouter';
+import type {ReactElement} from 'react';
+import {useEffect, useState} from 'react';
 
-function AuthModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: () => void }) {
-  const { isSignedIn } = useAuth();
 
-  useEffect(() => {
-    if (isSignedIn && isOpen) {
-      onSuccess();
-      onClose();
-    }
-  }, [isSignedIn, isOpen, onSuccess, onClose]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Sign In Required
-          </CardTitle>
-          <p className="text-muted-foreground">You need to sign in to host a game</p>
-        </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Hosting games requires authentication to manage game sessions and track scores.
-          </p>
-          <SignInButton mode="modal">
-            <Button className="w-full bg-blue-600 hover:bg-blue-700">
-              Sign In to Host
-            </Button>
-          </SignInButton>
-          <Button variant="outline" onClick={onClose} className="w-full">
-            Cancel
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function GameContent() {
-  const { isSignedIn } = useAuth();
-  const [gamePhase, setGamePhase] = useState<GamePhase>('lobby');
-  const [playerId] = useState(() => nanoid());
-  const [playerName, setPlayerName] = useState('');
-  const [gameSession, setGameSession] = useState<GameSession | null>(null);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [currentQuestion, setCurrentQuestion] = useState<Question | undefined>();
-  const [timeRemaining, setTimeRemaining] = useState(15);
-  const [isBeingHacked, setIsBeingHacked] = useState(false);
-  const [hackerName, setHackerName] = useState('');
-  const [hackProgress, setHackProgress] = useState(0);
+export const Game = (): ReactElement => {
   const [activeEffects, setActiveEffects] = useState<{ [key: string]: number }>({});
+  const [currentQuestion, setCurrentQuestion] = useState<Question | undefined>();
+  const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
+  const [gamePhase, setGamePhase] = useState<GamePhase>('lobby');
+  const [gameSession, setGameSession] = useState<GameSession | null>(null);
+  const [gameTimeRemaining, setGameTimeRemaining] = useState<number>(0);
   const [globalPlayerEffects, setGlobalPlayerEffects] = useState<{ [playerId: string]: { [effect: string]: number } }>({});
-  const [showAnswerFeedback, setShowAnswerFeedback] = useState<{ show: boolean, correct: boolean }>({show: false, correct: false});
   const [hackModeActive, setHackModeActive] = useState(false);
   const [hackModeData, setHackModeData] = useState<{ attackerProgress: number, defenderProgress: number, isAttacker: boolean, opponentName: string } | null>(null);
+  const [hackProgress, setHackProgress] = useState(0);
+  const [hackerName, setHackerName] = useState('');
+  const [isBeingHacked, setIsBeingHacked] = useState(false);
   const [pendingAnswer, setPendingAnswer] = useState(false);
+  const [pendingHostData, setPendingHostData] = useState<{ hostName: string, maxPlayers: number, gameDuration: number } | null>(null);
+  const [playerId] = useState(() => nanoid());
+  const [playerName, setPlayerName] = useState('');
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [showAnswerFeedback, setShowAnswerFeedback] = useState<{ show: boolean, correct: boolean }>({show: false, correct: false});
   const [slowCountdown, setSlowCountdown] = useState(0);
-  const [gameTimeRemaining, setGameTimeRemaining] = useState<number>(0);
-  const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [pendingHostData, setPendingHostData] = useState<{hostName: string, maxPlayers: number, gameDuration: number} | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState(15);
+
+  const currentPlayer = players.find(p => p.playerId === playerId);
+  const {isSignedIn, isLoaded: authLoaded} = useAuth();
+  const {toast} = useToast();
 
   // Update effect timers every second
   useEffect(() => {
@@ -87,10 +48,9 @@ function GameContent() {
 
       // Clean up current player's active effects
       setActiveEffects(prev => {
-        const filtered = Object.fromEntries(
+        return Object.fromEntries(
           Object.entries(prev).filter(([_, endTime]) => endTime > now)
         );
-        return filtered;
       });
 
       // Clean up global player effects
@@ -112,10 +72,6 @@ function GameContent() {
 
     return () => clearInterval(interval);
   }, []);
-
-  const {toast} = useToast();
-
-  const currentPlayer = players.find(p => p.playerId === playerId);
 
   // WebSocket setup
   useEffect(() => {
@@ -331,34 +287,34 @@ function GameContent() {
           });
         };
 
-        wsManager.on('gameState', handleGameState);
-        wsManager.on('playerJoined', handlePlayerJoined);
-        wsManager.on('gameStarted', handleGameStarted);
-        wsManager.on('newQuestion', handleNewQuestion);
         wsManager.on('answerSubmitted', handleAnswerSubmitted);
-        wsManager.on('hackStarted', handleHackStarted);
-        wsManager.on('hackProgress', handleHackProgress);
+        wsManager.on('gameEnded', handleGameEnded);
+        wsManager.on('gameLogUpdated', handleGameLogUpdated);
+        wsManager.on('gameStarted', handleGameStarted);
+        wsManager.on('gameState', handleGameState);
         wsManager.on('hackCompleted', handleHackCompleted);
+        wsManager.on('hackProgress', handleHackProgress);
+        wsManager.on('hackStarted', handleHackStarted);
+        wsManager.on('newQuestion', handleNewQuestion);
+        wsManager.on('playerJoined', handlePlayerJoined);
+        wsManager.on('playerUpdated', handlePlayerUpdated);
         wsManager.on('powerUpUsed', handlePowerUpUsed);
         wsManager.on('questionSkipped', handleQuestionSkipped);
-        wsManager.on('gameLogUpdated', handleGameLogUpdated);
-        wsManager.on('playerUpdated', handlePlayerUpdated);
-        wsManager.on('gameEnded', handleGameEnded);
 
         return () => {
-          wsManager.off('gameState', handleGameState);
-          wsManager.off('playerJoined', handlePlayerJoined);
-          wsManager.off('gameStarted', handleGameStarted);
-          wsManager.off('newQuestion', handleNewQuestion);
           wsManager.off('answerSubmitted', handleAnswerSubmitted);
-          wsManager.off('hackStarted', handleHackStarted);
-          wsManager.off('hackProgress', handleHackProgress);
+          wsManager.off('gameEnded', handleGameEnded);
+          wsManager.off('gameLogUpdated', handleGameLogUpdated);
+          wsManager.off('gameStarted', handleGameStarted);
+          wsManager.off('gameState', handleGameState);
           wsManager.off('hackCompleted', handleHackCompleted);
+          wsManager.off('hackProgress', handleHackProgress);
+          wsManager.off('hackStarted', handleHackStarted);
+          wsManager.off('newQuestion', handleNewQuestion);
+          wsManager.off('playerJoined', handlePlayerJoined);
+          wsManager.off('playerUpdated', handlePlayerUpdated);
           wsManager.off('powerUpUsed', handlePowerUpUsed);
           wsManager.off('questionSkipped', handleQuestionSkipped);
-          wsManager.off('gameLogUpdated', handleGameLogUpdated);
-          wsManager.off('playerUpdated', handlePlayerUpdated);
-          wsManager.off('gameEnded', handleGameEnded);
         };
 
       } catch (error) {
@@ -592,111 +548,67 @@ function GameContent() {
     handleLeaveGame();
   };
 
-  const handleBackToHome = () => {
-    handleLeaveGame();
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-      <GameHeader
-        gameCode={gameSession?.code}
-        playerCredits={currentPlayer?.credits || 0}
-        gameTimeRemaining={gamePhase === 'active' ? gameTimeRemaining : undefined}
-        onLeaveGame={handleLeaveGame}
-        isGameActive={gamePhase === 'active'}
+  return <>
+    {gamePhase === 'lobby' && (
+      <GameLobby
+        authLoaded={authLoaded}
+        isAuthenticated={!!isSignedIn}
+        onHostGame={handleHostGame}
+        onJoinGame={handleJoinGame}
       />
+    )}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {gamePhase === 'lobby' && (
-          <GameLobby
-            onHostGame={handleHostGame}
-            onJoinGame={handleJoinGame}
-            onRequireAuth={() => setShowAuthModal(true)}
-            isAuthenticated={!!isSignedIn}
-          />
-        )}
+    {gamePhase === 'waiting' && gameSession && (
+      <GameWaitingRoom
+        gameCode={gameSession.code}
+        players={players}
+        isHost={currentPlayer?.isHost || false}
+        currentPlayerId={playerId || ''}
+        onStartGame={handleStartGame}
+        onToggleReady={handleToggleReady}
+      />
+    )}
 
-        {gamePhase === 'waiting' && gameSession && (
-          <GameWaitingRoom
-            gameCode={gameSession.code}
-            players={players}
-            isHost={currentPlayer?.isHost || false}
-            currentPlayerId={playerId || ''}
-            onStartGame={handleStartGame}
-            onToggleReady={handleToggleReady}
-          />
-        )}
+    {gamePhase === 'active' && currentPlayer && (
+      <div className={`${activeEffects.freeze && activeEffects.freeze > Date.now() ? 'animate-pulse' : ''} ${activeEffects.slow && activeEffects.slow > Date.now() ? 'transition-all duration-1000' : ''}`}>
+        <ActiveGame
+          activeEffects={activeEffects} currentPlayer={currentPlayer} currentQuestion={currentQuestion} gameLog={gameLog} gameTimeRemaining={gameTimeRemaining} globalPlayerEffects={globalPlayerEffects} hackModeActive={hackModeActive} hackModeData={hackModeData} hackProgress={hackProgress}
+          hackerName={hackerName} isBeingHacked={isBeingHacked} pendingAnswer={pendingAnswer} players={players} showAnswerFeedback={showAnswerFeedback}
+          onSkipQuestion={handleSkipQuestion} onSubmitAnswer={handleSubmitAnswer} onUsePowerUp={handleUsePowerUp}/>
 
-        {gamePhase === 'active' && currentPlayer && (
-          <div className={`${activeEffects.freeze && activeEffects.freeze > Date.now() ? 'animate-pulse' : ''} ${activeEffects.slow && activeEffects.slow > Date.now() ? 'transition-all duration-1000' : ''}`}>
-            <ActiveGame
-              players={players}
-              currentPlayer={currentPlayer}
-              currentQuestion={currentQuestion}
-              timeRemaining={timeRemaining}
-              isBeingHacked={isBeingHacked}
-              hackerName={hackerName}
-              hackProgress={hackProgress}
-              onSubmitAnswer={handleSubmitAnswer}
-              onUsePowerUp={handleUsePowerUp}
-              onStartHack={handleStartHack}
-              onSkipQuestion={handleSkipQuestion}
-              showAnswerFeedback={showAnswerFeedback}
-              pendingAnswer={pendingAnswer}
-              hackModeActive={hackModeActive}
-              hackModeData={hackModeData}
-              slowCountdown={slowCountdown}
-              gameLog={gameLog}
-              activeEffects={activeEffects}
-              globalPlayerEffects={globalPlayerEffects}
-            />
-
-            {/* Active Effects Indicator */}
-            {Object.keys(activeEffects).filter(effect => activeEffects[effect] > Date.now()).length > 0 && (
-              <div className="fixed top-20 right-4 space-y-2 z-50">
-                {Object.entries(activeEffects)
-                  .filter(([effect, endTime]) => endTime > Date.now())
-                  .map(([effect, endTime]) => {
-                    const timeLeft = Math.ceil((endTime - Date.now()) / 1000);
-                    return (
-                      <div key={effect} className={`px-3 py-2 rounded-lg border-2 animate-pulse ${
-                        effect === 'slow' ? 'bg-orange-500/20 border-orange-500 text-orange-500' :
-                          effect === 'freeze' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-500' :
-                            effect === 'scramble' ? 'bg-purple-500/20 border-purple-500 text-purple-500' :
-                              'bg-green-500/20 border-green-500 text-green-500'
-                      }`}>
-                        <div className="text-sm font-semibold">
-                          {effect.charAt(0).toUpperCase() + effect.slice(1)} Active
-                        </div>
-                        <div className="text-xs opacity-75">
-                          {timeLeft}s remaining
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            )}
+        {/* Active Effects Indicator */}
+        {Object.keys(activeEffects).filter(effect => activeEffects[effect] > Date.now()).length > 0 && (
+          <div className="fixed top-20 right-4 space-y-2 z-50">
+            {Object.entries(activeEffects)
+              .filter(([effect, endTime]) => endTime > Date.now())
+              .map(([effect, endTime]) => {
+                const timeLeft = Math.ceil((endTime - Date.now()) / 1000);
+                return (
+                  <div key={effect} className={`px-3 py-2 rounded-lg border-2 animate-pulse ${
+                    effect === 'slow' ? 'bg-orange-500/20 border-orange-500 text-orange-500' :
+                      effect === 'freeze' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-500' :
+                        effect === 'scramble' ? 'bg-purple-500/20 border-purple-500 text-purple-500' :
+                          'bg-green-500/20 border-green-500 text-green-500'
+                  }`}>
+                    <div className="text-sm font-semibold">
+                      {effect.charAt(0).toUpperCase() + effect.slice(1)} Active
+                    </div>
+                    <div className="text-xs opacity-75">
+                      {timeLeft}s remaining
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         )}
+      </div>
+    )}
 
-        {gamePhase === 'results' && (
-          <GameResults
-            players={players}
-            onPlayAgain={handlePlayAgain}
-          />
-        )}
-
-        <AuthModal 
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-          onSuccess={handleAuthSuccess}
-        />
-      </main>
-      <Footer />
-    </div>
-  );
-}
-
-export default function Game() {
-  return <GameContent />;
-}
+    {gamePhase === 'results' && (
+      <GameResults
+        players={players}
+        onPlayAgain={handlePlayAgain}
+      />
+    )}
+  </>;
+};
