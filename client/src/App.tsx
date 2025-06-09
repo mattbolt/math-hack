@@ -10,7 +10,10 @@ import {Switch, Route} from 'wouter';
 import type {ReactElement} from 'react';
 
 
-const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const isDev = import.meta.env.DEV;
+const publishableKey = isDev 
+  ? import.meta.env.VITE_DEV_CLERK_PUBLISHABLE_KEY 
+  : import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 if (!publishableKey) throw new Error('Missing Publishable Key');
 
 const Router = (): ReactElement => {

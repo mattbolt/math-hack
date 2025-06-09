@@ -31,10 +31,15 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Add Clerk middleware
+// Add Clerk middleware with environment-specific keys
+const isDevelopment = app.get("env") === "development";
 app.use(clerkMiddleware({
-  publishableKey: process.env.VITE_CLERK_PUBLISHABLE_KEY,
-  secretKey: process.env.CLERK_SECRET_KEY,
+  publishableKey: isDevelopment 
+    ? process.env.VITE_DEV_CLERK_PUBLISHABLE_KEY 
+    : process.env.VITE_CLERK_PUBLISHABLE_KEY,
+  secretKey: isDevelopment 
+    ? process.env.DEV_CLERK_SECRET_KEY 
+    : process.env.CLERK_SECRET_KEY,
 }));
 
 app.use((req, res, next) => {
