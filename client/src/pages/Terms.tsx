@@ -25,7 +25,7 @@ export const Terms = (): ReactElement => {
       <p>Math Hack is for educational and personal entertainment purposes only. You may not reverse engineer, copy, or misuse the platform.</p>
 
       <h2 className="font-bold mt-4 text-slate-400 text-xl">User Accounts</h2>
-      <p>You can create an account using email or by signing in with Third-party social platforms via our authentication system (Clerk). You are responsible for keeping your login credentials or linked accounts secure. Offensive names or content are not allowed.</p>
+      <p>You can create an account using email or by signing in with third-party social platforms via our authentication system (Clerk). You are responsible for keeping your login credentials or linked accounts secure. Offensive names or content are not allowed.</p>
 
       <h2 className="font-bold mt-4 text-slate-400 text-xl">Payment and Subscriptions</h2>
       <p>Some features may require a paid subscription. All payments are handled securely. Subscriptions renew automatically unless canceled.</p>
